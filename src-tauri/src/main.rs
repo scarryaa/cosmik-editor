@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    cosmik_editor_lib::run()
+    cosmik_editor_lib::run();
 }
