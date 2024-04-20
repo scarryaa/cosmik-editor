@@ -9,7 +9,7 @@ export function useEditor(
 	setLineCount: React.Dispatch<React.SetStateAction<number>>,
 	calculateLineCount: (htmlContent: string) => number,
 	lineCount: number,
-	initialContent = "",
+	initialContent = "<br>",
 ) {
 	const lastContentRef = useRef<string>(initialContent);
 	const [content, setContent] = useState<string>(initialContent);
@@ -75,7 +75,7 @@ export function useEditor(
 		const fragment = document.createDocumentFragment();
 		lines.forEach((line, index) => {
 			if (index > 0) {
-				fragment.appendChild(document.createElement("br")); // Add a line break for each new line, except the first
+				fragment.appendChild(document.createElement("div")); // Add a div for each new line, except the first
 			}
 			const lineNode = document.createTextNode(line);
 			fragment.appendChild(lineNode);
@@ -83,43 +83,7 @@ export function useEditor(
 		range.insertNode(fragment);
 	};
 
-	const handlePaste = useCallback(
-		(e: React.FormEvent<HTMLDivElement>) => {
-			e.preventDefault(); // Prevent the default paste behavior
-			const pastedText = (
-				e as unknown as ClipboardEvent
-			).clipboardData?.getData("text/plain");
-			if (pastedText) {
-				const sanitizedContent = sanitizeContent(pastedText); // Sanitize the pasted content
-
-				// Check if the last element is a <br> tag
-				const lastElement =
-					editorRef.current?.childNodes[
-						editorRef.current?.childNodes.length - 1
-					];
-				if (lastElement?.nodeName === "BR") {
-					// Remove the last <br> tag
-					editorRef.current?.removeChild(lastElement);
-					// Insert the sanitized content at the cursor's position
-					insertContentAtCursor(sanitizedContent);
-				} else {
-					// If the last element is not a <br>, insert at the cursor position
-					insertContentAtCursor(sanitizedContent);
-				}
-
-				setLineCount(calculateLineCount(editorRef.current?.innerHTML || ""));
-			}
-		},
-		[
-			sanitizeContent,
-			insertContentAtCursor,
-			calculateLineCount,
-			editorRef,
-			setLineCount,
-		],
-	);
-
-    const handleInput = useCallback(
+	const handleInput = useCallback(
 		(e: React.FormEvent<HTMLDivElement>) => {
 			const newContent = e.currentTarget.innerHTML;
 			sanitizeDiffAndUpdateContent(newContent, false);
@@ -165,11 +129,8 @@ export function useEditor(
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent<HTMLDivElement>) => {
 			if (e.key === "Enter") {
-				e.preventDefault(); // Prevent the default div creation on enter
-				document.execCommand("insertHTML", false, "<br><br>"); // Insert a double BR for a new line.
-
 				// Update content state to reflect the new structure
-				const updatedContent = editorRef.current?.innerHTML || "";
+				const updatedContent = editorRef.current?.innerHTML || "\n";
 				updateContent(updatedContent);
 				lastContentRef.current = updatedContent;
 			}
@@ -179,16 +140,16 @@ export function useEditor(
 
 	return {
 		content,
+		setContent,
 		updateContent,
 		cursorPosition,
 		updateCursorPosition,
 		lastContentRef,
 		sanitizeDiffAndUpdateContent,
-		handlePaste,
 		handleMultiLineInsertion,
 		sanitizeContent,
 		insertContentAtCursor,
-        handleInput,
-        handleKeyDown,
+		handleInput,
+		handleKeyDown,
 	};
 }

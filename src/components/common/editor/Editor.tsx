@@ -2,19 +2,22 @@ import React from "react";
 import { useRef } from "react";
 import { useEditor } from "../../../hooks/useEditor";
 import { useLineCount } from "../../../hooks/useLineCount";
+import { useListeners } from "../../../hooks/useListeners";
 import "./Editor.scss";
 import { LineNumbers } from "./LineNumbers";
 
 const Editor = () => {
 	const editorRef = useRef<HTMLDivElement>(null);
+	const ELEMENT_ID = "editor";
 
 	const { calculateLineCount, lineCount, setLineCount } = useLineCount();
-	const { content, handleInput, handleKeyDown, handlePaste } = useEditor(
+	const { content, handleInput, handleKeyDown, setContent } = useEditor(
 		editorRef,
 		setLineCount,
 		calculateLineCount,
 		lineCount,
 	);
+	useListeners(editorRef, setContent);
 
 	return (
 		<div className="editor-wrapper">
@@ -24,8 +27,7 @@ const Editor = () => {
 				contentEditable={true}
 				onInput={handleInput}
 				onKeyDown={handleKeyDown}
-				onPaste={handlePaste}
-				className="editor"
+				className={ELEMENT_ID}
 				suppressContentEditableWarning={true}
 				role="textbox"
 				aria-multiline="true"

@@ -12,49 +12,54 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-fn new_file() -> std::io::Result<()> {
+fn new_file(app: &AppHandle) -> std::io::Result<()> {
     println!("New file");
     Ok(())
 }
 
-fn open_file() -> std::io::Result<()> {
+fn open_file(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn save_file() -> std::io::Result<()> {
+fn save_file(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn save_as_file() -> std::io::Result<()> {
+fn save_as_file(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn quit() -> std::io::Result<()> {
-    std::process::exit(0);
-}
-
-fn undo() -> std::io::Result<()> {
+fn quit(app: &AppHandle) -> std::io::Result<()> {
+    app.exit(0);
     Ok(())
 }
 
-fn redo() -> std::io::Result<()> {
+fn undo(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn cut() -> std::io::Result<()> {
+fn redo(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn copy() -> std::io::Result<()> {
-    Ok(())
+fn cut(app: &AppHandle) -> std::io::Result<()> {
+    app.emit("cut", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "cut failed"))
 }
 
-fn paste() -> std::io::Result<()> {
-    Ok(())
+fn copy(app: &AppHandle) -> std::io::Result<()> {
+    app.emit("copy", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "copy failed"))
 }
 
-fn select_all() -> std::io::Result<()> {
-    Ok(())
+fn paste(app: &AppHandle) -> std::io::Result<()> {
+    app.emit("paste", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "paste failed"))
+}
+
+fn select_all(app: &AppHandle) -> std::io::Result<()> {
+    app.emit("select-all", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "select-all failed"))
 }
 
 fn toggle_fullscreen(app: &AppHandle) -> std::io::Result<()> {
@@ -81,7 +86,7 @@ fn toggle_dev_tools(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn toggle_sidebar() -> std::io::Result<()> {
+fn toggle_sidebar(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
@@ -90,7 +95,7 @@ fn reload(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn check_for_updates() -> std::io::Result<()> {
+fn check_for_updates(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
@@ -117,6 +122,7 @@ fn about(app: &AppHandle) -> std::io::Result<()> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![greet])
@@ -266,37 +272,37 @@ pub fn run() {
 
             app.on_menu_event(move |app, event| {
                 if event.id() == "new_menu_item" {
-                    new_file().expect("Could not create new file");
+                    new_file(app).expect("Could not create new file");
                 } else if event.id() == "open_menu_item" {
-                    open_file().expect("Could not open file");
+                    open_file(app).expect("Could not open file");
                 } else if event.id() == "save_menu_item" {
-                    save_file().expect("Could not save file");
+                    save_file(app).expect("Could not save file");
                 } else if event.id() == "save_as_menu_item" {
-                    save_as_file().expect("Could not save as file");
+                    save_as_file(app).expect("Could not save as file");
                 } else if event.id() == "quit_menu_item" {
-                    quit().expect("Could not quit");
+                    quit(app).expect("Could not quit");
                 } else if event.id() == "undo_menu_item" {
-                    undo().expect("Could not undo");
+                    undo(app).expect("Could not undo");
                 } else if event.id() == "redo_menu_item" {
-                    redo().expect("Could not redo");
+                    redo(app).expect("Could not redo");
                 } else if event.id() == "cut_menu_item" {
-                    cut().expect("Could not cut");
+                    cut(app).expect("Could not cut");
                 } else if event.id() == "copy_menu_item" {
-                    copy().expect("Could not copy");
+                    copy(app).expect("Could not copy");
                 } else if event.id() == "paste_menu_item" {
-                    paste().expect("Could not paste");
+                    paste(app).expect("Could not paste");
                 } else if event.id() == "select_all_menu_item" {
-                    select_all().expect("Could not select all");
+                    select_all(app).expect("Could not select all");
                 } else if event.id() == "toggle_fullscreen_menu_item" {
                     toggle_fullscreen(app).expect("Could not toggle fullscreen");
                 } else if event.id() == "toggle_developer_tools_menu_item" {
                     toggle_dev_tools(app).expect("Could not toggle developer tools");
                 } else if event.id() == "toggle_sidebar_menu_item" {
-                    toggle_sidebar().expect("Could not toggle sidebar");
+                    toggle_sidebar(app).expect("Could not toggle sidebar");
                 } else if event.id() == "reload_menu_item" {
                     reload(app).expect("Could not reload app");
                 } else if event.id() == "check_for_updates_menu_item" {
-                    check_for_updates().expect("Could not check for updates");
+                    check_for_updates(app).expect("Could not check for updates");
                 } else if event.id() == "report_issue_menu_item" {
                     report_issue(app).expect("Could not report issue");
                 } else if event.id() == "about_menu_item" {
