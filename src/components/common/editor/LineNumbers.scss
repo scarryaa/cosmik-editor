@@ -1,7 +1,7 @@
 .line-numbers {
     flex-shrink: 0;
     width: 50px;
-    background: #eee;
+    background: var(--line-number-bg-color);
     padding-top: 5px;
     padding-right: 10px;
     text-align: right;
@@ -10,5 +10,5 @@
     -moz-user-select: none;
     -ms-user-select: none;
     -o-user-select: none;
-    min-height: 100vh;
+    min-height: fit-content;
 }

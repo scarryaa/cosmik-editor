@@ -1,13 +1,16 @@
 .editor-wrapper {
     display: flex;
-    overflow: hidden;
+    overflow: auto;
+    height: calc(100vh - var(--status-pane-height));
 
     .editor {
         padding-top: 5px;
         padding-left: 5px;
         flex-grow: 1;
         overflow-x: auto;
+        overflow-y: hidden;
         white-space: nowrap;
         outline: none;
+        min-height: fit-content;
     }
 }
