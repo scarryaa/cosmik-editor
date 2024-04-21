@@ -32,16 +32,16 @@ const Editor = () => {
 		setLineCount(newLines.length);
 	};
 
-    const updateCursor = (opts: { line: number, char: number }) => {
-        setCursorChar(opts.char);
-        setCursorLine(opts.line);
-    }
+	const updateCursor = (opts: { line: number; char: number }) => {
+		setCursorChar(opts.char);
+		setCursorLine(opts.line);
+	};
 
 	const { handleKeyDown } = useEditorEvents(
 		editorRef,
 		editorModelRef,
 		updateEditorContent,
-        updateCursor
+		updateCursor,
 	);
 
 	return (
@@ -62,9 +62,9 @@ const Editor = () => {
 					tabIndex={0}
 				>
 					{lines.map((line, index) => (
-						<div 
-                        data-line-number={index}
-                        key={`line-${index}-${line}`}>{line}</div>
+						<div data-line-number={index} key={`line-${index}-${line}`}>
+							{line}
+						</div>
 					))}
 				</div>
 			</div>
