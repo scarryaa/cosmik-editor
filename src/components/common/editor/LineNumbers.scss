@@ -12,4 +12,8 @@
     -o-user-select: none;
     min-height: fit-content;
     padding-bottom: 93vh;
+
+    >* {
+        min-height: 20px;
+    }
 }

@@ -9,9 +9,14 @@
         flex-grow: 1;
         overflow-x: auto;
         overflow-y: hidden;
-        white-space: nowrap;
+        white-space: break-spaces;
         outline: none;
         min-height: fit-content;
         padding-bottom: 93vh;
+
+        div[data-line-number] {
+            min-height: 20px;
+            white-space: break-spaces;
+          }
     }
 }

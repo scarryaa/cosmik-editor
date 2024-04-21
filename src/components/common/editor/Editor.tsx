@@ -1,47 +1,34 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useEditorEvents } from "../../../hooks/useEditorEvents";
+import React, { useEffect, useMemo, useRef } from "react";
+import { useEditor } from "../../../contexts/editorContext";
 import { EditorModel } from "../../../model/editorModel";
 import "./Editor.scss";
-import { LineNumbers } from "./LineNumbers";
-import { StatusPane } from "./StatusPane";
+import LineNumbers from "./LineNumbers";
+import StatusPane from "./StatusPane";
 
 const Editor = () => {
-	const editorRef = useRef<HTMLDivElement>(null);
-	const editorModelRef = useRef<EditorModel | null>(null);
-	const [lines, setLines] = useState<string[]>([]);
-	const [lineCount, setLineCount] = useState<number>(1);
-	const [cursorLine, setCursorLine] = useState<number>(1);
-	const [cursorChar, setCursorChar] = useState<number>(1);
+	const {
+		lines,
+		updateEditorContent,
+		lineCount,
+		handleKeyDown,
+		cursorPosition,
+		editorRef,
+		editorModelRef
+	} = useEditor();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Adding 'updateEditorContent' to deps causes infinite loop
 	useEffect(() => {
-		editorModelRef.current = new EditorModel({ initialContent: "" });
 		updateEditorContent("");
 	}, []);
 
-	const updateEditorContent = (newContent: string) => {
-		const newLines = newContent.split("\n").map((line) => {
-			return (
-				line
-					// Replace spaces with non-breaking spaces
-					.replace(/ /g, "\u00a0")
-					// If the content is empty, add a non-breaking space
-					.replace(/^\s*$/g, "\u00a0")
-			);
-		});
-		setLines(newLines);
-		setLineCount(newLines.length);
-	};
-
-	const updateCursor = (opts: { line: number; char: number }) => {
-		setCursorChar(opts.char);
-		setCursorLine(opts.line);
-	};
-
-	const { handleKeyDown } = useEditorEvents(
-		editorRef,
-		editorModelRef,
-		updateEditorContent,
-		updateCursor,
+	const linesMapping = useMemo(
+		() =>
+			lines.map((line, index) => (
+				<div data-line-number={index} key={`line-${index}-${line}`}>
+					{line}
+				</div>
+			)),
+		[lines],
 	);
 
 	return (
@@ -61,14 +48,13 @@ const Editor = () => {
 					aria-atomic="true"
 					tabIndex={0}
 				>
-					{lines.map((line, index) => (
-						<div data-line-number={index} key={`line-${index}-${line}`}>
-							{line}
-						</div>
-					))}
+					{linesMapping}
 				</div>
 			</div>
-			<StatusPane lineNumber={cursorLine} char={cursorChar} />
+			<StatusPane
+				lineNumber={cursorPosition.line + 1}
+				char={cursorPosition.char + 1}
+			/>
 		</>
 	);
 };
