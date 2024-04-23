@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import type { EditorModel } from "../model/editorModel";
+import { keyActions } from "../util/keyActions";
 import type { CursorPosition } from "./useCursorManagement";
-import { ScrollDirection } from "./useScrollManagement";
+import type { ScrollDirection } from "./useScrollManagement";
 
 /**
  * A custom hook for managing common events (like input) within a text editor component.
@@ -10,7 +11,10 @@ export const useEditorEvents = (
 	editorRef: React.RefObject<HTMLDivElement>,
 	editorModelRef: React.RefObject<EditorModel>,
 	updateEditorContent: (newContent: string) => void,
-	updateCursor: (opts: { line: number; char: number }) => void,
+	updateCursor: (
+		model: EditorModel,
+		opts: { line: number; char: number },
+	) => void,
 	scrollToCursorIfNeeded: (direction: ScrollDirection) => void,
 	handleEnterScroll: () => void,
 	moveCursorDown: (
@@ -43,67 +47,65 @@ export const useEditorEvents = (
 			const cursorPosition = model?.getCursorPosition();
 
 			if (!content || !model || !cursorPosition) return;
-			e.preventDefault();
 
-			switch (e.key) {
-				case "Delete": {
-					deleteCharacter(model, true);
-					break;
+			const action = keyActions({
+				deleteCharacter,
+				handleEnterScroll,
+				insertCharacter,
+				moveCursorDown,
+				moveCursorLeft,
+				moveCursorRight,
+				moveCursorUp,
+				scrollToCursorIfNeeded,
+			})[e.key as keyof typeof keyActions];
+			if (action || e.key.length === 1) {
+				// Prevent default only if an action is defined or it's a printable character
+				e.preventDefault();
+
+				if (action) {
+					if (
+						e.key === "Delete" ||
+						e.key === "Backspace" ||
+						e.key === "Enter"
+					) {
+						(action as (model: EditorModel) => void)(model);
+					} else if (
+						["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp"].includes(e.key)
+					) {
+						(
+							action as (
+								event: React.KeyboardEvent<HTMLDivElement>,
+								model: EditorModel,
+								cursorPosition: CursorPosition,
+								content: HTMLDivElement,
+							) => void
+						)(e, model, cursorPosition, content);
+					}
+				} else if (e.key.length === 1) {
+					insertCharacter(model, e.key);
 				}
-				case "Backspace": {
-					deleteCharacter(model);
-					scrollToCursorIfNeeded(ScrollDirection.Up);
-					break;
-				}
-				case "Enter": {
-					insertCharacter(model, "\n");
-					handleEnterScroll();
-					break;
-				}
-				// Arrow Keys
-				case "ArrowLeft": {
-					moveCursorLeft(model, cursorPosition, content);
-					break;
-				}
-				case "ArrowRight": {
-					moveCursorRight(model, cursorPosition, content);
-					break;
-				}
-				case "ArrowUp": {
-					moveCursorUp(model, cursorPosition, content);
-					scrollToCursorIfNeeded(ScrollDirection.Up);
-					break;
-				}
-				case "ArrowDown": {
-					moveCursorDown(model, cursorPosition, content);
-					scrollToCursorIfNeeded(ScrollDirection.Down);
-					break;
-				}
-				default: {
-					if (e.key.length === 1) insertCharacter(model, e.key);
-					break;
-				}
+
+				updateEditorContent(model.getContent());
+				updateCursor(model, {
+					char: cursorPosition.char,
+					line: cursorPosition.line,
+				});
 			}
-
-			// Update the content state with the new model content
-			updateEditorContent(model.getContent());
-
-			// Ensure the cursor is updated in the DOM
-			updateCursor({ char: cursorPosition.char, line: cursorPosition.line });
 		},
 		[
-			editorRef,
 			editorModelRef,
+			editorRef,
+			insertCharacter,
+			updateCursor,
 			updateEditorContent,
-			scrollToCursorIfNeeded,
+			deleteCharacter,
 			handleEnterScroll,
+			insertCharacter,
 			moveCursorDown,
-			moveCursorUp,
 			moveCursorLeft,
 			moveCursorRight,
-			updateCursor,
-			insertCharacter,
-			deleteCharacter,
+			moveCursorUp,
+			scrollToCursorIfNeeded,
 		],
 	);
 

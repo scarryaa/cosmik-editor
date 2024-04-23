@@ -10,11 +10,14 @@ import {
 } from "../hooks/useCursorManagement";
 import { useEditorContentManagement } from "../hooks/useEditorContentManagement";
 import { useEditorEvents } from "../hooks/useEditorEvents";
+import { useMouseEvents } from "../hooks/useMouseEvents";
 import {
 	type ScrollDirection,
 	useScrollManagement,
 } from "../hooks/useScrollManagement";
+import { useSelectionManagement } from "../hooks/useSelectionManagement";
 import { EditorModel } from "../model/editorModel";
+import type { Selection } from "../model/selectionModel";
 
 interface EditorContextType {
 	lines: string[];
@@ -43,12 +46,23 @@ interface EditorContextType {
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
 	) => void;
-	updateCursor: (opts: { line: number; char: number }) => void;
+	updateCursor: (
+		model: EditorModel,
+		opts: { line: number; char: number },
+	) => void;
 	scrollToCursorIfNeeded: (direction: ScrollDirection) => void;
 	handleEnterScroll: () => void;
 	handleKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 	editorRef: React.RefObject<HTMLDivElement>;
 	editorModelRef: React.RefObject<EditorModel>;
+	handleMouseDownWrapper: (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+	) => void;
+	debouncedMouseMove: (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+	) => void;
+	handleMouseUp: (event: MouseEvent) => void;
+	selection: Selection;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -63,7 +77,9 @@ export const useEditor = () => {
 
 export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 	const editorRef = useRef<HTMLDivElement>(null);
-    const editorModelRef = useRef<EditorModel | null>(new EditorModel({ initialContent: "" }));
+	const editorModelRef = useRef<EditorModel | null>(
+		new EditorModel({ initialContent: "" }),
+	);
 	const LINE_HEIGHT = 20;
 	const SCROLL_OFFSET = LINE_HEIGHT * 3;
 
@@ -90,6 +106,26 @@ export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 		LINE_HEIGHT,
 		SCROLL_OFFSET,
 	);
+
+	const {
+		clearSelection,
+		getDOMSelection,
+		setIsSelecting,
+		isSelectingRef,
+		selection,
+		updateSelection,
+	} = useSelectionManagement(editorModelRef, editorRef);
+
+	const { handleMouseDownWrapper, debouncedMouseMove, handleMouseUp } =
+		useMouseEvents(
+			editorModelRef,
+			editorRef,
+			isSelectingRef,
+			setIsSelecting,
+			updateSelection,
+			getDOMSelection,
+			updateCursor,
+		);
 
 	const { handleKeyDown } = useEditorEvents(
 		editorRef,
@@ -125,6 +161,10 @@ export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 				handleKeyDown,
 				editorRef,
 				editorModelRef,
+				handleMouseDownWrapper,
+				debouncedMouseMove,
+				handleMouseUp,
+				selection,
 			}}
 		>
 			{children}

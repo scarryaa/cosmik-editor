@@ -23,7 +23,7 @@ export const useEditorContentManagement = () => {
 		[],
 	);
 
-	const updateEditorContent = (newContent: string) => {
+	const updateEditorContent = useCallback((newContent: string) => {
 		ReactDOM.unstable_batchedUpdates(() => {
 			const newLines = newContent
 				.split("\n")
@@ -31,7 +31,7 @@ export const useEditorContentManagement = () => {
 			setLines([...newLines]);
 			setLineCount(newLines.length);
 		});
-	};
+	}, []);
 
 	return {
 		insertCharacter,

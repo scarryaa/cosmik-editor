@@ -15,9 +15,16 @@ export const useCursorManagement = (
 	const [cursorPosition, setCursorPosition] = useState(initialPosition);
 
 	// Function to update the cursor position in state
-	const updateCursorPosition = useCallback((newPosition: CursorPosition) => {
-		setCursorPosition(newPosition);
-	}, []);
+	const updateCursorPosition = useCallback(
+		(model: EditorModel, newPosition: CursorPosition) => {
+			setCursorPosition(newPosition);
+			model.setCursorPosition({
+				xPosition: newPosition.char,
+				yPosition: newPosition.line,
+			});
+		},
+		[],
+	);
 
 	// Effect to update the cursor position in the DOM
 	useEffect(() => {
@@ -33,6 +40,7 @@ export const useCursorManagement = (
 		if (textNode?.nodeType === Node.TEXT_NODE) {
 			const range = document.createRange();
 			const sel = window.getSelection();
+			
 			range.setStart(textNode, Math.min(char, textNode.textContent.length));
 			range.collapse(true);
 			sel?.removeAllRanges();
@@ -40,7 +48,7 @@ export const useCursorManagement = (
 		}
 	}, [cursorPosition, editorRef]);
 
-    const moveCursorDown = useCallback(
+	const moveCursorDown = useCallback(
 		(
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
@@ -61,7 +69,7 @@ export const useCursorManagement = (
 		[],
 	);
 
-    const moveCursorUp = useCallback(
+	const moveCursorUp = useCallback(
 		(
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
@@ -78,7 +86,7 @@ export const useCursorManagement = (
 		[],
 	);
 
-    const moveCursorRight = useCallback(
+	const moveCursorRight = useCallback(
 		(
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
@@ -98,7 +106,7 @@ export const useCursorManagement = (
 		[],
 	);
 
-    const moveCursorLeft = useCallback(
+	const moveCursorLeft = useCallback(
 		(
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
@@ -116,28 +124,39 @@ export const useCursorManagement = (
 		[],
 	);
 
-    const getDOMLineLength = useCallback(
-        (line: number): number => {
-            const content = editorRef.current;
-            if (line >= 0 && content?.children && line < content.children.length) {
-                const textNode = content.children[line].firstChild;
-                if (textNode?.nodeType === Node.TEXT_NODE) {
-                    const textContent = textNode.textContent;
-                    if (!textContent) return 0;
-                    if (textContent === '\u200B') {
-                        return 0; // Treat the zero-width space as 0
-                    }
-                    return textContent.length;
-                }
-            }
-            return 0;
-        },
-        [editorRef],
-    );
+	const getDOMLineLength = useCallback(
+		(line: number): number => {
+			const content = editorRef.current;
+			if (line >= 0 && content?.children && line < content.children.length) {
+				const textNode = content.children[line].firstChild;
+				if (textNode?.nodeType === Node.TEXT_NODE) {
+					const textContent = textNode.textContent;
+					if (!textContent) return 0;
+					if (textContent === "\u200B") {
+						return 0; // Treat the zero-width space as 0
+					}
+					return textContent.length;
+				}
+			}
+			return 0;
+		},
+		[editorRef],
+	);
 
-    const updateCursor = (opts: { line: number; char: number }) => {
-		updateCursorPosition(opts);
+	const updateCursor = (
+		model: EditorModel,
+		opts: { line: number; char: number },
+	) => {
+		updateCursorPosition(model, opts);
 	};
 
-	return { cursorPosition, updateCursorPosition, moveCursorDown, moveCursorUp, moveCursorLeft, moveCursorRight, updateCursor };
+	return {
+		cursorPosition,
+		updateCursorPosition,
+		moveCursorDown,
+		moveCursorUp,
+		moveCursorLeft,
+		moveCursorRight,
+		updateCursor,
+	};
 };

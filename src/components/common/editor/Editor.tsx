@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useEditor } from "../../../contexts/editorContext";
-import { EditorModel } from "../../../model/editorModel";
 import "./Editor.scss";
 import LineNumbers from "./LineNumbers";
 import StatusPane from "./StatusPane";
@@ -13,13 +12,12 @@ const Editor = () => {
 		handleKeyDown,
 		cursorPosition,
 		editorRef,
-		editorModelRef
+		selection,
 	} = useEditor();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Adding 'updateEditorContent' to deps causes infinite loop
 	useEffect(() => {
 		updateEditorContent("");
-	}, []);
+	}, [updateEditorContent]);
 
 	const linesMapping = useMemo(
 		() =>
@@ -54,6 +52,7 @@ const Editor = () => {
 			<StatusPane
 				lineNumber={cursorPosition.line + 1}
 				char={cursorPosition.char + 1}
+				selection={selection}
 			/>
 		</>
 	);
