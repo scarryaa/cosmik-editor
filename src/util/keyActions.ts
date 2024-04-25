@@ -1,7 +1,6 @@
 import type { CursorPosition } from "../hooks/useCursorManagement";
 import { ScrollDirection } from "../hooks/useScrollManagement";
 import type { EditorModel } from "../model/editorModel";
-import { SelectionDirection, SelectionEvents } from "../model/selectionModel";
 
 interface KeyActionsParams {
 	deleteCharacter: (model: EditorModel, isDelete?: boolean) => void;
@@ -28,6 +27,7 @@ interface KeyActionsParams {
 	) => void;
 	handleEnterScroll: () => void;
 	scrollToCursorIfNeeded: (direction: ScrollDirection) => void;
+	selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>;
 }
 
 export const keyActions = ({
@@ -54,24 +54,13 @@ export const keyActions = ({
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 	) => {
 		if (event.shiftKey) {
-			const currentSelection = model.getSelection();
-
-			if (
-				!currentSelection.isEmpty() &&
-				currentSelection.direction === SelectionDirection.leftToRight
-			) {
-				currentSelection.contractSelection({
-					direction: SelectionDirection.leftToRight,
-					amount: 1,
-				});
-				model.updateAndSetSelection(currentSelection);
-				model.emit(SelectionEvents.selectionChanged, currentSelection);
-			} else {
-				model.updateSelectionForShiftLeft();
-			}
+			selectionSourceRef.current = "keyboard";
+			model.updateSelectionForShiftLeft(model.getCursorPosition());
 		} else {
+			model.clearSelection();
 			moveCursorLeft(model, cursorPosition, content);
 		}
 	},
@@ -80,24 +69,13 @@ export const keyActions = ({
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 	) => {
 		if (event.shiftKey) {
-			const currentSelection = model.getSelection();
-
-			if (
-				!currentSelection.isEmpty() &&
-				currentSelection.direction === SelectionDirection.rightToLeft
-			) {
-				currentSelection.contractSelection({
-					direction: SelectionDirection.rightToLeft,
-					amount: 1,
-				});
-				model.updateAndSetSelection(currentSelection);
-				model.emit(SelectionEvents.selectionChanged, currentSelection);
-			} else {
-				model.updateSelectionForShiftRight();
-			}
+			selectionSourceRef.current = "keyboard";
+			model.updateSelectionForShiftRight(model.getCursorPosition());
 		} else {
+			model.clearSelection();
 			moveCursorRight(model, cursorPosition, content);
 		}
 	},
@@ -106,17 +84,32 @@ export const keyActions = ({
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 	) => {
-		moveCursorDown(model, cursorPosition, content);
-		scrollToCursorIfNeeded(ScrollDirection.Down);
+		if (event.shiftKey) {
+			selectionSourceRef.current = "keyboard";
+			model.updateSelectionForShiftDown(model.getCursorPosition());
+		} else {
+			model.clearSelection();
+			moveCursorDown(model, cursorPosition, content);
+			scrollToCursorIfNeeded(ScrollDirection.Down);
+		}
+
 	},
 	ArrowUp: (
 		event: React.KeyboardEvent<HTMLDivElement>,
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 	) => {
-		moveCursorUp(model, cursorPosition, content);
-		scrollToCursorIfNeeded(ScrollDirection.Up);
+		if (event.shiftKey) {
+			selectionSourceRef.current = "keyboard";
+			model.updateSelectionForShiftUp(model.getCursorPosition());
+		} else {
+			model.clearSelection();
+			moveCursorUp(model, cursorPosition, content);
+			scrollToCursorIfNeeded(ScrollDirection.Up);
+		}
 	},
 });

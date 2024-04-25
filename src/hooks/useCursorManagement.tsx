@@ -97,10 +97,10 @@ export const useCursorManagement = (
 				cursorPosition.line < content.children.length - 1
 			) {
 				// Move to the next line
-				model.moveCursorY(1);
-				model.moveCursorX(-cursorPosition.char);
+				model.moveCursor(0, 1);
+				model.moveCursor(-cursorPosition.char, 0);
 			} else {
-				model.moveCursorX(1);
+				model.moveCursor(1, 0);
 			}
 		},
 		[],
@@ -115,10 +115,10 @@ export const useCursorManagement = (
 			if (cursorPosition.char === 0 && cursorPosition.line > 0) {
 				// Move to the previous line
 				const lineLength = getDOMLineLength(cursorPosition.line - 1);
-				model.moveCursorY(-1);
-				model.moveCursorX(lineLength);
+				model.moveCursor(0, -1);
+				model.moveCursor(lineLength, 0);
 			} else {
-				model.moveCursorX(-1);
+				model.moveCursor(-1, 0);
 			}
 		},
 		[],

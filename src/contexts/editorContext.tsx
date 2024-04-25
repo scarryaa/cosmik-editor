@@ -113,7 +113,7 @@ export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 		setIsSelecting,
 		isSelectingRef,
 		selection,
-		updateSelection,
+		selectionSourceRef
 	} = useSelectionManagement(editorModelRef, editorRef);
 
 	const { handleMouseDownWrapper, debouncedMouseMove, handleMouseUp } =
@@ -122,9 +122,9 @@ export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 			editorRef,
 			isSelectingRef,
 			setIsSelecting,
-			updateSelection,
 			getDOMSelection,
 			updateCursor,
+			selectionSourceRef
 		);
 
 	const { handleKeyDown } = useEditorEvents(
@@ -140,6 +140,7 @@ export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 		moveCursorRight,
 		insertCharacter,
 		deleteCharacter,
+		selectionSourceRef
 	);
 
 	return (

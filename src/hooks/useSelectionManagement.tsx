@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { EditorModel } from "../model/editorModel";
-import { Selection, SelectionEvents } from "../model/selectionModel";
+import {
+	Selection,
+	SelectionDirection,
+	SelectionEvents,
+} from "../model/selectionModel";
 
 /**TODO
- * implement selections for up and down
- * fix mouse selections
- * synch up mouse and keyboard selections
- * add bounds checking for selections
- * clear selection (truly clear) on click or non shift keystroke
+ * update cursor position with selection (and after finalizing selection)
  */
 
 /**
@@ -19,30 +19,7 @@ export const useSelectionManagement = (
 ) => {
 	const isSelectingRef = useRef(false);
 	const [selection, setSelection] = useState<Selection>(Selection.empty());
-
-	// Function to update the selection in state and model
-	const updateSelection = useCallback(
-		(model: EditorModel, newSelection: Selection) => {
-			setSelection((oldSelection) =>
-				{
-					if (oldSelection === newSelection) {
-						return oldSelection;
-                    }
-
-					return new Selection(
-						newSelection.content,
-						newSelection.startLine,
-						newSelection.endLine,
-						newSelection.startIndex,
-						newSelection.endIndex,
-						newSelection.direction,
-					);
-				}
-			);
-			model.getSelection().emit(SelectionEvents.selectionChanged, newSelection);
-		},
-		[],
-	);
+	const selectionSourceRef = useRef<'keyboard' | 'mouse' | null>(null);
 
 	const applyDOMSelection = (selection: Selection) => {
 		const editor = editorContainerRef.current;
@@ -56,8 +33,8 @@ export const useSelectionManagement = (
 		const endNode = findTextNode(editor, selection.endLine);
 		if (!startNode || !endNode) return;
 
-		const startOffset = findCharacterOffset(startNode, selection.startIndex);
-		const endOffset = findCharacterOffset(endNode, selection.endIndex);
+		const startOffset = findCharacterOffset(startNode, selection.selectionStart);
+		const endOffset = findCharacterOffset(endNode, selection.selectionEnd);
 
 		range.setStart(startNode, startOffset);
 		range.setEnd(endNode, endOffset);
@@ -65,6 +42,7 @@ export const useSelectionManagement = (
 		// requestAnimationFrame is needed or else the visible
 		// selection disappears due to React re-renders
 		requestAnimationFrame(() => {
+			selectionSourceRef.current = null;
 			_selection.removeAllRanges();
 			_selection.addRange(range);
 		});
@@ -87,9 +65,7 @@ export const useSelectionManagement = (
 	const clearSelection = useCallback(() => {
 		const model = editorModelRef.current;
 		if (!model) return;
-
-		updateSelection(model, Selection.empty());
-	}, [editorModelRef, updateSelection]);
+	}, [editorModelRef]);
 
 	// Helpers
 	const setIsSelecting = (selecting: boolean) => {
@@ -140,6 +116,10 @@ export const useSelectionManagement = (
 			endLine,
 			range.startOffset,
 			range.endOffset,
+			range.startOffset,
+			(range.startOffset > range.endOffset || endLine < startLine)
+				? SelectionDirection.left
+				: SelectionDirection.right,
 		);
 	};
 
@@ -158,12 +138,16 @@ export const useSelectionManagement = (
 					newSelection.content,
 					newSelection.startLine,
 					newSelection.endLine,
-					newSelection.startIndex,
-					newSelection.endIndex,
+					newSelection.selectionStart,
+					newSelection.selectionEnd,
+					newSelection.selectionStart,
 					newSelection.direction,
 				);
 			});
-			applyDOMSelection(newSelection);
+
+			if (selectionSourceRef.current === 'keyboard') {
+				applyDOMSelection(newSelection);
+			}
 		};
 
 		model.on(SelectionEvents.selectionChanged, handleSelectionChange);
@@ -186,7 +170,7 @@ export const useSelectionManagement = (
 			if (selection && selection.rangeCount > 0) {
 				const range = selection.getRangeAt(0);
 				const newSelection = createSelectionFromRange(range);
-				updateSelection(model, newSelection);
+				model.updateSelection(newSelection);
 			}
 		};
 
@@ -200,19 +184,14 @@ export const useSelectionManagement = (
 				container.removeEventListener("selectstart", handleSelectDelegated);
 			}
 		};
-	}, [
-		editorContainerRef,
-		editorModelRef,
-		updateSelection,
-		createSelectionFromRange,
-	]);
+	}, [editorContainerRef, editorModelRef, createSelectionFromRange]);
 
 	return {
 		clearSelection,
 		selection,
-		updateSelection,
 		isSelectingRef,
 		getDOMSelection,
 		setIsSelecting,
+		selectionSourceRef,
 	};
 };

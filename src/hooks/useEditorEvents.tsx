@@ -39,6 +39,7 @@ export const useEditorEvents = (
 	) => void,
 	insertCharacter: (model: EditorModel, character: string) => void,
 	deleteCharacter: (model: EditorModel, isDeleteKey?: boolean) => void,
+	selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 ) => {
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -57,6 +58,7 @@ export const useEditorEvents = (
 				moveCursorRight,
 				moveCursorUp,
 				scrollToCursorIfNeeded,
+				selectionSourceRef
 			})[e.key as keyof typeof keyActions];
 			if (action || e.key.length === 1) {
 				// Prevent default only if an action is defined or it's a printable character
@@ -78,8 +80,9 @@ export const useEditorEvents = (
 								model: EditorModel,
 								cursorPosition: CursorPosition,
 								content: HTMLDivElement,
+								selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 							) => void
-						)(e, model, cursorPosition, content);
+						)(e, model, cursorPosition, content, selectionSourceRef);
 					}
 				} else if (e.key.length === 1) {
 					insertCharacter(model, e.key);
@@ -106,6 +109,7 @@ export const useEditorEvents = (
 			moveCursorRight,
 			moveCursorUp,
 			scrollToCursorIfNeeded,
+			selectionSourceRef
 		],
 	);
 

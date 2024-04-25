@@ -16,7 +16,7 @@ const StatusPane: React.FC<StatusPaneProps> = ({
 	return (
 		<div className="status-pane">
 			Ln {lineNumber}, Col {char}{" "}
-			{selection.startIndex !== selection.endIndex
+			{selection.selectionStart !== selection.selectionEnd
 				? `(${selection.content.length} selected)`
 				: ""}
 		</div>

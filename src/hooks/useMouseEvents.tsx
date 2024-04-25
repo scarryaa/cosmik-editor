@@ -1,7 +1,23 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { EditorModel } from "../model/editorModel";
-import type { Selection } from "../model/selectionModel";
+import { type Selection, SelectionDirection } from "../model/selectionModel";
 import { debounce } from "../util/debounce";
+
+type MouseClickPosition = {
+	start: {
+		line: number;
+		character: number;
+	};
+	end?: {
+		line: number;
+		character: number;
+	};
+};
+
+type MouseCoords = {
+	x: number;
+	y: number;
+};
 
 /**
  * A custom hook for managing mouse events within a text editor component.
@@ -11,14 +27,16 @@ export const useMouseEvents = (
 	editorContainerRef: React.RefObject<HTMLDivElement>,
 	isSelectingRef: React.MutableRefObject<boolean>,
 	setIsSelecting: (selecting: boolean) => void,
-	updateSelection: (model: EditorModel, newSelection: Selection) => void,
 	getDOMSelection: () => Selection,
 	updateCursor: (
 		model: EditorModel,
 		opts: { line: number; char: number },
 	) => void,
+	selectionSourceRef: React.MutableRefObject<"keyboard" | "mouse" | null>,
 ) => {
 	const textWidthCache = new Map<string, number>();
+	const mouseClickPositon = useRef<MouseClickPosition>();
+	const mouseClickCoords = useRef<MouseCoords>();
 
 	const handleMouseDownWrapper = useCallback(
 		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
@@ -31,17 +49,32 @@ export const useMouseEvents = (
 			const mouseEvent = event as MouseEvent;
 
 			setIsSelecting(true);
+			selectionSourceRef.current = "mouse";
 
 			const target = mouseEvent.target as HTMLElement;
 			const lineElement = target.closest("[data-line-number]");
 			const model = editorModelRef.current;
 
 			if (lineElement) {
+				const mouseX = (event as MouseEvent).clientX;
+				const mouseY = (event as MouseEvent).clientY;
+				mouseClickCoords.current = {
+					x: mouseX,
+					y: mouseY,
+				};
+
 				const lineNumber = Number(
 					lineElement.getAttribute("data-line-number") || "0",
 				);
 
 				const charPosition = calculateCharPosition(mouseEvent, lineElement);
+				mouseClickPositon.current = {
+					start: {
+						character: charPosition,
+						line: lineNumber,
+					},
+				};
+
 				if (model) {
 					updateCursor(model, {
 						line: lineNumber,
@@ -53,28 +86,41 @@ export const useMouseEvents = (
 				if (model) {
 					updateCursor(model, {
 						line: model.getNumberOfLines(),
-						char: model.getCurrentLineLength(),
+						char: model.getLineLength(model.getNumberOfLines()),
 					});
 				}
 			}
 		},
-		[updateCursor, editorModelRef, setIsSelecting],
+		[updateCursor, editorModelRef, setIsSelecting, selectionSourceRef],
 	);
 
 	const handleMouseMove = useCallback(
-		(event: MouseEvent) => {
+		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 			const model = editorModelRef.current;
 
 			if (!isSelectingRef.current || !model) return;
+			selectionSourceRef.current = "mouse";
 
-			updateSelection(model, getDOMSelection());
+			const mouseY = event.clientY;
+			const initialY = mouseClickCoords.current?.y ?? 0;
+
+			// Determine the selection direction based on Y coordinates
+			const selectionDirection =
+				mouseY < initialY ? SelectionDirection.left : SelectionDirection.right;
+
+			if (model) {
+				model.updateSelection({
+					...getDOMSelection(),
+					direction: selectionDirection,
+				});
+			}
 		},
-		[editorModelRef, updateSelection, getDOMSelection, isSelectingRef],
+		[editorModelRef, getDOMSelection, isSelectingRef, selectionSourceRef],
 	);
 
 	const debouncedMouseMove = debounce(
 		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-			handleMouseMove(event.nativeEvent);
+			handleMouseMove(event);
 		},
 		1,
 	);
@@ -83,8 +129,17 @@ export const useMouseEvents = (
 		(event: Event) => {
 			const model = editorModelRef.current;
 
-			if (model) {
-				updateSelection(model, getDOMSelection());
+			const target = event.target as HTMLElement;
+			const lineElement = target.closest("[data-line-number]");
+
+			const selectionDirection = determineSelectionDirection(lineElement);
+
+			if (model && selectionDirection) {
+				selectionSourceRef.current = "mouse";
+				model.updateSelection({
+					...getDOMSelection(),
+					direction: selectionDirection,
+				});
 			}
 
 			setIsSelecting(false);
@@ -92,8 +147,8 @@ export const useMouseEvents = (
 		},
 		[
 			editorModelRef,
-			updateSelection,
 			getDOMSelection,
+			selectionSourceRef,
 			setIsSelecting,
 			isSelectingRef,
 		],
@@ -129,6 +184,51 @@ export const useMouseEvents = (
 		return closestCharIndex;
 	};
 
+	const determineSelectionDirection = (
+		lineElement: Element | null,
+	): SelectionDirection | null => {
+		if (!lineElement) return null;
+
+		let selectionDirection: SelectionDirection = SelectionDirection.right;
+		if (lineElement) {
+			const lineNumber = Number(
+				lineElement.getAttribute("data-line-number") || "0",
+			);
+
+			const charPosition = calculateCharPosition(
+				event as MouseEvent,
+				lineElement,
+			);
+			mouseClickPositon.current = {
+				start: {
+					character: mouseClickPositon.current?.start.character ?? 0,
+					line: mouseClickPositon.current?.start.line ?? 0,
+				},
+				end: {
+					character: charPosition,
+					line: lineNumber,
+				},
+			};
+
+			// Determine selection direction
+			if (mouseClickPositon.current?.start && mouseClickPositon.current?.end) {
+				const isForward =
+					mouseClickPositon.current.end.line >
+						mouseClickPositon.current.start.line ||
+					(mouseClickPositon.current.end.line ===
+						mouseClickPositon.current.start.line &&
+						mouseClickPositon.current.end.character >=
+							mouseClickPositon.current.start.character);
+
+				selectionDirection = isForward
+					? SelectionDirection.right
+					: SelectionDirection.left;
+			}
+		}
+
+		return selectionDirection;
+	};
+
 	const measureTextWidth = (text: string, font: string): number => {
 		const cacheKey = `${font}-${text}`;
 		if (textWidthCache.has(cacheKey)) {
@@ -160,7 +260,7 @@ export const useMouseEvents = (
 		const toggleListeners = (action: "add" | "remove") => {
 			const method =
 				action === "add" ? "addEventListener" : "removeEventListener";
-			container[method]("mouseup", handleMouseUp);
+			document[method]("mouseup", handleMouseUp);
 			container[method]("mousedown", handleMouseDown);
 			// Need this on the document so selection outside of the window works correctly
 			document[method]("mousemove", debouncedMouseMove);
