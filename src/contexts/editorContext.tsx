@@ -30,21 +30,25 @@ interface EditorContextType {
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	moveCursorUp: (
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	moveCursorLeft: (
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	moveCursorRight: (
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	updateCursor: (
 		model: EditorModel,

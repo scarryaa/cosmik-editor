@@ -62,7 +62,6 @@ export class Selection extends EventEmitter {
 
 	private getSelectionContent = (document: string[]) => {
 		if (this.startLine === this.endLine) {
-			console.log(this.startLine);
 			// Selection within a single line
 			this.content = document[this.startLine].slice(
 				this.selectionStart,

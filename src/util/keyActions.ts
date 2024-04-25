@@ -9,21 +9,25 @@ interface KeyActionsParams {
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	moveCursorRight: (
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	moveCursorDown: (
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	moveCursorUp: (
 		model: EditorModel,
 		cursorPosition: CursorPosition,
 		content: HTMLDivElement,
+		ctrlModifier: boolean,
 	) => void;
 	handleEnterScroll: () => void;
 	scrollToCursorIfNeeded: (direction: ScrollDirection) => void;
@@ -60,7 +64,7 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftLeft(model.getCursorPosition());
 		} else {
-			moveCursorLeft(model, cursorPosition, content);
+			moveCursorLeft(model, cursorPosition, content, event.ctrlKey);
 			model.clearSelection();
 		}
 	},
@@ -75,7 +79,7 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftRight(model.getCursorPosition());
 		} else {
-			moveCursorRight(model, cursorPosition, content);
+			moveCursorRight(model, cursorPosition, content, event.ctrlKey);
 			model.clearSelection();
 		}
 	},
@@ -90,11 +94,10 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftDown(model.getCursorPosition());
 		} else {
-			moveCursorDown(model, cursorPosition, content);
+			moveCursorDown(model, cursorPosition, content, event.ctrlKey);
 			scrollToCursorIfNeeded(ScrollDirection.Down);
 			model.clearSelection();
 		}
-
 	},
 	ArrowUp: (
 		event: React.KeyboardEvent<HTMLDivElement>,
@@ -107,7 +110,7 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftUp(model.getCursorPosition());
 		} else {
-			moveCursorUp(model, cursorPosition, content);
+			moveCursorUp(model, cursorPosition, content, event.ctrlKey);
 			scrollToCursorIfNeeded(ScrollDirection.Up);
 			model.clearSelection();
 		}

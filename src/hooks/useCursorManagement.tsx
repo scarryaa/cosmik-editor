@@ -48,12 +48,39 @@ export const useCursorManagement = (
 		}
 	}, [cursorPosition, editorRef]);
 
+	const moveToEndOfPreviousLine = useCallback(
+		(model: EditorModel, content: HTMLDivElement) => {
+			if (cursorPosition.char === 0 && cursorPosition.line > 0) {
+				const lineLength = getDOMLineLength(cursorPosition.line - 1);
+				model.moveCursor(0, -1);
+				model.moveCursor(lineLength, 0);
+			}
+		},
+		[cursorPosition],
+	);
+
+	const moveToStartOfNextLine = useCallback(
+		(model: EditorModel, content: HTMLDivElement) => {
+			if (
+				cursorPosition.char === getDOMLineLength(cursorPosition.line) &&
+				cursorPosition.line < content.children.length - 1
+			) {
+				// Move to the next line
+				model.moveCursor(0, 1);
+				model.moveCursor(-cursorPosition.char, 0);
+			}
+		},
+		[cursorPosition],
+	);
+
 	const moveCursorDown = useCallback(
 		(
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
 			content: HTMLDivElement,
+			ctrlModifier: boolean,
 		) => {
+			// @TODO multi-cursor
 			const lineLength = getDOMLineLength(cursorPosition?.line);
 			model.setCursorPosition({
 				xPosition:
@@ -74,7 +101,9 @@ export const useCursorManagement = (
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
 			content: HTMLDivElement,
+			ctrlModifier: boolean,
 		) => {
+			// @TODO multi-cursor
 			model.setCursorPosition({
 				xPosition: cursorPosition.line === 0 ? 0 : cursorPosition.char,
 				yPosition:
@@ -91,23 +120,54 @@ export const useCursorManagement = (
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
 			content: HTMLDivElement,
+			ctrlModifier: boolean,
 		) => {
-			// If there is a selection, move the cursor to the end of the selection
 			if (!model.getSelection().isEmpty()) {
 				cursorPosition.char = model.getSelection().selectionEnd;
 				cursorPosition.line = model.getSelection().endLine;
-			} else if (
+			}
+
+			if (ctrlModifier) {
+				const currentLineText =
+					content.children[cursorPosition.line]?.textContent || "";
+				let newPosition = currentLineText.length; // Default to end of line
+				if (cursorPosition.char < currentLineText.length - 1) {
+					// Search forwards from the current position to find the start of the next word
+					let foundSpace = false;
+					for (
+						let i = cursorPosition.char + 1;
+						i < currentLineText.length;
+						i++
+					) {
+						if (currentLineText[i].match(/\s/)) {
+							foundSpace = true; // Mark when a space is found
+						} else if (foundSpace && !currentLineText[i].match(/\s/)) {
+							newPosition = i;
+							break;
+						}
+					}
+
+					model.setCursorPosition({
+						xPosition: newPosition,
+						yPosition: cursorPosition.line,
+					});
+				} else {
+					moveToStartOfNextLine(model, content);
+				}
+				return;
+			}
+
+			if (
 				cursorPosition.char === getDOMLineLength(cursorPosition.line) &&
 				cursorPosition.line < content.children.length - 1
 			) {
-				// Move to the next line
-				model.moveCursor(0, 1);
-				model.moveCursor(-cursorPosition.char, 0);
+				moveToStartOfNextLine(model, content);
 			} else {
+				// Default behavior: move one character to the right
 				model.moveCursor(1, 0);
 			}
 		},
-		[],
+		[moveToStartOfNextLine],
 	);
 
 	const moveCursorLeft = useCallback(
@@ -115,21 +175,82 @@ export const useCursorManagement = (
 			model: EditorModel,
 			cursorPosition: { line: number; char: number },
 			content: HTMLDivElement,
+			ctrlModifier: boolean,
 		) => {
-			// If there is a selection, move the cursor to the start of the selection
 			if (!model.getSelection().isEmpty()) {
 				cursorPosition.char = model.getSelection().selectionStart;
 				cursorPosition.line = model.getSelection().startLine;
-			} else if (cursorPosition.char === 0 && cursorPosition.line > 0) {
-				// Move to the previous line
-				const lineLength = getDOMLineLength(cursorPosition.line - 1);
-				model.moveCursor(0, -1);
-				model.moveCursor(lineLength, 0);
+			}
+
+			if (ctrlModifier) {
+				if (cursorPosition.char === 0 && cursorPosition.line > 0) {
+					// Move to the end of the previous line
+					const previousLineIndex = cursorPosition.line - 1;
+					const previousLineText =
+						content.children[previousLineIndex]?.textContent || "";
+					let newPosition = 0; // Default to start of the previous line
+					if (previousLineText.length > 0) {
+						for (let i = previousLineText.length - 1; i >= 0; i--) {
+							if (
+								previousLineText[i].match(/\s/) &&
+								i < previousLineText.length - 1
+							) {
+								newPosition = i + 1;
+								break;
+							}
+
+							if (i === 0) {
+								// If we reach the start, set position to start
+								newPosition = 0;
+							}
+						}
+					}
+					model.setCursorPosition({
+						xPosition: newPosition,
+						yPosition: previousLineIndex,
+					});
+				} else {
+					if (ctrlModifier) {
+						const currentLineText =
+							content.children[cursorPosition.line]?.textContent || "";
+						let newPosition = 0; // Default to start of line
+						if (cursorPosition.char > 0) {
+							// Search backwards from the current position to find the start of the previous word
+							for (let i = cursorPosition.char - 1; i > 0; i--) {
+								if (
+									currentLineText[i].match(/\s/) &&
+									!currentLineText[i - 1].match(/\s/)
+								) {
+									newPosition = i;
+									break;
+								}
+							}
+
+							model.setCursorPosition({
+								xPosition: newPosition,
+								yPosition: cursorPosition.line,
+							});
+						} else {
+							moveToEndOfPreviousLine(model, content);
+						}
+						return;
+					}
+				}
+			} else {
+				if (cursorPosition.char === 0 && cursorPosition.line > 0) {
+					moveToEndOfPreviousLine(model, content);
+				} else {
+					model.moveCursor(-1, 0);
+				}
+			}
+
+			if (cursorPosition.char === 0 && cursorPosition.line > 0) {
+				moveToEndOfPreviousLine(model, content);
 			} else {
 				model.moveCursor(-1, 0);
 			}
 		},
-		[],
+		[moveToEndOfPreviousLine],
 	);
 
 	const getDOMLineLength = useCallback(
