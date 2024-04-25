@@ -76,6 +76,10 @@ export const useMouseEvents = (
 				};
 
 				if (model) {
+					model.getSelection().selectionBasis = charPosition;
+				}
+
+				if (model) {
 					updateCursor(model, {
 						line: lineNumber,
 						char: charPosition,

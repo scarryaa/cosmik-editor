@@ -60,8 +60,8 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftLeft(model.getCursorPosition());
 		} else {
-			model.clearSelection();
 			moveCursorLeft(model, cursorPosition, content);
+			model.clearSelection();
 		}
 	},
 	ArrowRight: (
@@ -75,8 +75,8 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftRight(model.getCursorPosition());
 		} else {
-			model.clearSelection();
 			moveCursorRight(model, cursorPosition, content);
+			model.clearSelection();
 		}
 	},
 	ArrowDown: (
@@ -90,9 +90,9 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftDown(model.getCursorPosition());
 		} else {
-			model.clearSelection();
 			moveCursorDown(model, cursorPosition, content);
 			scrollToCursorIfNeeded(ScrollDirection.Down);
+			model.clearSelection();
 		}
 
 	},
@@ -107,9 +107,9 @@ export const keyActions = ({
 			selectionSourceRef.current = "keyboard";
 			model.updateSelectionForShiftUp(model.getCursorPosition());
 		} else {
-			model.clearSelection();
 			moveCursorUp(model, cursorPosition, content);
 			scrollToCursorIfNeeded(ScrollDirection.Up);
+			model.clearSelection();
 		}
 	},
 });

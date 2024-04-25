@@ -113,7 +113,7 @@ export const EditorProvider: React.FC<PropsWithChildren> = ({ children }) => {
 		setIsSelecting,
 		isSelectingRef,
 		selection,
-		selectionSourceRef
+		selectionSourceRef,
 	} = useSelectionManagement(editorModelRef, editorRef);
 
 	const { handleMouseDownWrapper, debouncedMouseMove, handleMouseUp } =

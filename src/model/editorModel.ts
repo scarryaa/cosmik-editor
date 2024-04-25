@@ -176,6 +176,7 @@ export class EditorModel extends EventEmitter {
 			selectionStart = 0,
 			selectionEnd = 0,
 			content = "",
+			selectionBasis = 0,
 			direction = this.selection.direction,
 		} = options;
 
@@ -185,7 +186,7 @@ export class EditorModel extends EventEmitter {
 			endLine,
 			selectionStart,
 			selectionEnd,
-			this.selection.selectionBasis,
+			selectionBasis,
 			direction,
 		);
 

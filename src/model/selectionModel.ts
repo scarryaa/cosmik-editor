@@ -27,10 +27,7 @@ export interface SelectionOptions {
 	direction: SelectionDirection;
 }
 
-export type UpdateSelectionOptions = Partial<
-	Omit<SelectionOptions, "selectionBasis">
->;
-
+export type UpdateSelectionOptions = SelectionOptions;
 /**
  * A class for managing selection as it relates to a text editor.
  */
@@ -42,6 +39,7 @@ export class Selection extends EventEmitter {
 	public selectionEnd: number;
 	public selectionBasis: number;
 	public direction: SelectionDirection;
+	public shouldUpdateCursor = true;
 
 	constructor(
 		content = "",
@@ -64,6 +62,7 @@ export class Selection extends EventEmitter {
 
 	private getSelectionContent = (document: string[]) => {
 		if (this.startLine === this.endLine) {
+			console.log(this.startLine);
 			// Selection within a single line
 			this.content = document[this.startLine].slice(
 				this.selectionStart,
@@ -128,6 +127,7 @@ export class Selection extends EventEmitter {
 		this.selectionStart = cursor.char;
 		this.endLine = cursor.line;
 		this.selectionEnd = cursor.char;
+		this.selectionBasis = cursor.char;
 	};
 
 	private startNewSelection = (
@@ -196,8 +196,15 @@ export class Selection extends EventEmitter {
 	) => {
 		// Document start
 		if (this.startLine === 0) {
-			// Select all
-			this.selectionStart = 0;
+			// Check if we are past the selection baasis
+			if (this.selectionEnd > this.selectionBasis) {
+				this.selectionEnd = this.selectionBasis;
+			} else {
+				// Select all
+				this.selectionStart = 0;
+				// Prevent cursor adjustment
+				this.shouldUpdateCursor = false;
+			}
 		} else {
 			this.startLine -= opts.amount;
 
@@ -221,12 +228,19 @@ export class Selection extends EventEmitter {
 		if (this.endLine === document.length - 1) {
 			// Select all
 			this.selectionEnd = document[this.endLine].length;
+			// Prevent cursor adjustment
+			this.shouldUpdateCursor = false;
 		} else {
 			this.endLine += opts.amount;
 
 			// Blank line
 			if (document[this.endLine].length === 0) {
 				this.selectionEnd = 0;
+			}
+
+			// Check if we are before the selection baasis
+			if (this.selectionStart < this.selectionBasis) {
+				this.selectionStart = this.selectionBasis;
 			}
 
 			this.selectionEnd = Math.min(
@@ -290,9 +304,21 @@ export class Selection extends EventEmitter {
 	) => {
 		// Document start
 		if (this.endLine === 0) {
+			// Check if we are past the selection baasis
+			if (this.selectionEnd > this.selectionBasis) {
+				this.selectionEnd = this.selectionBasis;
+			}
 			// Select all
 			this.selectionStart = 0;
 		} else if (this.endLine > 0) {
+			// Check if we are past the selection baasis
+			if (
+				this.selectionEnd > this.selectionBasis &&
+				this.startLine === this.endLine
+			) {
+				this.selectionEnd = this.selectionBasis;
+			}
+
 			this.endLine -= opts.amount;
 
 			// Blank line
@@ -321,11 +347,30 @@ export class Selection extends EventEmitter {
 	) => {
 		// Document end
 		if (this.startLine < document.length - 1) {
+			// Check if we are before the selection baasis
+			if (
+				this.selectionStart < this.selectionBasis &&
+				this.startLine === this.endLine
+			) {
+				this.selectionStart = this.selectionBasis;
+			}
+
 			this.startLine += opts.amount;
 
 			// Blank line
 			if (document[this.startLine].length === 0) {
 				this.selectionStart = 0;
+			}
+
+			// Check if selectionStart > selectionEnd
+			if (this.selectionStart > this.selectionEnd) {
+				const tmp = this.selectionEnd;
+				this.selectionEnd = Math.min(
+					document[this.endLine].length,
+					this.selectionStart,
+				);
+				this.selectionStart = tmp;
+				this.invertSelectionDirection();
 			}
 
 			// Invert selection
@@ -340,6 +385,11 @@ export class Selection extends EventEmitter {
 				document[this.startLine].length,
 				this.selectionStart,
 			);
+		} // Collapse to end on last line
+		else if (this.startLine === document.length - 1) {
+			this.selectionStart = this.selectionBasis;
+			this.selectionEnd = document[this.endLine].length;
+			this.invertSelectionDirection();
 		}
 	};
 

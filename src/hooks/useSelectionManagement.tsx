@@ -6,10 +6,6 @@ import {
 	SelectionEvents,
 } from "../model/selectionModel";
 
-/**TODO
- * update cursor position with selection (and after finalizing selection)
- */
-
 /**
  * A custom hook for managing selections within a text editor component.
  */
@@ -19,7 +15,7 @@ export const useSelectionManagement = (
 ) => {
 	const isSelectingRef = useRef(false);
 	const [selection, setSelection] = useState<Selection>(Selection.empty());
-	const selectionSourceRef = useRef<'keyboard' | 'mouse' | null>(null);
+	const selectionSourceRef = useRef<"keyboard" | "mouse" | null>(null);
 
 	const applyDOMSelection = (selection: Selection) => {
 		const editor = editorContainerRef.current;
@@ -33,7 +29,10 @@ export const useSelectionManagement = (
 		const endNode = findTextNode(editor, selection.endLine);
 		if (!startNode || !endNode) return;
 
-		const startOffset = findCharacterOffset(startNode, selection.selectionStart);
+		const startOffset = findCharacterOffset(
+			startNode,
+			selection.selectionStart,
+		);
 		const endOffset = findCharacterOffset(endNode, selection.selectionEnd);
 
 		range.setStart(startNode, startOffset);
@@ -116,8 +115,8 @@ export const useSelectionManagement = (
 			endLine,
 			range.startOffset,
 			range.endOffset,
-			range.startOffset,
-			(range.startOffset > range.endOffset || endLine < startLine)
+			editorModelRef.current?.getSelection().selectionBasis,
+			range.startOffset > range.endOffset || endLine < startLine
 				? SelectionDirection.left
 				: SelectionDirection.right,
 		);
@@ -145,8 +144,39 @@ export const useSelectionManagement = (
 				);
 			});
 
-			if (selectionSourceRef.current === 'keyboard') {
+			if (selectionSourceRef.current === "keyboard") {
 				applyDOMSelection(newSelection);
+			}
+
+			if (!model.getSelection().isEmpty() && model.getSelection().shouldUpdateCursor) {
+				switch (newSelection.direction) {
+					case SelectionDirection.left:
+						model.setCursorPosition({
+							xPosition: newSelection.selectionStart,
+							yPosition: newSelection.startLine,
+						});
+						break;
+					case SelectionDirection.up:
+						model.setCursorPosition({
+							xPosition: newSelection.selectionStart,
+							yPosition: newSelection.startLine,
+						});
+						break;
+					case SelectionDirection.down:
+						model.setCursorPosition({
+							xPosition: newSelection.selectionEnd,
+							yPosition: newSelection.endLine,
+						});
+						break;
+					case SelectionDirection.right:
+						model.setCursorPosition({
+							xPosition: newSelection.selectionEnd,
+							yPosition: newSelection.endLine,
+						});
+						break;
+				}
+			} else if (model.getSelection().shouldUpdateCursor) {
+				model.getSelection().shouldUpdateCursor = true;
 			}
 		};
 

@@ -40,7 +40,7 @@ export const useCursorManagement = (
 		if (textNode?.nodeType === Node.TEXT_NODE) {
 			const range = document.createRange();
 			const sel = window.getSelection();
-			
+
 			range.setStart(textNode, Math.min(char, textNode.textContent.length));
 			range.collapse(true);
 			sel?.removeAllRanges();
@@ -92,7 +92,11 @@ export const useCursorManagement = (
 			cursorPosition: { line: number; char: number },
 			content: HTMLDivElement,
 		) => {
-			if (
+			// If there is a selection, move the cursor to the end of the selection
+			if (!model.getSelection().isEmpty()) {
+				cursorPosition.char = model.getSelection().selectionEnd;
+				cursorPosition.line = model.getSelection().endLine;
+			} else if (
 				cursorPosition.char === getDOMLineLength(cursorPosition.line) &&
 				cursorPosition.line < content.children.length - 1
 			) {
@@ -112,7 +116,11 @@ export const useCursorManagement = (
 			cursorPosition: { line: number; char: number },
 			content: HTMLDivElement,
 		) => {
-			if (cursorPosition.char === 0 && cursorPosition.line > 0) {
+			// If there is a selection, move the cursor to the start of the selection
+			if (!model.getSelection().isEmpty()) {
+				cursorPosition.char = model.getSelection().selectionStart;
+				cursorPosition.line = model.getSelection().startLine;
+			} else if (cursorPosition.char === 0 && cursorPosition.line > 0) {
 				// Move to the previous line
 				const lineLength = getDOMLineLength(cursorPosition.line - 1);
 				model.moveCursor(0, -1);
