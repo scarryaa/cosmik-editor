@@ -3,11 +3,10 @@
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": true
+    "distDir": "../dist"
   },
   "package": {
-    "productName": "cosmik-editor",
+    "productName": "tauri-app",
     "version": "0.0.0"
   },
   "tauri": {
@@ -20,7 +19,7 @@
     },
     "windows": [
       {
-        "title": "cosmik-editor",
+        "title": "tauri-app",
         "width": 800,
         "height": 600
       }
