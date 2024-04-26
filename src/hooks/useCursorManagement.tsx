@@ -48,30 +48,164 @@ export const useCursorManagement = (
 		}
 	}, [cursorPosition, editorRef]);
 
-	const moveToEndOfPreviousLine = useCallback(
-		(model: EditorModel, content: HTMLDivElement) => {
-			if (cursorPosition.char === 0 && cursorPosition.line > 0) {
+	const moveToPreviousLine = useCallback(
+		(model: EditorModel, moveToEnd = false) => {
+			if (moveToEnd) {
 				const lineLength = getDOMLineLength(cursorPosition.line - 1);
 				model.moveCursor(0, -1);
 				model.moveCursor(lineLength, 0);
+			} else {
+				model.moveCursor(0, -1);
+				model.moveCursor(0, 0);
 			}
 		},
 		[cursorPosition],
 	);
 
-	const moveToStartOfNextLine = useCallback(
-		(model: EditorModel, content: HTMLDivElement) => {
-			if (
-				cursorPosition.char === getDOMLineLength(cursorPosition.line) &&
-				cursorPosition.line < content.children.length - 1
-			) {
-				// Move to the next line
+	const moveToNextLine = useCallback(
+		(model: EditorModel, moveToEnd = false) => {
+			if (moveToEnd) {
+				model.moveCursor(0, 1);
+				model.moveCursor(cursorPosition.char, 0);
+			} else {
 				model.moveCursor(0, 1);
 				model.moveCursor(-cursorPosition.char, 0);
 			}
 		},
 		[cursorPosition],
 	);
+
+	const findNextWordStartPosition = (
+		text: string,
+		startPosition: number,
+	): number => {
+		let foundSpaceOrSymbol = false;
+		for (let i = startPosition; i < text.length; i++) {
+			if (text[i].match(/[\s\/.,;(){}[\]=+*&|<>-]/)) {
+				foundSpaceOrSymbol = true; // Mark when a space or symbol is found
+			} else if (foundSpaceOrSymbol) {
+				return i; // Return the start position of the next word or symbol
+			}
+		}
+		return text.length; // If no next word or symbol is found, return the end of the text
+	};
+
+	const moveToPreviousWord = useCallback(
+		(
+			model: EditorModel,
+			cursorPosition: CursorPosition,
+			documentLines: string[],
+		) => {
+			let currentLineIndex = cursorPosition.line;
+			let startPosition = cursorPosition.char;
+
+			while (currentLineIndex >= 0) {
+				const text = documentLines[currentLineIndex];
+				const previousWordStartPos = findPreviousWordStartPosition(
+					text,
+					startPosition,
+				);
+
+				// If a previous word is found in the current line
+				if (previousWordStartPos > 0) {
+					model.setCursorPosition({
+						xPosition: previousWordStartPos,
+						yPosition: currentLineIndex,
+					});
+					break; // Exit the loop
+				}
+
+				// Move to the previous line and start from the end of the line
+				currentLineIndex--;
+				if (currentLineIndex < 0) {
+					model.setCursorPosition({
+						xPosition: 0,
+						yPosition: 0,
+					});
+					break;
+				}
+				startPosition = documentLines[currentLineIndex].length;
+
+				// If the line is blank, move there
+				if (
+					currentLineIndex < documentLines.length &&
+					documentLines[currentLineIndex].length === 0
+				) {
+					model.setCursorPosition({
+						xPosition: 0,
+						yPosition: currentLineIndex,
+					});
+					break;
+				}
+			}
+		},
+		[],
+	);
+
+	const moveToNextWord = useCallback(
+		(
+			model: EditorModel,
+			cursorPosition: CursorPosition,
+			documentLines: string[],
+		) => {
+			let currentLineIndex = cursorPosition.line;
+			let startPosition = cursorPosition.char;
+
+			while (currentLineIndex < documentLines.length) {
+				const text = documentLines[currentLineIndex];
+				const nextWordStartPos = findNextWordStartPosition(text, startPosition);
+
+				// If a next word is found in the current line
+				if (nextWordStartPos < text.length) {
+					model.setCursorPosition({
+						xPosition: nextWordStartPos,
+						yPosition: currentLineIndex,
+					});
+					break; // Exit the loop since we've found the next word
+				}
+
+				// Move to the next line and start from the beginning of the line
+				currentLineIndex++;
+				startPosition = 0;
+
+				// If it is the last line, set cursor to the end
+				if (currentLineIndex === documentLines.length) {
+					model.setCursorPosition({
+						xPosition: documentLines[currentLineIndex - 1].length,
+						yPosition: currentLineIndex - 1,
+					});
+				}
+
+				// If the line is blank, move there
+				if (
+					currentLineIndex < documentLines.length &&
+					documentLines[currentLineIndex].length === 0
+				) {
+					model.setCursorPosition({
+						xPosition: 0,
+						yPosition: currentLineIndex,
+					});
+					break;
+				}
+			}
+		},
+		[findNextWordStartPosition],
+	);
+
+	const findPreviousWordStartPosition = (
+		text: string,
+		startPosition: number,
+	): number => {
+		for (let i = startPosition - 1; i > 0; i--) {
+			if (
+				text[i].match(/[\s\/.,;(){}[\]=+*&|<>-]/) &&
+				!text[i - 1].match(/[\s\/.,;(){}[\]=+*&|<>-]/)
+			) {
+				return i;
+			}
+		}
+		return 0; // If no previous word or symbol is found, return the start of the text
+	};
 
 	const moveCursorDown = useCallback(
 		(
@@ -128,32 +262,9 @@ export const useCursorManagement = (
 			}
 
 			if (ctrlModifier) {
-				const currentLineText =
-					content.children[cursorPosition.line]?.textContent || "";
-				let newPosition = currentLineText.length; // Default to end of line
-				if (cursorPosition.char < currentLineText.length - 1) {
-					// Search forwards from the current position to find the start of the next word
-					let foundSpace = false;
-					for (
-						let i = cursorPosition.char + 1;
-						i < currentLineText.length;
-						i++
-					) {
-						if (currentLineText[i].match(/\s/)) {
-							foundSpace = true; // Mark when a space is found
-						} else if (foundSpace && !currentLineText[i].match(/\s/)) {
-							newPosition = i;
-							break;
-						}
-					}
+				const document = model.getContent().split("\n");
 
-					model.setCursorPosition({
-						xPosition: newPosition,
-						yPosition: cursorPosition.line,
-					});
-				} else {
-					moveToStartOfNextLine(model, content);
-				}
+				moveToNextWord(model, cursorPosition, document);
 				return;
 			}
 
@@ -161,13 +272,13 @@ export const useCursorManagement = (
 				cursorPosition.char === getDOMLineLength(cursorPosition.line) &&
 				cursorPosition.line < content.children.length - 1
 			) {
-				moveToStartOfNextLine(model, content);
+				moveToNextLine(model, false);
 			} else {
 				// Default behavior: move one character to the right
 				model.moveCursor(1, 0);
 			}
 		},
-		[moveToStartOfNextLine],
+		[moveToNextLine, moveToNextWord],
 	);
 
 	const moveCursorLeft = useCallback(
@@ -183,74 +294,19 @@ export const useCursorManagement = (
 			}
 
 			if (ctrlModifier) {
-				if (cursorPosition.char === 0 && cursorPosition.line > 0) {
-					// Move to the end of the previous line
-					const previousLineIndex = cursorPosition.line - 1;
-					const previousLineText =
-						content.children[previousLineIndex]?.textContent || "";
-					let newPosition = 0; // Default to start of the previous line
-					if (previousLineText.length > 0) {
-						for (let i = previousLineText.length - 1; i >= 0; i--) {
-							if (
-								previousLineText[i].match(/\s/) &&
-								i < previousLineText.length - 1
-							) {
-								newPosition = i + 1;
-								break;
-							}
+				const document = model.getContent().split("\n");
 
-							if (i === 0) {
-								// If we reach the start, set position to start
-								newPosition = 0;
-							}
-						}
-					}
-					model.setCursorPosition({
-						xPosition: newPosition,
-						yPosition: previousLineIndex,
-					});
-				} else {
-					if (ctrlModifier) {
-						const currentLineText =
-							content.children[cursorPosition.line]?.textContent || "";
-						let newPosition = 0; // Default to start of line
-						if (cursorPosition.char > 0) {
-							// Search backwards from the current position to find the start of the previous word
-							for (let i = cursorPosition.char - 1; i > 0; i--) {
-								if (
-									currentLineText[i].match(/\s/) &&
-									!currentLineText[i - 1].match(/\s/)
-								) {
-									newPosition = i;
-									break;
-								}
-							}
-
-							model.setCursorPosition({
-								xPosition: newPosition,
-								yPosition: cursorPosition.line,
-							});
-						} else {
-							moveToEndOfPreviousLine(model, content);
-						}
-						return;
-					}
-				}
-			} else {
-				if (cursorPosition.char === 0 && cursorPosition.line > 0) {
-					moveToEndOfPreviousLine(model, content);
-				} else {
-					model.moveCursor(-1, 0);
-				}
+				moveToPreviousWord(model, cursorPosition, document);
+				return;
 			}
 
 			if (cursorPosition.char === 0 && cursorPosition.line > 0) {
-				moveToEndOfPreviousLine(model, content);
+				moveToPreviousLine(model, true);
 			} else {
 				model.moveCursor(-1, 0);
 			}
 		},
-		[moveToEndOfPreviousLine],
+		[moveToPreviousLine, moveToPreviousWord],
 	);
 
 	const getDOMLineLength = useCallback(
