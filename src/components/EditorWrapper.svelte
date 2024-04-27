@@ -10,7 +10,6 @@
 <style lang="scss">
     #editor-wrapper {
         display: flex;
-        overflow: auto;
         height: calc(100vh - var(--status-pane-height));
     }
 </style>

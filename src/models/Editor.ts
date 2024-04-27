@@ -85,6 +85,14 @@ export class Editor {
         });
     }
 
+    getNumberOfLines() {
+        return this.lines.length - 1;
+    }
+
+    getLineLength(lineNumber: number) {
+        return this.lines[lineNumber].content.length;
+    }
+
     // Method to convert the model to HTML for rendering
     toHTML() {
         return this.lines.map(line => `<div data-line-number="${line.number}">${line.content || '<br>'}</div>`).join('');
