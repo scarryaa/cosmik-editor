@@ -1,19 +1,24 @@
 <script lang="ts">
 import { onDestroy, onMount, tick } from "svelte";
 import { editorModel } from "../stores/editorModel";
+import { mouseDown } from "../stores/mouse";
 import { LINE_HEIGHT } from "../utils/consts";
 import {
 	ScrollDirection,
 	scrollToCursorIfNeeded,
 } from "../utils/editorScrolling";
+import { updateSelection } from "../utils/editorSelection";
 import {
 	calculateCharIndex,
+	findNextWordOrSymbol,
+	findPreviousWordOrSymbol,
 	placeCursorAtPosition,
 	placeCursorInDiv,
 	resetEditorContent,
 	updateLastCursorPosition,
 } from "../utils/editorUtils";
 import Cursor from "./Cursor.svelte";
+import Line from "./Line.svelte";
 
 export let content = "";
 
@@ -35,14 +40,27 @@ tick().then(() => {
 	app?.addEventListener?.("scroll", updateCursorPosition);
 });
 
+const handleMouseUp = (event: MouseEvent) => {
+	mouseDown.set(false);
+};
+
 const handleMouseDown = (event: MouseEvent) => {
+	const getCharIndex = (target: HTMLElement): number => {
+		lineNumber = Number(target.dataset.lineNumber);
+		charIndex = calculateCharIndex(event, target) + 2;
+		return charIndex;
+	}
+
+	mouseDown.set(true);
+
 	const target = event.target as HTMLElement;
 	let lineNumber = 0;
 	let charIndex = 0;
 
 	if (target.dataset.lineNumber) {
-		lineNumber = Number(target.dataset.lineNumber);
-		charIndex = calculateCharIndex(event, target);
+		charIndex = getCharIndex(target);
+	} else if (target.parentElement?.dataset.lineNumber) {
+		charIndex = getCharIndex(target.parentElement);
 	} else {
 		const clickY = event.clientY;
 		let closestLineElement: HTMLElement | null = null;
@@ -65,12 +83,21 @@ const handleMouseDown = (event: MouseEvent) => {
 		}
 	}
 
+	// Update the selection start
+	editorModel.update((model) => {
+		model.selection.setStart(
+			model.cursor.position.cursorLine,
+			model.cursor.position.cursorCharacter,
+		);
+		return model;
+	});
+
 	if (lineNumber > 0) {
 		// Logic to update the model and place the cursor
 		editorModel.update((model) => {
 			model.cursor.moveCursor({
-				cursorBasis: charIndex,
-				cursorCharacter: charIndex,
+				cursorBasis: charIndex - 2,
+				cursorCharacter: charIndex - 2,
 				cursorLine: lineNumber,
 			});
 			return model;
@@ -79,20 +106,66 @@ const handleMouseDown = (event: MouseEvent) => {
 	}
 };
 
-const handleBackspace = (event: KeyboardEvent) => {
-	event.preventDefault();
+const handleCtrlLeftArrow = async (event: KeyboardEvent) => {
+	const position = $editorModel.cursor.position;
+
+	if (position.cursorCharacter === 0 && position.cursorLine > 1) {
+		// Move to end of previous line
+		editorModel.update((model) => {
+			const newLine = $editorModel.lines[position.cursorLine - 2];
+			model.cursor.moveCursor({
+				cursorCharacter: newLine.content.length,
+				cursorBasis: newLine.content.length,
+				cursorLine: position.cursorLine - 1,
+			});
+			return model;
+		});
+	}
+
+	const newPosition = findPreviousWordOrSymbol(
+		$editorModel.lines,
+		$editorModel.cursor.position,
+	);
+
+	editorModel.update((model) => {
+		model.cursor.moveCursor(newPosition);
+		return model;
+	});
+
+	scrollToCursorIfNeeded(
+		ScrollDirection.Left,
+		$editorModel,
+		app,
+		editorElement,
+		editorWrapper,
+	);
+};
+
+const handleCtrlRightArrow = (event: KeyboardEvent) => {
+	const position = $editorModel.cursor.position;
+	const numberOfLines = $editorModel.getNumberOfLines();
 
 	if (
-		editorElement.children.length === 1 &&
-		editorElement.textContent?.trim() === ""
+		position.cursorCharacter ===
+			$editorModel.lines[position.cursorLine - 1].content.length &&
+		position.cursorLine < numberOfLines + 1
 	) {
-		resetEditorContent(editorElement, editorModel);
-	} else {
+		// Move to start of next line
 		editorModel.update((model) => {
-			model.deleteCharacter(
-				$editorModel.cursor.position.cursorLine,
-				$editorModel.cursor.position.cursorCharacter,
-			);
+			model.cursor.moveCursor({
+				cursorCharacter: 0,
+				cursorBasis: 0,
+				cursorLine: position.cursorLine + 1,
+			});
+			return model;
+		});
+	} else {
+		const newPosition = findNextWordOrSymbol(
+			$editorModel.lines,
+			$editorModel.cursor.position,
+		);
+		editorModel.update((model) => {
+			model.cursor.moveCursor(newPosition);
 			return model;
 		});
 	}
@@ -104,6 +177,101 @@ const handleBackspace = (event: KeyboardEvent) => {
 		editorElement,
 		editorWrapper,
 	);
+};
+
+const handleDelete = (event: KeyboardEvent) => {
+	event.preventDefault();
+
+	editorModel.update((model) => {
+		const cursorPosition = model.cursor.position;
+		const currentLineIndex = cursorPosition.cursorLine - 1;
+		const currentLine = model.lines[currentLineIndex];
+		const isLastCharacterInLine =
+			cursorPosition.cursorCharacter === currentLine.content.length;
+		const isLastLine = currentLineIndex === model.lines.length - 1;
+
+		if (isLastCharacterInLine && !isLastLine) {
+			// If cursor is at the end of a line but not the last line, merge this line with the next one
+			const nextLine = model.lines[currentLineIndex + 1];
+			currentLine.content += nextLine.content;
+			model.lines.splice(currentLineIndex + 1, 1);
+
+			// Update line numbers
+			for (let i = currentLineIndex + 1; i < model.lines.length; i++) {
+				model.lines[i].number = i + 1;
+			}
+		} else if (!isLastCharacterInLine) {
+			// If not at the end of the line, delete the character after the cursor
+			currentLine.content =
+				currentLine.content.substring(0, cursorPosition.cursorCharacter) +
+				currentLine.content.substring(cursorPosition.cursorCharacter + 1);
+		}
+
+		return model;
+	});
+};
+
+const handleBackspace = (event: KeyboardEvent): void => {
+	event.preventDefault();
+
+	if (!$editorModel.selection.isEmpty()) {
+		// Delete selection
+		editorModel.update((model) => {
+			model.deleteSelection();
+			return model;
+		});
+	} else {
+		if (event.ctrlKey) {
+			const position = $editorModel.cursor.position;
+			const atLineStart = $editorModel.cursor.isAtLineStart();
+
+			// If at the start of a line, delete it and move to previous line
+			if (atLineStart) {
+				editorModel.update((model) => {
+					model.deleteCharacter(position.cursorLine, position.cursorCharacter);
+
+					return model;
+				});
+			} else {
+				// Delete whole words
+				const newPosition = findPreviousWordOrSymbol(
+					$editorModel.lines,
+					position,
+				);
+
+				editorModel.update((model) => {
+					// Delete from newPosition.cursorCharacter to position.cursorCharacter in newPosition.cursorLine
+					const lineIndex = newPosition.cursorLine - 1;
+					const start = newPosition.cursorCharacter;
+					const end = position.cursorCharacter;
+
+					model.substring(newPosition, lineIndex, start, end);
+					return model;
+				});
+			}
+		} else if (
+			editorElement.children.length === 1 &&
+			editorElement.textContent?.trim() === ""
+		) {
+			resetEditorContent(editorElement, editorModel);
+		} else {
+			editorModel.update((model) => {
+				model.deleteCharacter(
+					$editorModel.cursor.position.cursorLine,
+					$editorModel.cursor.position.cursorCharacter,
+				);
+				return model;
+			});
+		}
+
+		scrollToCursorIfNeeded(
+			ScrollDirection.Right,
+			$editorModel,
+			app,
+			editorElement,
+			editorWrapper,
+		);
+	}
 };
 
 const handleLetterKey = (event: KeyboardEvent) => {
@@ -133,39 +301,52 @@ const handleLetterKey = (event: KeyboardEvent) => {
 };
 
 const handleEnterKey = async (event: KeyboardEvent) => {
-    event.preventDefault();
+	event.preventDefault();
 
-    editorModel.update((model) => {
-        const cursorLine = model.cursor.position.cursorLine;
-        const cursorCharacter = model.cursor.position.cursorCharacter;
-        const currentLineContent = model.lines[cursorLine - 1]?.content || "";
-        const beforeCursor = currentLineContent.substring(0, cursorCharacter);
-        const afterCursor = currentLineContent.substring(cursorCharacter);
+	editorModel.update((model) => {
+		const cursorLine = model.cursor.position.cursorLine;
+		const cursorCharacter = model.cursor.position.cursorCharacter;
+		const currentLineContent = model.lines[cursorLine - 1]?.content || "";
+		const beforeCursor = currentLineContent.substring(0, cursorCharacter);
+		const afterCursor = currentLineContent.substring(cursorCharacter);
 
-        // Update the current line with the text before the cursor
-        model.lines[cursorLine - 1].content = beforeCursor;
+		// Update the current line with the text before the cursor
+		model.lines[cursorLine - 1].content = beforeCursor;
 
-        // Insert a new line after the current line with the text after the cursor
-        model.lines.splice(cursorLine, 0, { number: cursorLine + 1, content: afterCursor });
+		// Insert a new line after the current line with the text after the cursor
+		model.lines.splice(cursorLine, 0, {
+			number: cursorLine + 1,
+			content: afterCursor,
+		});
 
-        // Update line numbers for all lines after the new line
-        for (let i = cursorLine + 1; i < model.lines.length; i++) {
-            model.lines[i].number = i + 1;
-        }
+		// Update line numbers for all lines after the new line
+		for (let i = cursorLine + 1; i < model.lines.length; i++) {
+			model.lines[i].number = i + 1;
+		}
 
-        // Move the cursor to the beginning of the new line
-        model.cursor.moveCursor({
-            cursorBasis: 0,
-            cursorCharacter: 0,
-            cursorLine: cursorLine + 1,
-        });
+		// Move the cursor to the beginning of the new line
+		model.cursor.moveCursor({
+			cursorBasis: 0,
+			cursorCharacter: 0,
+			cursorLine: cursorLine + 1,
+		});
 
-        return model;
-    });
-	
-    await tick();
+		return model;
+	});
+
+	await tick();
 	const lastElement = editorElement.lastChild;
 	if (lastElement) placeCursorInDiv(lastElement as HTMLDivElement);
+};
+
+const handleCtrlKey = (event: KeyboardEvent) => {
+	if (event.shiftKey && event.key.toLowerCase() === "z") {
+		event.preventDefault();
+		console.log("Redo");
+	} else if (event.key.toLowerCase() === "z") {
+		event.preventDefault();
+		console.log("Undo");
+	}
 };
 
 const handleArrowKey = (event: KeyboardEvent) => {
@@ -173,30 +354,40 @@ const handleArrowKey = (event: KeyboardEvent) => {
 
 	switch (event.key) {
 		case "ArrowLeft": {
-			const cursorPosition = $editorModel.cursor.position;
-			const previousLineExists = $editorModel.lineExists(
-				$editorModel.cursor.position.cursorLine - 1,
-			);
-
-			if (previousLineExists) {
-				// Subtract 2: one for the 0-based indexing, another to get the last line
-				$editorModel.cursor.moveCursorLeft(
-					$editorModel.lines[cursorPosition.cursorLine - 2].content.length,
-				);
+			if (event.ctrlKey) {
+				handleCtrlLeftArrow(event);
 			} else {
-				$editorModel.cursor.moveCursorLeft();
+				const cursorPosition = $editorModel.cursor.position;
+				const previousLineExists = $editorModel.lineExists(
+					$editorModel.cursor.position.cursorLine - 1,
+				);
+
+				if (previousLineExists) {
+					// Subtract 2: one for the 0-based indexing, another to get the last line
+					$editorModel.cursor.moveCursorLeft(
+						$editorModel.lines[cursorPosition.cursorLine - 2].content.length,
+					);
+				} else {
+					$editorModel.cursor.moveCursorLeft();
+				}
 			}
+
 			break;
 		}
 		case "ArrowRight": {
-			const cursorPosition = $editorModel.cursor.position;
-			const currentLineLength =
-				$editorModel.lines[cursorPosition.cursorLine - 1].content.length;
+			if (event.ctrlKey) {
+				handleCtrlRightArrow(event);
+			} else {
+				const cursorPosition = $editorModel.cursor.position;
+				const currentLineLength =
+					$editorModel.lines[cursorPosition.cursorLine - 1].content.length;
 
-			$editorModel.cursor.moveCursorRight(
-				currentLineLength,
-				$editorModel.lines.length,
-			);
+				$editorModel.cursor.moveCursorRight(
+					currentLineLength,
+					$editorModel.lines.length,
+				);
+			}
+
 			break;
 		}
 		case "ArrowDown": {
@@ -204,17 +395,33 @@ const handleArrowKey = (event: KeyboardEvent) => {
 			const nextLineLength =
 				$editorModel.lines[cursorPosition.cursorLine]?.content?.length;
 
-			$editorModel.cursor.moveCursorDown(
-				nextLineLength,
-				$editorModel.lines.length,
-			);
-			scrollToCursorIfNeeded(
-				ScrollDirection.Down,
-				$editorModel,
-				app,
-				editorElement,
-				editorWrapper,
-			);
+			// If at the last line, move to the end
+			if (cursorPosition.cursorLine === $editorModel.getNumberOfLines() + 1) {
+				const lineLength =
+					$editorModel.lines[cursorPosition.cursorLine - 1].content.length;
+
+				editorModel.update((model) => {
+					model.cursor.moveCursor({
+						cursorBasis: lineLength,
+						cursorCharacter: lineLength,
+						cursorLine: cursorPosition.cursorLine,
+					});
+					return model;
+				});
+			} else {
+				$editorModel.cursor.moveCursorDown(
+					nextLineLength,
+					$editorModel.lines.length,
+				);
+				scrollToCursorIfNeeded(
+					ScrollDirection.Down,
+					$editorModel,
+					app,
+					editorElement,
+					editorWrapper,
+				);
+			}
+
 			break;
 		}
 		case "ArrowUp": {
@@ -222,14 +429,27 @@ const handleArrowKey = (event: KeyboardEvent) => {
 			const previousLineLength =
 				$editorModel.lines[cursorPosition.cursorLine - 2]?.content?.length;
 
-			$editorModel.cursor.moveCursorUp(previousLineLength);
-			scrollToCursorIfNeeded(
-				ScrollDirection.Up,
-				$editorModel,
-				app,
-				editorElement,
-				editorWrapper,
-			);
+			// If at the first line, move to the start
+			if (cursorPosition.cursorLine === 1) {
+				editorModel.update((model) => {
+					model.cursor.moveCursor({
+						cursorBasis: 0,
+						cursorCharacter: 0,
+						cursorLine: cursorPosition.cursorLine,
+					});
+					return model;
+				});
+			} else {
+				$editorModel.cursor.moveCursorUp(previousLineLength);
+				scrollToCursorIfNeeded(
+					ScrollDirection.Up,
+					$editorModel,
+					app,
+					editorElement,
+					editorWrapper,
+				);
+			}
+
 			break;
 		}
 		default:
@@ -312,6 +532,13 @@ const handleKeyDown = async (event: KeyboardEvent) => {
 			editorElement,
 			editorWrapper,
 		);
+	} else if (event.key === "Delete") {
+		handleDelete(event);
+	}
+
+	if (event.ctrlKey) {
+		event.preventDefault();
+		handleCtrlKey(event);
 	} else if (event.key.length === 1) {
 		handleLetterKey(event);
 	}
@@ -324,36 +551,41 @@ export const getCaretCoordinates = () => {
 	let y = 0;
 
 	const selection = window.getSelection();
-	if (selection?.rangeCount !== 0) {
-		const range = selection?.getRangeAt(0).cloneRange();
+	if (!selection) return { x, y };
 
+	if (selection?.rangeCount > 0) {
+		const range = selection.getRangeAt(0).cloneRange();
 		if (!range) return { x, y };
 
 		range.collapse(true);
 		const rect = range.getClientRects()[0];
+
 		if (rect) {
 			x = rect.left;
 			y = rect.top;
+		} else {
+			// Fallback if rect is not available, calculate based on line number
+			const anchorNode = selection?.anchorNode;
+			let lineElement =
+				anchorNode?.nodeType === 3 ? anchorNode.parentNode : anchorNode;
+			while (
+				lineElement &&
+				!(lineElement as HTMLElement).classList.contains("line")
+			) {
+				lineElement = lineElement.parentNode;
+			}
+
+			if (lineElement) {
+				const lineNumber = Number(
+					(lineElement as HTMLElement).dataset.lineNumber,
+				);
+				if (!lineNumber) return { x, y };
+
+				const scrollTop = app?.scrollTop ?? 0;
+				y = LINE_HEIGHT * (lineNumber - 1) + 5 - scrollTop;
+				x = (lineElement as HTMLElement).getBoundingClientRect().left;
+			}
 		}
-	}
-
-	if (
-		selection?.anchorNode?.nodeName === "DIV" &&
-		selection?.anchorNode.firstChild?.nodeName === "BR"
-	) {
-		// @TODO fix x equaling 0 on first load
-		const lineNumber = $editorModel.cursor.position.cursorLine;
-		const scrollTop = app?.scrollTop ?? 0;
-
-		x = cachedLineNumberLeft ?? 0;
-		y = LINE_HEIGHT * (lineNumber - 1) + 5 - scrollTop;
-
-		if (!cachedLineNumberLeft) cachedLineNumberLeft = x;
-
-		return {
-			x,
-			y,
-		};
 	}
 
 	return { x, y };
@@ -387,13 +619,38 @@ onMount(() => {
 	editorElement.addEventListener("keydown", (e) => {
 		if (e.key.length === 1 || e.key === "Backspace") updateCursorPosition();
 	});
-	editorElement.addEventListener("mousedown", updateCursorPosition);
+	window.addEventListener("mousemove", (event) => {
+		event.preventDefault();
+
+		updateSelection(
+			event as MouseEvent,
+			$mouseDown,
+			editorElement,
+			editorModel,
+			$editorModel,
+		);
+	});
+	document.addEventListener("mousedown", updateCursorPosition);
+	document.addEventListener("mouseup", handleMouseUp);
+	document.addEventListener("selectstart", (event) => {
+		event.preventDefault();
+	});
 	editorElement.addEventListener("scroll", updateCursorPosition);
 });
 
 onDestroy(() => {
+	window.removeEventListener("mousemove", (event) => {
+		updateSelection(
+			event as MouseEvent,
+			$mouseDown,
+			editorElement,
+			editorModel,
+			$editorModel,
+		);
+	});
 	editorElement.removeEventListener("keydown", updateCursorPosition);
-	editorElement.removeEventListener("mousedown", updateCursorPosition);
+	document.removeEventListener("mousedown", updateCursorPosition);
+	document.removeEventListener("mouseup", handleMouseUp);
 	editorElement.removeEventListener("scroll", updateCursorPosition);
 	app?.removeEventListener("scroll", updateCursorPosition);
 });
@@ -428,11 +685,17 @@ onDestroy(() => {
         class="editor" 
         contenteditable="true" 
         bind:this={editorElement} 
-        bind:innerHTML={content} 
         on:keydown={handleKeyDown} 
         on:mousedown={handleMouseDown}
         tabindex="0" 
         role="textbox" 
         aria-multiline="true">
+		{#each $editorModel.lines as { content }, index ( index )}
+			<Line 
+				bind:content={content} 
+				lineNumber={index + 1} 
+				selectionStart={$editorModel.selection.getSelectionRange()?.start} 
+				selectionEnd={$editorModel.selection.getSelectionRange()?.end} />
+		{/each}
     </div>
     <Cursor bind:left={cursorLeft} bind:top={cursorTop} />

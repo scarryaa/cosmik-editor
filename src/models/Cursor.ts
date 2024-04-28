@@ -96,11 +96,14 @@ export class Cursor {
 		});
 	}
 
-	shiftCursor(maxLines: number, adjustment: { deltaChar?: number; deltaLine?: number }) {
+	shiftCursor(
+		maxLines: number,
+		adjustment: { deltaChar?: number; deltaLine?: number },
+	) {
 		// Bounds checking
 		if (
 			adjustment?.deltaLine &&
-			(this.position.cursorLine + adjustment.deltaLine) < 1
+			this.position.cursorLine + adjustment.deltaLine < 1
 		) {
 			this.position = {
 				cursorBasis: this.position.cursorBasis + (adjustment?.deltaChar ?? 0),
@@ -108,7 +111,10 @@ export class Cursor {
 					this.position.cursorCharacter + (adjustment?.deltaChar ?? 0),
 				cursorLine: 1,
 			};
-        } else if (adjustment?.deltaLine && this.position.cursorLine + adjustment.deltaLine > maxLines) {
+		} else if (
+			adjustment?.deltaLine &&
+			this.position.cursorLine + adjustment.deltaLine > maxLines
+		) {
 			this.position = {
 				cursorBasis: this.position.cursorBasis + (adjustment?.deltaChar ?? 0),
 				cursorCharacter:

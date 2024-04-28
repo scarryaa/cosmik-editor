@@ -16,6 +16,7 @@
         -ms-user-select: none;
         -o-user-select: none;
         min-height: fit-content;
+        min-height: 100%;
         padding-bottom: 93vh;
         z-index: 99;
 

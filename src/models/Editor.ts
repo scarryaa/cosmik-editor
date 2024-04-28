@@ -1,14 +1,17 @@
-import { Cursor } from "./Cursor";
+import { Cursor, type CursorPosition } from "./Cursor";
+import { Selection } from "./Selection";
 
 export class Editor {
 	lines: Array<{ number: number; content: string }>;
 	cursor: Cursor;
+    selection: Selection;
 	private static EDITOR_DEFAULT_CONTENT =
 		'<div data-line-number="1"><br></div>';
 
 	constructor(initialContent: string) {
 		this.lines = this.parseInitialContent(initialContent);
 		this.cursor = new Cursor();
+        this.selection = new Selection();
 	}
 
 	resetContent(): void {
@@ -57,6 +60,25 @@ export class Editor {
 			this.cursor.shiftCursor(this.getNumberOfLines(), { deltaChar: 1 });
 		}
 	}
+
+	substring(
+		newPosition: CursorPosition,
+		lineIndex: number,
+		start: number,
+		end: number,
+	) {
+		this.lines[lineIndex].content =
+			this.lines[lineIndex].content.substring(0, start) +
+			this.lines[lineIndex].content.substring(end);
+
+		this.cursor.moveCursor(newPosition);
+	}
+
+    deleteSelection() {
+        const { lines, newPosition } = this.selection.deleteSelection(this.lines);
+        this.lines = lines;
+        this.cursor.moveCursor(newPosition);
+    }
 
 	deleteCharacter(cursorLine: number, cursorCharacter: number) {
 		if (cursorCharacter > 0) {
