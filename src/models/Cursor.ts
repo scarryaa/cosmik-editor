@@ -1,142 +1,57 @@
-import { cursorPosition } from "../stores/cursorPosition";
+import type { Content } from "./Editor";
 
-export interface CursorPosition {
-	cursorLine: number;
-	cursorCharacter: number;
-	cursorBasis: number;
-}
+type CursorPosition = { line: number; character: number };
 
 export class Cursor {
-	position: CursorPosition;
+	private position: CursorPosition;
 
 	constructor() {
-		this.position = { cursorCharacter: 0, cursorLine: 1, cursorBasis: 0 };
-		cursorPosition.set({ cursorLine: 1, cursorCharacter: 0 });
+		this.position = { line: 0, character: 0 };
 	}
 
-	private setCursorPosition() {
-		cursorPosition.set({
-			cursorLine: this.position.cursorLine,
-			cursorCharacter: this.position.cursorCharacter,
-		});
-	}
+    moveUp = (): void => {
+        this.position.line = Math.max(0, this.position.line - 1);
+    };
+    
+    moveDown = (): void => {
+        this.position.line += 1;
+    };
+    
+    moveLeft = (content: Content): void => {
+        if (this.position.character === 0) {
+            // If not on the first line, move up a line
+            if (this.position.line > 0) {
+                this.position.line -= 1;
+                // Set character position to the end of the previous line
+                this.position.character = content[this.position.line].content.length;
+            }
+            // If on the first line, do nothing
+        } else {
+            // Normal left movement within the line
+            this.position.character -= 1;
+        }
+    };
+    
+    moveRight = (content: Content): void => {
+        const currentLineLength = content[this.position.line].content.length;
+        if (this.position.character >= currentLineLength) {
+            // Move to the next line if not the last line
+            if (this.position.line < content.length - 1) {
+                this.position.line += 1;
+                this.position.character = 0; // Start at the beginning of the next line
+            }
+            // If it's the last line and character is at the end, do nothing
+        } else {
+            // Normal right movement within the line
+            this.position.character += 1;
+        }
+    };
+    
+    setPosition = (character: number, line: number): void => {
+        this.position = { character, line };
+    };
 
-	moveCursor(newPosition: Partial<CursorPosition>) {
-		this.position = {
-			cursorBasis: newPosition.cursorBasis ?? this.position.cursorBasis,
-			cursorCharacter:
-				newPosition.cursorCharacter ?? this.position.cursorCharacter,
-			cursorLine: newPosition.cursorLine ?? this.position.cursorLine,
-		};
-		this.setCursorPosition();
-	}
-
-	moveCursorLeft(previousLineContentLength?: number) {
-		// If we are at the beginning of the first line, return
-		if (this.position.cursorCharacter === 0 && this.position.cursorLine === 1)
-			return;
-
-		if (this.isAtLineStart()) {
-			if (typeof previousLineContentLength === "number") {
-				// Move cursor to the end of the previous line
-				this.moveCursor({
-					cursorCharacter: previousLineContentLength,
-					cursorLine: this.position.cursorLine - 1,
-				});
-			}
-		} else {
-			// Move the cursor one character to the left
-			this.moveCursor({ cursorCharacter: this.position.cursorCharacter - 1 });
-		}
-	}
-
-	moveCursorRight(currentLineContentLength: number, totalLines: number) {
-		// If we are at the end of the last line, return
-		if (
-			this.position.cursorCharacter === currentLineContentLength &&
-			this.position.cursorLine === totalLines
-		)
-			return;
-
-		if (this.isAtLineEnd(currentLineContentLength)) {
-			// Move cursor to start of next line
-			this.moveCursor({
-				cursorCharacter: 0,
-				cursorLine: this.position.cursorLine + 1,
-			});
-		} else {
-			// Move the cursor one character to the right
-			this.shiftCursor(totalLines, { deltaChar: 1 });
-		}
-	}
-
-	moveCursorUp(previousLineContentLength: number) {
-		// If we are at the first line, return
-		if (this.position.cursorLine === 1) return;
-
-		this.moveCursor({
-			cursorCharacter: Math.min(
-				this.position.cursorCharacter,
-				previousLineContentLength,
-			),
-			cursorLine: this.position.cursorLine - 1,
-		});
-	}
-
-	moveCursorDown(nextLineContentLength: number, totalLines: number) {
-		// If we are at the last line, return
-		if (this.position.cursorLine === totalLines) return;
-
-		this.moveCursor({
-			cursorCharacter: Math.min(
-				this.position.cursorCharacter,
-				nextLineContentLength,
-			),
-			cursorLine: this.position.cursorLine + 1,
-		});
-	}
-
-	shiftCursor(
-		maxLines: number,
-		adjustment: { deltaChar?: number; deltaLine?: number },
-	) {
-		// Bounds checking
-		if (
-			adjustment?.deltaLine &&
-			this.position.cursorLine + adjustment.deltaLine < 1
-		) {
-			this.position = {
-				cursorBasis: this.position.cursorBasis + (adjustment?.deltaChar ?? 0),
-				cursorCharacter:
-					this.position.cursorCharacter + (adjustment?.deltaChar ?? 0),
-				cursorLine: 1,
-			};
-		} else if (
-			adjustment?.deltaLine &&
-			this.position.cursorLine + adjustment.deltaLine > maxLines
-		) {
-			this.position = {
-				cursorBasis: this.position.cursorBasis + (adjustment?.deltaChar ?? 0),
-				cursorCharacter:
-					this.position.cursorCharacter + (adjustment?.deltaChar ?? 0),
-				cursorLine: maxLines + 1,
-			};
-		} else {
-			this.position = {
-				cursorBasis: this.position.cursorBasis + (adjustment?.deltaChar ?? 0),
-				cursorCharacter:
-					this.position.cursorCharacter + (adjustment?.deltaChar ?? 0),
-				cursorLine: this.position.cursorLine + (adjustment?.deltaLine ?? 0),
-			};
-		}
-		this.setCursorPosition();
-	}
-
-	isAtLineStart() {
-		return this.position.cursorCharacter === 0;
-	}
-
-	isAtLineEnd(lineLength: number) {
-		return this.position.cursorCharacter === lineLength;
-	}
+    getPosition = (): CursorPosition => {
+        return this.position;
+    }
 }

@@ -1,5 +1,5 @@
 [package]
-name = "cosmik-editor"
+name = "meteor"
 version = "0.0.0"
 description = "A simple code editor"
 authors = ["scarryaa"]

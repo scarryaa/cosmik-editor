@@ -9,7 +9,7 @@
     .cursor {
         position: absolute;
         width: 1px;
-        height: 20px;
+        height: 19px;
         background-color: black;
         pointer-events: none;
     }

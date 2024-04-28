@@ -1,6 +1,5 @@
 <script lang="ts">
-    import EditorWrapper from "./components/EditorWrapper.svelte";
-    document.querySelector("#app")?.setAttribute("aria-role", "application");
+    import AstroWrapper from "./components/AstroWrapper/AstroWrapper.svelte";
 </script>
 
-<EditorWrapper />
+<AstroWrapper />

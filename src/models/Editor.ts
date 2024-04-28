@@ -1,20 +1,27 @@
-import { Cursor, type CursorPosition } from "./Cursor";
-import { Selection } from "./Selection";
+import { Cursor } from "./Cursor";
+
+export type Content = Array<{ number: number; content: string }>;
 
 export class Editor {
-	lines: Array<{ number: number; content: string }>;
-	cursor: Cursor;
-    selection: Selection;
 	private static EDITOR_DEFAULT_CONTENT = "";
 
-	constructor(initialContent: string) {
-		this.lines = this.parseInitialContent(initialContent);
+	private content: Content;
+	private cursor: Cursor;
+
+	constructor() {
 		this.cursor = new Cursor();
-        this.selection = new Selection();
+		this.content = this.parseInitialContent(Editor.EDITOR_DEFAULT_CONTENT);
 	}
 
-	resetContent(): void {
-		this.lines = Array.from(Editor.EDITOR_DEFAULT_CONTENT).map(
+	private parseInitialContent = (content: string): Content => {
+		return content.split("\n").map((lineContent, index) => ({
+			number: index + 1,
+			content: lineContent,
+		}));
+	};
+
+	private resetContent = (): void => {
+		this.content = Array.from(Editor.EDITOR_DEFAULT_CONTENT).map(
 			(line, index) => {
 				return {
 					number: index + 1,
@@ -22,123 +29,63 @@ export class Editor {
 				};
 			},
 		);
-	}
+	};
 
-	parseInitialContent(
-		content: string,
-	): Array<{ number: number; content: string }> {
-		return content.split("\n").map((lineContent, index) => ({
-			number: index + 1,
-			content: lineContent,
-		}));
-	}
+	setContent = (content: string): void => {
+		this.content = this.parseInitialContent(content);
+	};
 
-	addLine(index: number, content = "") {
-		const newLine = { number: this.lines.length + 1, content };
-		this.lines.splice(index, 0, newLine);
-		this.updateLineNumbers();
-		this.cursor.moveCursor({
-			cursorCharacter: 0,
-			cursorLine: this.cursor.position.cursorLine + 1,
-		});
-	}
+	getContent = (): Content => {
+		return this.content;
+	};
 
-	insertCharacter(char: string, cursorLine: number, cursorCharacter: number) {
-		// Check if the specified line exists
-		if (this.lines.length >= cursorLine) {
-			// Get the current content of the line
-			let lineContent = this.lines[cursorLine - 1].content;
-			// Insert the character at the specified character position
-			lineContent =
-				lineContent.substring(0, cursorCharacter) +
-				char +
-				lineContent.substring(cursorCharacter);
-			// Update the line content
-			this.lines[cursorLine - 1].content = lineContent;
-			// Move the cursor forward by one character
-			this.cursor.shiftCursor(this.getNumberOfLines(), { deltaChar: 1 });
-		}
-	}
+	getContentString = (): string => {
+		return this.content.map((line) => line.content).join("\n");
+	};
 
-	substring(
-		newPosition: CursorPosition,
-		lineIndex: number,
-		start: number,
-		end: number,
-	) {
-		this.lines[lineIndex].content =
-			this.lines[lineIndex].content.substring(0, start) +
-			this.lines[lineIndex].content.substring(end);
+	insertCharacter = (char: string): void => {
+		this.setContent(this.getContentString() + char);
+		this.cursor.moveRight(this.content);
+	};
 
-		this.cursor.moveCursor(newPosition);
-	}
+	deleteCharacter = (): void => {
+		this.setContent(
+			this.getContentString().substring(0, this.getContentString().length - 1),
+		);
+		this.cursor.moveLeft(this.content);
+	};
 
-    deleteSelection() {
-        const { lines, newPosition } = this.selection.deleteSelection(this.lines);
-        this.lines = lines;
-        this.cursor.moveCursor(newPosition);
+	// Cursor
+
+    cursorIsAtBeginningOfLine = (): boolean => {
+        return this.cursor.getPosition().character === 0;
     }
 
-	deleteCharacter(cursorLine: number, cursorCharacter: number) {
-		if (cursorCharacter > 0) {
-			// Case where the cursor is not at the beginning of a line
-			const line = this.lines[cursorLine - 1];
-			line.content =
-				line.content.substring(0, cursorCharacter - 1) +
-				line.content.substring(cursorCharacter);
-			this.cursor.shiftCursor(this.getNumberOfLines(), { deltaChar: -1 }); // Move cursor back by one character
-		} else if (cursorLine > 1) {
-			// Case where the cursor is at the beginning of a line and not the first line
-			const currentLineContent = this.lines[cursorLine - 1].content;
-			const previousLineLength = this.lines[cursorLine - 2].content.length;
+    getCursorLine = (): number => {
+        return this.cursor.getPosition().line;
+    }
 
-			// Merge content with previous line
-			this.lines[cursorLine - 2].content += currentLineContent;
-			// Remove the current line
-			this.removeLine(cursorLine - 1);
-			// Move cursor to the end of the previous line
-			this.cursor.moveCursor({
-				cursorLine: cursorLine - 1,
-				cursorCharacter: previousLineLength,
-			});
-		}
-	}
+    cursorIsAtBeginningOfDocument = (): boolean => {
+        return this.cursorIsAtBeginningOfLine() && this.getCursorLine() === 0;
+    }
 
-	removeLine(index: number) {
-		if (this.lines.length > 1) {
-			this.lines.splice(index, 1);
-			this.updateLineNumbers();
-		}
-		this.cursor.shiftCursor(this.getNumberOfLines(), { deltaLine: -1 });
-	}
+	moveCursorUp = (): void => {
+		this.cursor.moveUp();
+	};
 
-	lineExists(lineNumber: number): boolean {
-		return Boolean(this.lines[lineNumber - 1]);
-	}
+	moveCursorDown = (): void => {
+		this.cursor.moveDown();
+	};
 
-	updateLineNumbers() {
-		this.lines.forEach((line, index) => {
-			line.number = index + 1;
-		});
-	}
+	moveCursorLeft = (): void => {
+		this.cursor.moveLeft(this.content);
+	};
 
-	getNumberOfLines() {
-		return this.lines.length - 1;
-	}
+	moveCursorRight = (): void => {
+		this.cursor.moveRight(this.content);
+	};
 
-	getLineLength(lineNumber: number) {
-		return this.lines[lineNumber].content.length;
-	}
-
-	// Method to convert the model to HTML for rendering
-	toHTML() {
-		return this.lines
-			.map(
-				(line) =>
-					`<div data-line-number="${line.number}">${
-						line.content || "<br>"
-					}</div>`,
-			)
-			.join("");
-	}
+	getCursor = (): Cursor => {
+		return this.cursor;
+	};
 }
