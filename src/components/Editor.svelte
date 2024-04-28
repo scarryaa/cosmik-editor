@@ -26,6 +26,7 @@ let cachedLineNumberLeft: number | undefined;
 let cursorLeft = 0;
 let cursorTop = 0;
 let editorElement: HTMLDivElement;
+let textareaElement: HTMLTextAreaElement;
 let editorWrapper: HTMLDivElement | null;
 let app: HTMLElement | null;
 
@@ -40,6 +41,12 @@ tick().then(() => {
 	app?.addEventListener?.("scroll", updateCursorPosition);
 });
 
+const updateTextareaPosition = () => {
+  const { x, y } = getCaretCoordinates();
+  textareaElement.style.left = `${x}px`;
+  textareaElement.style.top = `${y}px`;
+};
+
 const handleMouseUp = (event: MouseEvent) => {
 	mouseDown.set(false);
 };
@@ -49,7 +56,7 @@ const handleMouseDown = (event: MouseEvent) => {
 		lineNumber = Number(target.dataset.lineNumber);
 		charIndex = calculateCharIndex(event, target) + 2;
 		return charIndex;
-	}
+	};
 
 	mouseDown.set(true);
 
@@ -657,6 +664,22 @@ onDestroy(() => {
 </script>
 
     <style lang="scss">
+		  .invisible-textarea {
+			tab-size: 33.7188px;
+			appearance: none;
+			font-family: "Droid Sans Mono", "monospace", monospace;
+			font-weight: normal;
+			font-size: 14px;
+			font-feature-settings: "liga" 0, "calt" 0;
+			font-variation-settings: normal;
+			line-height: 19px;
+			letter-spacing: 0px;
+			top: 0px;
+			left: 70px;
+			width: 1px;
+			height: 1px;
+		  }
+
         .editor {
             display: flex;
             flex-direction: column;
@@ -671,6 +694,7 @@ onDestroy(() => {
             min-height: fit-content;
             padding-bottom: 93vh;
             caret-color: transparent;
+			font-family: "Droid Sans Mono", "monospace", monospace;
 
             :global([data-line-number]) {
                 min-height: 20px;
@@ -683,19 +707,12 @@ onDestroy(() => {
   
   <div 
         class="editor" 
-        contenteditable="true" 
         bind:this={editorElement} 
-        on:keydown={handleKeyDown} 
+        on:keydown={handleKeyDown}
         on:mousedown={handleMouseDown}
-        tabindex="0" 
+        tabindex="0"
         role="textbox" 
         aria-multiline="true">
-		{#each $editorModel.lines as { content }, index ( index )}
-			<Line 
-				bind:content={content} 
-				lineNumber={index + 1} 
-				selectionStart={$editorModel.selection.getSelectionRange()?.start} 
-				selectionEnd={$editorModel.selection.getSelectionRange()?.end} />
-		{/each}
     </div>
+	<textarea bind:this={textareaElement} class="invisible-textarea"></textarea>
     <Cursor bind:left={cursorLeft} bind:top={cursorTop} />

@@ -1,5 +1,5 @@
 // Editor
-export const LINE_HEIGHT = 20;
+export const LINE_HEIGHT = 19;
 export const textWidthCache = new Map<string, number>();
 
 // Scrolling

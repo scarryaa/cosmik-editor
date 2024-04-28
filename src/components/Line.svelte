@@ -1,4 +1,5 @@
 <script lang="ts">
+import DOMPurify from "dompurify";
 import type { SelectionProps } from "../models/Selection";
 
 export let content = "";
@@ -15,7 +16,6 @@ const isLineSelected = (
 	return line >= start.line && line <= end.line;
 };
 
-// Determine the parts of the line to highlight
 let selectedPart = "";
 let unselectedStart = "";
 let unselectedEnd = "";
@@ -32,11 +32,11 @@ $: if (lineNumber !== null) {
 			lineNumber === selectionEnd.line
 				? selectionEnd.character
 				: content.length;
-		unselectedStart = content.substring(0, startChar);
-		selectedPart = content.substring(startChar, endChar);
-		unselectedEnd = content.substring(endChar);
+		unselectedStart = DOMPurify.sanitize(content.substring(0, startChar));
+		selectedPart = DOMPurify.sanitize(content.substring(startChar, endChar));
+		unselectedEnd = DOMPurify.sanitize(content.substring(endChar));
 	} else {
-		unselectedStart = content;
+		unselectedStart = DOMPurify.sanitize(content);
 		selectedPart = "";
 		unselectedEnd = "";
 	}
@@ -54,9 +54,9 @@ $: if (lineNumber !== null) {
 </style>
   
   <div class="line" data-line-number="{lineNumber}">
-    <div>{@html unselectedStart}</div>
+    <div>{unselectedStart}</div>
     {#if selectedPart}
-      <span class="selected-text">{@html selectedPart}</span>
+      <span class="selected-text">{selectedPart}</span>
     {/if}
-    <div>{@html unselectedEnd}</div>
+    <div>{unselectedEnd}</div>
   </div>

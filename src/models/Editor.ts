@@ -5,8 +5,7 @@ export class Editor {
 	lines: Array<{ number: number; content: string }>;
 	cursor: Cursor;
     selection: Selection;
-	private static EDITOR_DEFAULT_CONTENT =
-		'<div data-line-number="1"><br></div>';
+	private static EDITOR_DEFAULT_CONTENT = "";
 
 	constructor(initialContent: string) {
 		this.lines = this.parseInitialContent(initialContent);
