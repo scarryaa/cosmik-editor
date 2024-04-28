@@ -1,0 +1,4 @@
+#astro-wrapper {
+    display: flex;
+    height: calc(100vh - var(--status-pane-height));
+}
