@@ -182,6 +182,23 @@ export class Editor {
 		}
 	};
 
+	deleteTabAtStart = (): void => {
+		const cursorPos = this.cursor.getPosition();
+		const lineIndex = cursorPos.line;
+		if (lineIndex < 0) return; // Ensure valid line index
+
+		let line = this.content[lineIndex];
+
+		// Check for 4 spaces or a tab character at the start of the line
+		if (line.content.startsWith("    ")) {
+			// Delete 4 spaces at the start
+			line.content = line.content.substring(4);
+			for (let i = 0; i < 4; i++) {
+				this.cursor.moveLeft(this.content);
+			}
+		}
+	};
+
 	deleteTab = (): void => {
 		const cursorPos = this.cursor.getPosition();
 		const lineIndex = cursorPos.line;
@@ -225,33 +242,78 @@ export class Editor {
 
 	deleteCharacter = (): void => {
 		const cursorPos = this.cursor.getPosition();
-		if (cursorPos.character > 0 || cursorPos.line > 0) {
-			const lineIndex = cursorPos.line;
-			const charIndex = cursorPos.character;
-			let line = this.content[lineIndex];
 
-			if (charIndex > 0) {
-				// Attempt to delete a tab first
-				this.deleteTab();
-				// If no tab was deleted, delete a single character
-				if (this.cursor.getPosition().character === charIndex) {
-					line.content =
-						line.content.substring(0, charIndex - 1) +
-						line.content.substring(charIndex);
-					this.cursor.moveLeft(this.content);
-				}
-			} else if (lineIndex > 0) {
-				// Handle line merging for deletion at the beginning of a line
-				let prevLine = this.content[lineIndex - 1];
-				let currentLine = this.content[lineIndex];
-				prevLine.content += currentLine.content;
-				this.content.splice(lineIndex, 1); // Remove the current line
+		// Check for selection and delete
+		if (this.selection.isSelection()) {
+			const { start, end } = this.selection.getSelectionRange();
+			if (start.line === end.line) {
+				// Selection within a single line
+				let line = this.content[start.line];
+				line.content =
+					line.content.substring(0, start.character) +
+					line.content.substring(end.character);
+				// Move cursor to the start of the selection
 				this.cursor.setPosition(
 					this.getTotalLines(),
 					this.content,
-					prevLine.content.length,
-					lineIndex - 1,
+					start.character,
+					start.line,
 				);
+			} else {
+				// Selection spans multiple lines
+				// Remove text from the start line up to the start character
+				this.content[start.line].content = this.content[
+					start.line
+				].content.substring(0, start.character);
+				// Remove text from the end character to the end of the end line
+				this.content[end.line].content = this.content[
+					end.line
+				].content.substring(end.character);
+				// Remove lines fully within the selection
+				this.content.splice(start.line + 1, end.line - start.line - 1);
+				// Merge start and end lines if they are not the same
+				this.content[start.line].content +=
+					this.content[start.line + 1].content;
+				this.content.splice(start.line + 1, 1);
+				// Move cursor to the start of the selection
+				this.cursor.setPosition(
+					this.getTotalLines(),
+					this.content,
+					start.character,
+					start.line,
+				);
+			}
+			// Clear the selection after deleting
+			this.selection.clearSelection();
+		} else {
+			if (cursorPos.character > 0 || cursorPos.line > 0) {
+				const lineIndex = cursorPos.line;
+				const charIndex = cursorPos.character;
+				let line = this.content[lineIndex];
+
+				if (charIndex > 0) {
+					// Attempt to delete a tab first
+					this.deleteTab();
+					// If no tab was deleted, delete a single character
+					if (this.cursor.getPosition().character === charIndex) {
+						line.content =
+							line.content.substring(0, charIndex - 1) +
+							line.content.substring(charIndex);
+						this.cursor.moveLeft(this.content);
+					}
+				} else if (lineIndex > 0) {
+					// Handle line merging for deletion at the beginning of a line
+					let prevLine = this.content[lineIndex - 1];
+					let currentLine = this.content[lineIndex];
+					prevLine.content += currentLine.content;
+					this.content.splice(lineIndex, 1); // Remove the current line
+					this.cursor.setPosition(
+						this.getTotalLines(),
+						this.content,
+						prevLine.content.length,
+						lineIndex - 1,
+					);
+				}
 			}
 		}
 	};

@@ -1,0 +1,12 @@
+.line {
+    display: flex;
+    color: black;
+}
+
+.selected {
+    background-color: #83a5e456;
+
+    &.empty-line-placeholder {
+        width: 10px;
+    }
+}

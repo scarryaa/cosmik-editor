@@ -1,27 +1,31 @@
 {
-  "name": "meteor",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^1"
-  },
-  "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.0.1",
-    "@tauri-apps/cli": "^1",
-    "@tsconfig/svelte": "^5.0.2",
-    "sass": "^1.75.0",
-    "svelte": "5.0.0-next.115",
-    "svelte-check": "^3.4.6",
-    "tslib": "^2.6.0",
-    "typescript": "^5.0.2",
-    "vite": "^5.0.0"
-  }
+	"name": "meteor",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-check --tsconfig ./tsconfig.json",
+		"tauri": "tauri",
+		"biome:format:fix": "pnpm biome format --write ./",
+		"biome:lint:fix": "pnpm biome lint --apply ./",
+		"biome:fix-all": "pnpm biome:lint:fix; pnpm biome:format:fix"
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.7.1",
+		"@sveltejs/vite-plugin-svelte": "^3.0.1",
+		"@tauri-apps/cli": "^1",
+		"@tsconfig/svelte": "^5.0.2",
+		"sass": "^1.75.0",
+		"svelte": "5.0.0-next.115",
+		"svelte-check": "^3.4.6",
+		"tslib": "^2.6.0",
+		"typescript": "^5.0.2",
+		"vite": "^5.0.0"
+	}
 }

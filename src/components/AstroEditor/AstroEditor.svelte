@@ -1,4 +1,5 @@
 <script lang="ts">
+import { getCurrent } from "@tauri-apps/api/window";
 import { onMount, tick } from "svelte";
 import { derived } from "svelte/store";
 import { lineHeight } from "../../const/const";
@@ -8,7 +9,7 @@ import {
 	astroEditor,
 	astroWrapper,
 	astroWrapperInner,
-    cursor,
+	cursor,
 } from "../../stores/elements";
 import {
 	scrollHorizontalPosition,
@@ -89,9 +90,9 @@ onMount(() => {
 });
 </script>
     
-<div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input) }}>
+<div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }}>
     {#each $editor.getContentString().split('\n') as line, index}
-        <Line lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getSelection().getSelectionStart()} selectionEnd={$editor.getSelection().getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
     {/each}
 </div>
 <textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, $editor, $astroWrapper, $app, $astroEditor, linesMap.get($editor.getCursorLine() + 1)!, $astroWrapperInner, $cursor)}} class="astro-input"></textarea>

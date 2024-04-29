@@ -123,3 +123,30 @@ export const measureTextWidth = (content: string): number => {
 
 	return width;
 };
+
+export const getCharacterIndex = (event: MouseEvent): number => {
+	const target = event.target as HTMLElement;
+	const { left } = target.getBoundingClientRect();
+	const clickX = event.clientX - left;
+
+	let cumulativeWidth = 0;
+	const content = target.textContent || "";
+	let characterIndex = target.textContent?.length ?? 0;
+
+	for (let i = 0; i < content.length; i++) {
+		const charWidth = measureTextWidth(content[i]);
+		cumulativeWidth += charWidth;
+		if (cumulativeWidth >= clickX) {
+			characterIndex = i;
+			break;
+		}
+	}
+
+	return characterIndex;
+};
+
+export const getLineIndex = (event: MouseEvent, totalLines: number): number => {
+	const target = event.target as HTMLElement;
+	const lineNumber = target.dataset.lineNumber;
+	return lineNumber ? Number.parseInt(lineNumber, 10) : totalLines;
+};

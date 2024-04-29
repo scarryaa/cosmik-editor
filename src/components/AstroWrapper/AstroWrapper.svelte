@@ -1,7 +1,11 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { editor } from "../../stores/editor";
-import { astroWrapper, astroWrapperInner, lineNumbers } from "../../stores/elements";
+import {
+	astroWrapper,
+	astroWrapperInner,
+	lineNumbers,
+} from "../../stores/elements";
 import AstroEditor from "../AstroEditor/AstroEditor.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
 import StatusPane from "../StatusPane/StatusPane.svelte";
@@ -12,7 +16,7 @@ let wrapperInner: HTMLDivElement;
 
 onMount(() => {
 	astroWrapper.set(wrapper);
-    astroWrapperInner.set(wrapperInner);
+	astroWrapperInner.set(wrapperInner);
 });
 </script>
 
@@ -21,5 +25,5 @@ onMount(() => {
     <div id="wrapper-inner" bind:this={wrapperInner} on:scroll={() => $lineNumbers.scrollTop = wrapperInner.scrollTop}>
         <AstroEditor />
     </div> 
-    <StatusPane char={$editor.getCursor().getPosition().character + 1} lineNumber={$editor.getCursor().getPosition().line + 1} selection={$editor.getSelection()}/>
+    <StatusPane char={$editor.getCursor().getPosition().character + 1} lineNumber={$editor.getCursor().getPosition().line + 1} selection={$editor.getSelection()} selectionLength={$editor.getSelection().calculateTotalCharactersSelected()}/>
 </div>

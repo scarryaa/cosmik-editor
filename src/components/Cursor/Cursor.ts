@@ -18,7 +18,7 @@ export const calculateCursorHorizontalPosition = (
 	$editor: Editor,
 	cursorLeft: number,
 	scrollPosition: number,
-) => {	
+) => {
 	const cursorPosition = $editor.getCursor().getPosition();
 	const lineContent = $editor.getContent()[cursorPosition.line]?.content ?? "";
 	const textUpToCursor = lineContent.substring(0, cursorPosition.character);
