@@ -54,8 +54,18 @@ export class Cursor {
 			}
 			// If on the first line, do nothing
 		} else {
-			// Normal left movement within the line
-			this.position.character -= 1;
+			// Check for a tab (4 spaces) before the cursor and move left by 4 if found
+			const isTabBeforeCursor =
+				content[this.position.line].content.substring(
+					this.position.character - 4,
+					this.position.character,
+				) === "    ";
+			if (isTabBeforeCursor) {
+				this.position.character -= 4;
+			} else {
+				// Normal left movement within the line
+				this.position.character -= 1;
+			}
 		}
 
 		this.position.characterBasis = this.position.character;
@@ -71,8 +81,18 @@ export class Cursor {
 			}
 			// If it's the last line and character is at the end, do nothing
 		} else {
-			// Normal right movement within the line
-			this.position.character += 1;
+			// Check for a tab (4 spaces) after the cursor and move right by 4 if found
+			const isTabAfterCursor =
+				content[this.position.line].content.substring(
+					this.position.character,
+					this.position.character + 4,
+				) === "    ";
+			if (isTabAfterCursor) {
+				this.position.character += 4;
+			} else {
+				// Normal right movement within the line
+				this.position.character += 1;
+			}
 		}
 
 		this.position.characterBasis = this.position.character;
@@ -88,20 +108,44 @@ export class Cursor {
 		this.position.characterBasis = lineLength;
 	};
 
-	moveToPreviousWord = (content: Content): void => {
+	moveToPreviousWord = (maxLines: number, content: Content): void => {
 		const newPosition = findPreviousWordOrSymbol(content, this.position);
-		this.setPosition(newPosition.character, newPosition.line, newPosition.characterBasis);
-	}
+		this.setPosition(
+			maxLines,
+			content,
+			newPosition.character,
+			newPosition.line,
+			newPosition.characterBasis,
+		);
+	};
 
-	moveToNextWord = (content: Content): void => {
+	moveToNextWord = (maxLines: number, content: Content): void => {
 		const newPosition = findNextWordOrSymbol(content, this.position);
-		this.setPosition(newPosition.character, newPosition.line, newPosition.characterBasis);
-	}
+		this.setPosition(
+			maxLines,
+			content,
+			newPosition.character,
+			newPosition.line,
+			newPosition.characterBasis,
+		);
+	};
 
-	setPosition = (character: number, line: number, basis?: number): void => {
+	setPosition = (
+		maxLines: number,
+		content: Content,
+		character: number,
+		line: number,
+		basis?: number,
+	): void => {
 		this.position = {
-			character,
-			line,
+			character: Math.max(
+				0,
+				Math.min(
+					basis ?? character,
+					content[Math.max(0, Math.min(line, maxLines - 1))].content.length,
+				),
+			),
+			line: Math.max(0, Math.min(line, maxLines - 1)),
 			characterBasis: basis ?? this.position.characterBasis,
 		};
 	};

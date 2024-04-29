@@ -1,9 +1,15 @@
+import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import { measureTextWidth } from "../../util/text";
-import { scrollToCurrentLine, scrollToCursor, scrollToElement } from "./AstroEditorScrolling";
+import {
+	getNumberOfLinesOnScreen,
+	scrollToCurrentLine,
+	scrollToCursor,
+	scrollToElement,
+} from "./AstroEditorScrolling";
 
 export const cursorHorizOffset = 5;
 export const cursorVertOffset = 5;
@@ -21,7 +27,7 @@ export const focusEditor = (input: HTMLTextAreaElement) => {
 	input.focus();
 };
 
-export const handleKeyDown = (
+export const handleKeyDown = async (
 	event: KeyboardEvent,
 	editor: Writable<Editor>,
 	$editor: Editor,
@@ -37,6 +43,32 @@ export const handleKeyDown = (
 	if (event.key === "Backspace") {
 		handleBackspace(event, editor, $editor, $astroWrapper, $app, $astroEditor);
 		scrollToCursor($cursor, $editor, $astroWrapperInner);
+	} else if (event.key === "Tab") {
+		handleTab(event, $editor, $astroEditor);
+	} else if (event.key === "Delete") {
+		handleDelete(event, $editor);
+	} else if (event.key === "Home") {
+		handleHome(event, $editor, $astroEditor);
+	} else if (event.key === "End") {
+		handleEnd(event, $editor, $astroEditor);
+	} else if (event.key === "PageUp") {
+		handlePageUp(event, $editor, $astroEditor);
+		await tick();
+		scrollToCurrentLine(
+			currentLineElement,
+			$astroWrapperInner,
+			"up",
+			$editor.getCursorLine() + 1,
+		);
+	} else if (event.key === "PageDown") {
+		handlePageDown(event, $editor, $astroEditor);
+		await tick();
+		scrollToCurrentLine(
+			currentLineElement,
+			$astroWrapperInner,
+			"down",
+			$editor.getCursorLine() + 1,
+		);
 	} else if (event.key === "Enter") {
 		handleEnter(
 			event,
@@ -47,10 +79,19 @@ export const handleKeyDown = (
 			currentLineElement,
 			$cursor,
 		);
+
+		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
+		scrollToCursor($cursor, $editor, $astroWrapperInner);
 	} else if (
 		["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(event.key)
 	) {
-		handleArrowKeys(event, $editor, $astroEditor, currentLineElement, $astroWrapperInner);
+		handleArrowKeys(
+			event,
+			$editor,
+			$astroEditor,
+			currentLineElement,
+			$astroWrapperInner,
+		);
 		scrollToCursor($cursor, $editor, $astroWrapperInner);
 	} else if (event.key.length === 1) {
 		handleKey(
@@ -95,6 +136,130 @@ const updateCursorHorizontalPosition = (
 
 const updateCursorVerticalPosition = (add: boolean) => {
 	cursorVertPos.update((value) => value + (add ? lineHeight : -lineHeight));
+};
+
+const handleTab = (event: KeyboardEvent, $editor: Editor, $astroEditor: HTMLDivElement) => {
+	// Insert tab
+	editor.update((model) => {
+		model.insertCharacter(" ");
+		model.insertCharacter(" ");
+		model.insertCharacter(" ");
+		model.insertCharacter(" ");
+		return model;
+	});
+
+	updateCursorHorizontalPosition($editor, $astroEditor);
+};
+
+const handleHome = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
+	// Move to beginning of line
+	editor.update((model) => {
+		model.getCursor().moveToBeginningOfLine();
+		return model;
+	});
+
+	updateCursorHorizontalPosition($editor, $astroEditor);
+};
+
+const handleEnd = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
+	// Move to end of line
+	editor.update((model) => {
+		model
+			.getCursor()
+			.moveToEndOfLine(
+				model.getContent()[model.getCursorLine()].content.length,
+			);
+		return model;
+	});
+
+	updateCursorHorizontalPosition($editor, $astroEditor);
+};
+
+const handlePageDown = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
+	// If at last line, go to end of last line
+	if ($editor.getCursor().isAtLastLine($editor.getTotalLines())) {
+		editor.update((model) => {
+			model
+				.getCursor()
+				.moveToEndOfLine(
+					model.getContent()[model.getCursorLine()].content.length,
+				);
+			return model;
+		});
+	} else {
+		// Move the cursor down a "page"
+		const cursorPosition = $editor.getCursor().getPosition();
+		editor.update((model) => {
+			model.moveCursor(
+				cursorPosition.character,
+				cursorPosition.line + getNumberOfLinesOnScreen(),
+			);
+			return model;
+		});
+	}
+
+	updateCursorHorizontalPosition($editor, $astroEditor);
+	updateCursorVerticalPosition(true);
+};
+
+const handlePageUp = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
+	// If at fiorst line, go to end of last line
+	if ($editor.getCursor().isAtFirstLine()) {
+		editor.update((model) => {
+			model.getCursor().moveToBeginningOfLine();
+			return model;
+		});
+	} else {
+		// Move the cursor up a "page"
+		const cursorPosition = $editor.getCursor().getPosition();
+		editor.update((model) => {
+			model.moveCursor(
+				cursorPosition.character,
+				cursorPosition.line - getNumberOfLinesOnScreen(),
+			);
+			return model;
+		});
+	}
+
+	updateCursorHorizontalPosition($editor, $astroEditor);
+	updateCursorVerticalPosition(false);
+};
+
+const handleDelete = (event: KeyboardEvent, $editor: Editor) => {
+	if (event.ctrlKey) {
+		if ($editor.cursorIsAtEndOfLine()) {
+			editor.update((model) => {
+				model.forwardDelete();
+				return model;
+			});
+		} else {
+			editor.update((model) => {
+				model.deleteNextWord();
+				return model;
+			});
+		}
+	} else {
+		editor.update((model) => {
+			model.forwardDelete();
+			return model;
+		});
+	}
 };
 
 const handleArrowLeft = (
@@ -276,8 +441,6 @@ const handleEnter = (
 
 	updateCursorVerticalPosition(true);
 	updateCursorHorizontalPosition($editor, $astroEditor);
-	scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
-	scrollToCursor($cursor, $editor, $astroWrapperInner)
 };
 
 const handleKey = (

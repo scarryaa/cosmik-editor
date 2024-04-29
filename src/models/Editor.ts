@@ -1,4 +1,4 @@
-import { findPreviousWordOrSymbol } from "../util/text";
+import { findNextWordOrSymbol, findPreviousWordOrSymbol } from "../util/text";
 import { Cursor, type CursorPosition } from "./Cursor";
 import { Selection } from "./Selection";
 
@@ -74,7 +74,12 @@ export class Editor {
 			}
 
 			// Move the cursor to the beginning of the new line
-			this.cursor.setPosition(0, lineIndex + 1);
+			this.cursor.setPosition(
+				this.getTotalLines(),
+				this.content,
+				0,
+				lineIndex + 1,
+			);
 		} else {
 			// If not inserting a newline, proceed with normal character insertion
 			let newContent =
@@ -89,47 +94,164 @@ export class Editor {
 	};
 
 	deletePreviousWord = (): void => {
-		const lastWordPosition: CursorPosition = findPreviousWordOrSymbol(this.content, this.cursor.getPosition());
+		const lastWordPosition: CursorPosition = findPreviousWordOrSymbol(
+			this.content,
+			this.cursor.getPosition(),
+		);
 		if (lastWordPosition) {
 			const currentLineIndex = this.cursor.getPosition().line;
 			const currentCharIndex = this.cursor.getPosition().character;
 			const lastWordLineIndex = lastWordPosition.line;
 			const lastWordCharIndex = lastWordPosition.character;
-	
+
 			// Ensure deletion occurs within the same line
 			if (currentLineIndex === lastWordLineIndex) {
 				let line = this.content[currentLineIndex];
-				let newContent = line.content.substring(0, lastWordCharIndex) + line.content.substring(currentCharIndex);
+				let newContent =
+					line.content.substring(0, lastWordCharIndex) +
+					line.content.substring(currentCharIndex);
 				line.content = newContent;
-	
+
 				// Move cursor to the start of the deleted word
-				this.cursor.setPosition(lastWordCharIndex, currentLineIndex);
+				this.cursor.setPosition(
+					this.getTotalLines(),
+					this.content,
+					lastWordCharIndex,
+					currentLineIndex,
+				);
 			}
 		}
-	}
+	};
+
+	deleteNextWord = () => {
+		const cursorPos = this.cursor.getPosition();
+		const nextWordPosition: CursorPosition = findNextWordOrSymbol(
+			this.content,
+			cursorPos,
+		);
+		if (nextWordPosition) {
+			const currentLineIndex = cursorPos.line;
+			const currentCharIndex = cursorPos.character;
+			const nextWordCharIndex = nextWordPosition.character;
+			let line = this.content[currentLineIndex];
+
+			// Ensure deletion occurs within the same line and there is a word to delete
+			if (
+				currentLineIndex === nextWordPosition.line &&
+				nextWordCharIndex > currentCharIndex
+			) {
+				let newContent =
+					line.content.substring(0, currentCharIndex) +
+					line.content.substring(nextWordCharIndex);
+				line.content = newContent;
+			}
+		}
+	};
+
+	forwardDelete = (): void => {
+		const cursorPos = this.cursor.getPosition();
+		const lineIndex = cursorPos.line;
+		const charIndex = cursorPos.character;
+		let line = this.content[lineIndex];
+
+		// Attempt to delete a tab forward first
+		const originalContent = line.content;
+		this.deleteTabForward();
+		// If the content has changed, a tab was deleted, and we don't need to do anything further
+		if (line.content !== originalContent) {
+			return;
+		}
+
+		// If no tab was deleted, proceed with the original forward delete logic
+		if (charIndex < line.content.length) {
+			// Delete character immediately after the cursor in the current line
+			let newContent =
+				line.content.substring(0, charIndex) +
+				line.content.substring(charIndex + 1);
+			line.content = newContent;
+		} else if (lineIndex < this.content.length - 1) {
+			// If at the end of a line, merge this line with the next line
+			let nextLine = this.content[lineIndex + 1];
+			line.content += nextLine.content;
+			this.content.splice(lineIndex + 1, 1); // Remove the next line
+
+			// Update line numbers for all lines following the merged line
+			for (let i = lineIndex + 1; i < this.content.length; i++) {
+				this.content[i].number = i + 1;
+			}
+		}
+	};
+
+	deleteTab = (): void => {
+		const cursorPos = this.cursor.getPosition();
+		const lineIndex = cursorPos.line;
+		const charIndex = cursorPos.character;
+		if (lineIndex < 0 || charIndex < 4) return; // Ensure there's enough space for a tab and valid line index
+
+		let line = this.content[lineIndex];
+
+		// Check for 4 spaces before the cursor
+		if (line.content.substring(charIndex - 4, charIndex) === "    ") {
+			// Delete 4 spaces
+			line.content =
+				line.content.substring(0, charIndex - 4) +
+				line.content.substring(charIndex);
+			// Move cursor left by 4 for manual tab (4 spaces)
+			for (let i = 0; i < 4; i++) {
+				this.cursor.moveLeft(this.content);
+			}
+		}
+	};
+
+	deleteTabForward = (): void => {
+		const cursorPos = this.cursor.getPosition();
+		const lineIndex = cursorPos.line;
+		const charIndex = cursorPos.character;
+		let line = this.content[lineIndex];
+
+		// Check for 4 spaces or a tab character immediately after the cursor
+		if (line.content.substring(charIndex, charIndex + 4) === "    ") {
+			// Delete 4 spaces
+			line.content =
+				line.content.substring(0, charIndex) +
+				line.content.substring(charIndex + 4);
+		} else if (line.content.charAt(charIndex) === "\t") {
+			// Delete a tab character
+			line.content =
+				line.content.substring(0, charIndex) +
+				line.content.substring(charIndex + 1);
+		}
+	};
 
 	deleteCharacter = (): void => {
 		const cursorPos = this.cursor.getPosition();
 		if (cursorPos.character > 0 || cursorPos.line > 0) {
 			const lineIndex = cursorPos.line;
 			const charIndex = cursorPos.character;
+			let line = this.content[lineIndex];
 
 			if (charIndex > 0) {
-				// Delete character in the current line
-				let line = this.content[lineIndex];
-				let newContent =
-					line.content.substring(0, charIndex - 1) +
-					line.content.substring(charIndex);
-				line.content = newContent;
-
-				this.cursor.moveLeft(this.content);
+				// Attempt to delete a tab first
+				this.deleteTab();
+				// If no tab was deleted, delete a single character
+				if (this.cursor.getPosition().character === charIndex) {
+					line.content =
+						line.content.substring(0, charIndex - 1) +
+						line.content.substring(charIndex);
+					this.cursor.moveLeft(this.content);
+				}
 			} else if (lineIndex > 0) {
-				// Delete character from the end of the previous line if at the beginning of a line
+				// Handle line merging for deletion at the beginning of a line
 				let prevLine = this.content[lineIndex - 1];
 				let currentLine = this.content[lineIndex];
 				prevLine.content += currentLine.content;
 				this.content.splice(lineIndex, 1); // Remove the current line
-				this.cursor.setPosition(prevLine.content.length, lineIndex - 1);
+				this.cursor.setPosition(
+					this.getTotalLines(),
+					this.content,
+					prevLine.content.length,
+					lineIndex - 1,
+				);
 			}
 		}
 	};
@@ -161,7 +283,7 @@ export class Editor {
 	moveCursorUp = (): void => {
 		this.cursor.moveUp(this.content);
 	};
-	
+
 	moveCursorDown = (): void => {
 		this.cursor.moveDown(this.content, this.getTotalLines());
 	};
@@ -179,12 +301,22 @@ export class Editor {
 	};
 
 	moveCursorToNextWord = (): void => {
-		this.cursor.moveToNextWord(this.content);
-	}
+		this.cursor.moveToNextWord(this.getTotalLines(), this.content);
+	};
 
 	moveCursorToPreviousWord = (): void => {
-		this.cursor.moveToPreviousWord(this.content);
-	}
+		this.cursor.moveToPreviousWord(this.getTotalLines(), this.content);
+	};
+
+	moveCursor = (character: number, line: number, basis?: number) => {
+		this.cursor.setPosition(
+			this.getTotalLines(),
+			this.content,
+			character,
+			line,
+			basis,
+		);
+	};
 
 	// Selection
 
