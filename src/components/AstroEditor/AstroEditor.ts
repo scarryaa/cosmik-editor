@@ -3,6 +3,7 @@ import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import { measureTextWidth } from "../../util/text";
+import { scrollToCurrentLine, scrollToCursor, scrollToElement } from "./AstroEditorScrolling";
 
 export const cursorHorizOffset = 5;
 export const cursorVertOffset = 5;
@@ -27,17 +28,30 @@ export const handleKeyDown = (
 	$astroWrapper: HTMLDivElement,
 	$app: HTMLDivElement,
 	$astroEditor: HTMLDivElement,
+	currentLineElement: HTMLDivElement,
+	$astroWrapperInner: HTMLDivElement,
+	$cursor: HTMLDivElement,
 ) => {
 	event.preventDefault();
 
 	if (event.key === "Backspace") {
 		handleBackspace(event, editor, $editor, $astroWrapper, $app, $astroEditor);
+		scrollToCursor($cursor, $editor, $astroWrapperInner);
 	} else if (event.key === "Enter") {
-		handleEnter(event, editor, $editor, $astroEditor, $app, $astroWrapper);
+		handleEnter(
+			event,
+			editor,
+			$editor,
+			$astroEditor,
+			$astroWrapperInner,
+			currentLineElement,
+			$cursor,
+		);
 	} else if (
 		["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(event.key)
 	) {
-		handleArrowKeys(event, $editor, $astroEditor);
+		handleArrowKeys(event, $editor, $astroEditor, currentLineElement, $astroWrapperInner);
+		scrollToCursor($cursor, $editor, $astroWrapperInner);
 	} else if (event.key.length === 1) {
 		handleKey(
 			event,
@@ -47,6 +61,8 @@ export const handleKeyDown = (
 			$astroEditor,
 			$astroWrapper,
 		);
+
+		scrollToCursor($cursor, $editor, $astroWrapperInner);
 	}
 };
 
@@ -181,42 +197,65 @@ const handleArrowKeys = (
 	event: KeyboardEvent,
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
+	currentLineElement: HTMLDivElement,
+	$astroWrapperInner: HTMLDivElement,
 ) => {
 	switch (event.key) {
 		case "ArrowRight":
 			handleArrowRight(event, $editor, $astroEditor);
+			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 			break;
 		case "ArrowLeft":
 			handleArrowLeft(event, $editor, $astroEditor);
+			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "up");
 			break;
 		case "ArrowUp":
 			handleArrowUp(event, $editor, $astroEditor);
+			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "up");
 			break;
 		case "ArrowDown":
 			handleArrowDown(event, $editor, $astroEditor);
+			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 			break;
 	}
 };
 
 const handleBackspace = (
-	event: Event,
+	event: KeyboardEvent,
 	editor: Writable<Editor>,
 	$editor: Editor,
 	$astroWrapper: HTMLDivElement,
 	$app: HTMLDivElement,
 	$astroEditor: HTMLDivElement,
 ) => {
-	editor.update((model) => {
-		if (
-			!$editor.cursorIsAtBeginningOfDocument() &&
-			$editor.cursorIsAtBeginningOfLine()
-		) {
-			updateCursorVerticalPosition(false);
-		}
+	if (event.ctrlKey) {
+		editor.update((model) => {
+			if (
+				!$editor.cursorIsAtBeginningOfDocument() &&
+				$editor.cursorIsAtBeginningOfLine()
+			) {
+				updateCursorVerticalPosition(false);
 
-		model.deleteCharacter();
-		return model;
-	});
+				model.deleteCharacter();
+				return model;
+			}
+
+			model.deletePreviousWord();
+			return model;
+		});
+	} else {
+		editor.update((model) => {
+			if (
+				!$editor.cursorIsAtBeginningOfDocument() &&
+				$editor.cursorIsAtBeginningOfLine()
+			) {
+				updateCursorVerticalPosition(false);
+			}
+
+			model.deleteCharacter();
+			return model;
+		});
+	}
 
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
@@ -226,8 +265,9 @@ const handleEnter = (
 	editor: Writable<Editor>,
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
-	$app: HTMLDivElement,
-	$astroWrapper: HTMLDivElement,
+	$astroWrapperInner: HTMLDivElement,
+	currentLineElement: HTMLDivElement,
+	$cursor: HTMLDivElement,
 ) => {
 	editor.update((model) => {
 		model.insertCharacter("\n");
@@ -236,6 +276,8 @@ const handleEnter = (
 
 	updateCursorVerticalPosition(true);
 	updateCursorHorizontalPosition($editor, $astroEditor);
+	scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
+	scrollToCursor($cursor, $editor, $astroWrapperInner)
 };
 
 const handleKey = (

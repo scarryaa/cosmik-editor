@@ -1,4 +1,5 @@
-import { Cursor } from "./Cursor";
+import { findPreviousWordOrSymbol } from "../util/text";
+import { Cursor, type CursorPosition } from "./Cursor";
 import { Selection } from "./Selection";
 
 export type Content = Array<{ number: number; content: string }>;
@@ -87,6 +88,26 @@ export class Editor {
 		}
 	};
 
+	deletePreviousWord = (): void => {
+		const lastWordPosition: CursorPosition = findPreviousWordOrSymbol(this.content, this.cursor.getPosition());
+		if (lastWordPosition) {
+			const currentLineIndex = this.cursor.getPosition().line;
+			const currentCharIndex = this.cursor.getPosition().character;
+			const lastWordLineIndex = lastWordPosition.line;
+			const lastWordCharIndex = lastWordPosition.character;
+	
+			// Ensure deletion occurs within the same line
+			if (currentLineIndex === lastWordLineIndex) {
+				let line = this.content[currentLineIndex];
+				let newContent = line.content.substring(0, lastWordCharIndex) + line.content.substring(currentCharIndex);
+				line.content = newContent;
+	
+				// Move cursor to the start of the deleted word
+				this.cursor.setPosition(lastWordCharIndex, currentLineIndex);
+			}
+		}
+	}
+
 	deleteCharacter = (): void => {
 		const cursorPos = this.cursor.getPosition();
 		if (cursorPos.character > 0 || cursorPos.line > 0) {
@@ -140,7 +161,7 @@ export class Editor {
 	moveCursorUp = (): void => {
 		this.cursor.moveUp(this.content);
 	};
-
+	
 	moveCursorDown = (): void => {
 		this.cursor.moveDown(this.content, this.getTotalLines());
 	};

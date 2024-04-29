@@ -1,9 +1,9 @@
 <script lang="ts">
     export let lineContent: string;
     export let lineNumber: number;
-    export let registerLineRef: (lineNumber: number, element: HTMLElement) => void;
+    export let registerLineRef: (lineNumber: number, element: HTMLDivElement) => void;
   
-    let lineElement: HTMLElement;
+    let lineElement: HTMLDivElement;
   
     $: if (lineElement) {
       registerLineRef(lineNumber, lineElement);
