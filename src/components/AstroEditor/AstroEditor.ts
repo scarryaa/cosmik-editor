@@ -86,17 +86,33 @@ const handleArrowLeft = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-    if (
-        !$editor.cursorIsAtBeginningOfDocument() &&
-        $editor.cursorIsAtBeginningOfLine()
-    ) {
-        updateCursorVerticalPosition(false);
-    }
+	if (event.ctrlKey) {
+		if ($editor.cursorIsAtBeginningOfLine()) {
+			editor.update((model) => {
+				model.moveCursorLeft();
+				return model;
+			});
+			updateCursorVerticalPosition(false);
+		} else {
+			editor.update((model) => {
+				model.moveCursorToPreviousWord();
+				return model;
+			});
+		}
+	} else {
+		if (
+			!$editor.cursorIsAtBeginningOfDocument() &&
+			$editor.cursorIsAtBeginningOfLine()
+		) {
+			updateCursorVerticalPosition(false);
+		}
 
-	editor.update((model) => {
-		model.moveCursorLeft();
-		return model;
-	});
+		editor.update((model) => {
+			model.moveCursorLeft();
+			return model;
+		});
+	}
+
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
@@ -105,34 +121,60 @@ const handleArrowRight = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-    if (
-        !$editor.cursorIsAtBeginningOfDocument() &&
-        $editor.cursorIsAtEndOfLine()
-    ) {
-        updateCursorVerticalPosition(false);
-    }
+	if (event.ctrlKey) {
+		if ($editor.cursorIsAtEndOfLine()) {
+			editor.update((model) => {
+				model.moveCursorRight();
+				return model;
+			});
+			updateCursorVerticalPosition(false);
+		} else {
+			editor.update((model) => {
+				model.moveCursorToNextWord();
+				return model;
+			});
+		}
+	} else {
+		if (
+			!$editor.cursorIsAtBeginningOfDocument() &&
+			$editor.cursorIsAtEndOfLine()
+		) {
+			updateCursorVerticalPosition(false);
+		}
 
-	editor.update((model) => {
-		model.moveCursorRight();
-		return model;
-	});
+		editor.update((model) => {
+			model.moveCursorRight();
+			return model;
+		});
+	}
+
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
-const handleArrowUp = (event: KeyboardEvent) => {
+const handleArrowUp = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
 	editor.update((model) => {
 		model.moveCursorUp();
 		return model;
 	});
 	updateCursorVerticalPosition(false);
+	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
-const handleArrowDown = (event: KeyboardEvent) => {
+const handleArrowDown = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
 	editor.update((model) => {
 		model.moveCursorDown();
 		return model;
 	});
 	updateCursorVerticalPosition(true);
+	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleArrowKeys = (
@@ -148,10 +190,10 @@ const handleArrowKeys = (
 			handleArrowLeft(event, $editor, $astroEditor);
 			break;
 		case "ArrowUp":
-			handleArrowUp(event);
+			handleArrowUp(event, $editor, $astroEditor);
 			break;
 		case "ArrowDown":
-			handleArrowDown(event);
+			handleArrowDown(event, $editor, $astroEditor);
 			break;
 	}
 };

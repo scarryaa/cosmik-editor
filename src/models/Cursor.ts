@@ -1,20 +1,47 @@
+import { findNextWordOrSymbol, findPreviousWordOrSymbol } from "../util/text";
 import type { Content } from "./Editor";
 
-export type CursorPosition = { line: number; character: number };
+export type CursorPosition = {
+	line: number;
+	character: number;
+	characterBasis: number;
+};
 
 export class Cursor {
 	private position: CursorPosition;
 
 	constructor() {
-		this.position = { line: 0, character: 0 };
+		this.position = { line: 0, character: 0, characterBasis: 0 };
 	}
 
-	moveUp = (): void => {
-		this.position.line = Math.max(0, this.position.line - 1);
+	moveUp = (content: Content): void => {
+		// If at first line, move to the start
+		if (this.isAtFirstLine()) {
+			this.moveToBeginningOfLine();
+		} else if (this.position.line > 0) {
+			// Try to move to character basis
+			const newLine = this.position.line - 1;
+			this.position.line = newLine;
+			this.position.character = Math.min(
+				this.position.characterBasis,
+				content[newLine].content.length,
+			);
+		}
 	};
 
-	moveDown = (totalLines: number): void => {
-		this.position.line = Math.min(totalLines - 1, this.position.line + 1);
+	moveDown = (content: Content, totalLines: number): void => {
+		// If at the last line, move to the end
+		if (this.isAtLastLine(totalLines)) {
+			this.moveToEndOfLine(content[totalLines - 1].content.length);
+		} else if (this.position.line < totalLines - 1) {
+			// Try to move to character basis
+			const newLine = this.position.line + 1;
+			this.position.line = newLine;
+			this.position.character = Math.min(
+				this.position.characterBasis,
+				content[newLine].content.length,
+			);
+		}
 	};
 
 	moveLeft = (content: Content): void => {
@@ -30,6 +57,8 @@ export class Cursor {
 			// Normal left movement within the line
 			this.position.character -= 1;
 		}
+
+		this.position.characterBasis = this.position.character;
 	};
 
 	moveRight = (content: Content): void => {
@@ -45,13 +74,59 @@ export class Cursor {
 			// Normal right movement within the line
 			this.position.character += 1;
 		}
+
+		this.position.characterBasis = this.position.character;
 	};
 
-	setPosition = (character: number, line: number): void => {
-		this.position = { character, line };
+	moveToBeginningOfLine = (): void => {
+		this.position.character = 0;
+		this.position.characterBasis = 0;
+	};
+
+	moveToEndOfLine = (lineLength: number): void => {
+		this.position.character = lineLength;
+		this.position.characterBasis = lineLength;
+	};
+
+	moveToPreviousWord = (content: Content): void => {
+		const newPosition = findPreviousWordOrSymbol(content, this.position);
+		this.setPosition(newPosition.character, newPosition.line, newPosition.characterBasis);
+	}
+
+	moveToNextWord = (content: Content): void => {
+		const newPosition = findNextWordOrSymbol(content, this.position);
+		this.setPosition(newPosition.character, newPosition.line, newPosition.characterBasis);
+	}
+
+	setPosition = (character: number, line: number, basis?: number): void => {
+		this.position = {
+			character,
+			line,
+			characterBasis: basis ?? this.position.characterBasis,
+		};
 	};
 
 	getPosition = (): CursorPosition => {
 		return this.position;
+	};
+
+	isAtFirstLine = (): boolean => {
+		return this.position.line === 0;
+	};
+
+	isAtLastLine = (numberOfLines: number): boolean => {
+		return this.position.line === numberOfLines - 1;
+	};
+
+	isAtBeginningOfDocument = (): boolean => {
+		return this.isAtBeginningOfLine() && this.position.line === 0;
+	};
+
+	isAtBeginningOfLine = (): boolean => {
+		return this.getPosition().character === 0;
+	};
+
+	isAtEndofLine = (lineLength: number): boolean => {
+		return this.getPosition().character === lineLength;
 	};
 }

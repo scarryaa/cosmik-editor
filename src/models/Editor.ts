@@ -8,12 +8,12 @@ export class Editor {
 
 	private content: Content;
 	private cursor: Cursor;
-    private selection: Selection;
+	private selection: Selection;
 
 	constructor() {
 		this.cursor = new Cursor();
 		this.content = this.parseInitialContent(Editor.EDITOR_DEFAULT_CONTENT);
-        this.selection = new Selection();
+		this.selection = new Selection();
 	}
 
 	private parseInitialContent = (content: string): Content => {
@@ -120,13 +120,12 @@ export class Editor {
 	// Cursor
 
 	cursorIsAtBeginningOfLine = (): boolean => {
-		return this.cursor.getPosition().character === 0;
+		return this.cursor.isAtBeginningOfLine();
 	};
 
 	cursorIsAtEndOfLine = (): boolean => {
-		return (
-			this.cursor.getPosition().character ===
-			this.content[this.cursor.getPosition().line].content.length
+		return this.cursor.isAtEndofLine(
+			this.content[this.cursor.getPosition().line].content.length,
 		);
 	};
 
@@ -135,15 +134,15 @@ export class Editor {
 	};
 
 	cursorIsAtBeginningOfDocument = (): boolean => {
-		return this.cursorIsAtBeginningOfLine() && this.getCursorLine() === 0;
+		return this.cursor.isAtBeginningOfDocument();
 	};
 
 	moveCursorUp = (): void => {
-		this.cursor.moveUp();
+		this.cursor.moveUp(this.content);
 	};
 
 	moveCursorDown = (): void => {
-		this.cursor.moveDown(this.getTotalLines());
+		this.cursor.moveDown(this.content, this.getTotalLines());
 	};
 
 	moveCursorLeft = (): void => {
@@ -158,9 +157,17 @@ export class Editor {
 		return this.cursor;
 	};
 
-    // Selection
+	moveCursorToNextWord = (): void => {
+		this.cursor.moveToNextWord(this.content);
+	}
 
-    getSelection = (): Selection => {
-        return this.selection;
-    }
+	moveCursorToPreviousWord = (): void => {
+		this.cursor.moveToPreviousWord(this.content);
+	}
+
+	// Selection
+
+	getSelection = (): Selection => {
+		return this.selection;
+	};
 }
