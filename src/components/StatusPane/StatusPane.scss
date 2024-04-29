@@ -1,0 +1,16 @@
+:root {
+    --status-pane-height: 20px;
+    --status-bar-bg-color: #d3d3d3;
+}
+
+.status-pane {
+    position: fixed;
+    bottom: 0;
+    min-width: 100%;
+    background-color: var(--status-bar-bg-color);
+    height: var(--status-pane-height);
+    z-index: 201;
+    overflow: auto;
+    font-size: 14px;
+    padding-left: 5px;
+}

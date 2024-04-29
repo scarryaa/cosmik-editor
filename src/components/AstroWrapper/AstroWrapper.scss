@@ -1,4 +1,13 @@
 #astro-wrapper {
     display: flex;
     height: calc(100vh - var(--status-pane-height));
+    width: 100vw;
+
+    #wrapper-inner {
+        overflow: auto;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        padding-right: 50px;
+    }
 }

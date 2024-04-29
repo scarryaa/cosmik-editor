@@ -1,4 +1,5 @@
 import { Cursor } from "./Cursor";
+import { Selection } from "./Selection";
 
 export type Content = Array<{ number: number; content: string }>;
 
@@ -7,10 +8,12 @@ export class Editor {
 
 	private content: Content;
 	private cursor: Cursor;
+    private selection: Selection;
 
 	constructor() {
 		this.cursor = new Cursor();
 		this.content = this.parseInitialContent(Editor.EDITOR_DEFAULT_CONTENT);
+        this.selection = new Selection();
 	}
 
 	private parseInitialContent = (content: string): Content => {
@@ -154,4 +157,10 @@ export class Editor {
 	getCursor = (): Cursor => {
 		return this.cursor;
 	};
+
+    // Selection
+
+    getSelection = (): Selection => {
+        return this.selection;
+    }
 }

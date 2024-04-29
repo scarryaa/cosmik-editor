@@ -4,11 +4,11 @@ import { cursorVertOffset } from "../AstroEditor/AstroEditor";
 
 export const calculateCursorVerticalPosition = (
 	$editor: Editor,
-	$app: HTMLDivElement,
+	scrollPosition: number,
 ) => {
 	return (
 		lineHeight * $editor.getCursor().getPosition().line -
-		$app.scrollTop +
+		scrollPosition +
 		cursorVertOffset
 	);
 };

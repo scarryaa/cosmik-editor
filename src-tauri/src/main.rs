@@ -8,6 +8,8 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
+    std::env::set_var("GTK_OVERLAY_SCROLLING", "1");
+    
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())

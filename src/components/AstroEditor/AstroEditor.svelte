@@ -3,7 +3,7 @@ import { onMount, tick } from "svelte";
 import { derived } from "svelte/store";
 import { lineHeight } from "../../const/const";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
-import { app, astroEditor, astroWrapper } from "../../stores/elements";
+import { app, astroEditor, astroWrapper, astroWrapperInner, lineNumbers } from "../../stores/elements";
 import { scrollPosition } from "../../stores/scroll";
 import { calculateCursorVerticalPosition } from "../Cursor/Cursor";
 import Cursor from "../Cursor/Cursor.svelte";
@@ -21,15 +21,15 @@ const handleLineRef = (lineNumber: number, element: HTMLElement) => {
 
 tick().then(() => {
 	// Have to add it here
-	$app.addEventListener("scroll", (event) => {
-		scrollPosition.set($app.scrollTop);
+	$astroWrapperInner.addEventListener("scroll", (event) => {
+		scrollPosition.set($astroWrapperInner.scrollTop);
 	});
 });
 
 const cursorPosition = derived([cursorVertPos, scrollPosition], async () => {
-	if ($app) {
+	if ($astroWrapper) {
 		await tick();
-		return calculateCursorVerticalPosition($editor, $app);
+		return calculateCursorVerticalPosition($editor, $scrollPosition);
 	}
 
 	return lineHeight;
