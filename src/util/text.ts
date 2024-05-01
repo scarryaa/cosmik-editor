@@ -1,5 +1,6 @@
 import { font } from "../const/const";
 import type { CursorPosition } from "../models/Cursor";
+import type { Editor } from "../models/Editor";
 
 const textWidthCache = new Map<string, number>();
 
@@ -124,29 +125,32 @@ export const measureTextWidth = (content: string): number => {
 	return width;
 };
 
-export const getCharacterIndex = (event: MouseEvent): number => {
-	const target = event.target as HTMLElement;
-	const { left } = target.getBoundingClientRect();
-	const clickX = event.clientX - left;
+export const getCharacterIndex = (event: MouseEvent, $editor: Editor): number => {
+    const target = event.target as HTMLElement;
+    const { left } = target.getBoundingClientRect();
+    const clickX = event.clientX - left;
 
-	let cumulativeWidth = 0;
-	const content = target.textContent || "";
-	let characterIndex = target.textContent?.length ?? 0;
+    let cumulativeWidth = 0;
+	const line = getLineIndex(event, $editor.getTotalLines());
+    const content = $editor.getContent()[line - 1].content;
+    let characterIndex = content.length;
 
-	for (let i = 0; i < content.length; i++) {
-		const charWidth = measureTextWidth(content[i]);
-		cumulativeWidth += charWidth;
-		if (cumulativeWidth >= clickX) {
-			characterIndex = i;
-			break;
-		}
-	}
+    for (let i = 0; i < content.length; i++) {
+        const charWidth = measureTextWidth(content[i]);
+        cumulativeWidth += charWidth;
+        if (cumulativeWidth >= clickX) {
+            characterIndex = i;
+            break;
+        }
+    }
 
-	return characterIndex;
+    // Removed redundant console.log for cleaner code
+    return characterIndex;
 };
 
 export const getLineIndex = (event: MouseEvent, totalLines: number): number => {
 	const target = event.target as HTMLElement;
-	const lineNumber = target.dataset.lineNumber;
+	const lineNumber =
+	target.dataset.lineNumber ?? target.parentElement?.dataset.lineNumber;
 	return lineNumber ? Number.parseInt(lineNumber, 10) : totalLines;
 };

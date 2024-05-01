@@ -11,7 +11,7 @@ export let selectionLength: number;
   
 <div class="status-pane">
     Ln {lineNumber}, Col {char} 
-    {#if selection.getSelectionStart() !== selection.getSelectionEnd()}
-        ({selectionLength} selected)
+    {#if selection.getSelectionStart() !== selection.getSelectionEnd() && selectionLength !== -1 && selectionLength !== 0}
+        ({selectionLength === -1 ? Math.abs(selectionLength + 1) : Math.abs(selectionLength)} selected)
     {/if}
 </div>

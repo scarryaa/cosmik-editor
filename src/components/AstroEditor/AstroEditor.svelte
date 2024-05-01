@@ -15,13 +15,20 @@ import {
 	scrollHorizontalPosition,
 	scrollVerticalPosition,
 } from "../../stores/scroll";
+import { lastMousePosition, selecting } from "../../stores/selection";
 import {
 	calculateCursorHorizontalPosition,
 	calculateCursorVerticalPosition,
 } from "../Cursor/Cursor";
 import Cursor from "../Cursor/Cursor.svelte";
 import Line from "../Line/Line.svelte";
-import { focusEditor, handleKeyDown, handleMouseDown } from "./AstroEditor";
+import {
+	focusEditor,
+	handleKeyDown,
+	handleMouseDown,
+	handleMouseMove,
+	handleMouseUp,
+} from "./AstroEditor";
 import "./AstroEditor.scss";
 
 let input: HTMLTextAreaElement;
@@ -87,12 +94,15 @@ onMount(() => {
 	focusEditor(input);
 
 	astroEditor.set(presentation);
+	document.addEventListener("mousemove", (event: MouseEvent) =>
+		handleMouseMove(event, $editor, $selecting, $lastMousePosition),
+	);
 });
 </script>
     
-<div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }}>
+<div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp}>
     {#each $editor.getContentString().split('\n') as line, index}
-        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getSelection().getSelectionStart()} selectionEnd={$editor.getSelection().getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} totalNumberOfLines={$editor.getTotalLines()} selectionStart={$editor.getSelection().getSelectionStart()} selectionEnd={$editor.getSelection().getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
     {/each}
 </div>
 <textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, $editor, $astroWrapper, $app, $astroEditor, linesMap.get($editor.getCursorLine() + 1)!, $astroWrapperInner, $cursor)}} class="astro-input"></textarea>

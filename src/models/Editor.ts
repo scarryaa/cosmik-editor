@@ -53,6 +53,11 @@ export class Editor {
 		const charIndex = cursorPos.character;
 		let line = this.content[lineIndex];
 
+		// Check for selection and delete
+		if (this.selection.isSelection()) {
+			this.selection.deleteSelection(this.content, this.cursor);
+		}
+
 		// Check if the character being inserted is a newline character
 		if (char === "\n") {
 			// Split the current line at the cursor position
@@ -99,6 +104,11 @@ export class Editor {
 			this.cursor.getPosition(),
 		);
 		if (lastWordPosition) {
+			// Check for selection and delete
+			if (this.selection.isSelection()) {
+				this.selection.deleteSelection(this.content, this.cursor);
+			}
+
 			const currentLineIndex = this.cursor.getPosition().line;
 			const currentCharIndex = this.cursor.getPosition().character;
 			const lastWordLineIndex = lastWordPosition.line;
@@ -130,6 +140,11 @@ export class Editor {
 			cursorPos,
 		);
 		if (nextWordPosition) {
+			// Check for selection and delete
+			if (this.selection.isSelection()) {
+				this.selection.deleteSelection(this.content, this.cursor);
+			}
+
 			const currentLineIndex = cursorPos.line;
 			const currentCharIndex = cursorPos.character;
 			const nextWordCharIndex = nextWordPosition.character;
@@ -153,6 +168,11 @@ export class Editor {
 		const lineIndex = cursorPos.line;
 		const charIndex = cursorPos.character;
 		let line = this.content[lineIndex];
+
+		// Check for selection and delete
+		if (this.selection.isSelection()) {
+			this.selection.deleteSelection(this.content, this.cursor);
+		}
 
 		// Attempt to delete a tab forward first
 		const originalContent = line.content;
@@ -244,47 +264,9 @@ export class Editor {
 		const cursorPos = this.cursor.getPosition();
 
 		// Check for selection and delete
+		// Check for selection and delete
 		if (this.selection.isSelection()) {
-			const { start, end } = this.selection.getSelectionRange();
-			if (start.line === end.line) {
-				// Selection within a single line
-				let line = this.content[start.line];
-				line.content =
-					line.content.substring(0, start.character) +
-					line.content.substring(end.character);
-				// Move cursor to the start of the selection
-				this.cursor.setPosition(
-					this.getTotalLines(),
-					this.content,
-					start.character,
-					start.line,
-				);
-			} else {
-				// Selection spans multiple lines
-				// Remove text from the start line up to the start character
-				this.content[start.line].content = this.content[
-					start.line
-				].content.substring(0, start.character);
-				// Remove text from the end character to the end of the end line
-				this.content[end.line].content = this.content[
-					end.line
-				].content.substring(end.character);
-				// Remove lines fully within the selection
-				this.content.splice(start.line + 1, end.line - start.line - 1);
-				// Merge start and end lines if they are not the same
-				this.content[start.line].content +=
-					this.content[start.line + 1].content;
-				this.content.splice(start.line + 1, 1);
-				// Move cursor to the start of the selection
-				this.cursor.setPosition(
-					this.getTotalLines(),
-					this.content,
-					start.character,
-					start.line,
-				);
-			}
-			// Clear the selection after deleting
-			this.selection.clearSelection();
+			this.selection.deleteSelection(this.content, this.cursor);
 		} else {
 			if (cursorPos.character > 0 || cursorPos.line > 0) {
 				const lineIndex = cursorPos.line;

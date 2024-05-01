@@ -126,8 +126,17 @@ export class Cursor {
 			content,
 			newPosition.character,
 			newPosition.line,
-			newPosition.characterBasis,
+			newPosition.character,
 		);
+	};
+
+	moveToEndOfDocument = (
+		maxLines: number,
+		content: Content,
+		character: number,
+		line: number,
+	): void => {
+		this.setPosition(maxLines, content, character, line, character);
 	};
 
 	setPosition = (

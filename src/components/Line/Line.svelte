@@ -8,6 +8,8 @@ export let lineNumber: number;
 export let selectionStart: SelectionProps;
 export let selectionEnd: SelectionProps;
 export let cursorPosition: CursorPosition;
+export let totalNumberOfLines: number;
+
 export let registerLineRef: (
 	lineNumber: number,
 	element: HTMLDivElement,
@@ -30,37 +32,43 @@ $: isSelected =
 	(lineNumber - 1 === selectionEnd.line && selectionEnd.character >= 0);
 
 $: {
+	let isLastLine = lineNumber === totalNumberOfLines;
+
 	if (
 		lineNumber - 1 === selectionStart.line &&
 		lineNumber - 1 === selectionEnd.line
 	) {
-		// Selection starts and ends on the same line
 		beforeSelection = lineContent.substring(0, selectionStart.character);
 		selectedText = lineContent.substring(
 			selectionStart.character,
 			selectionEnd.character,
 		);
 		afterSelection = lineContent.substring(selectionEnd.character);
+		if (!isLastLine) {
+			afterSelection += " ";
+		}
 	} else if (lineNumber - 1 === selectionStart.line) {
-		// Selection starts on this line but extends beyond
 		beforeSelection = lineContent.substring(0, selectionStart.character);
 		selectedText = lineContent.substring(selectionStart.character);
 		afterSelection = "";
+		if (!isLastLine) {
+			selectedText += " ";
+		}
 	} else if (
 		lineNumber - 1 > selectionStart.line &&
 		lineNumber - 1 < selectionEnd.line
 	) {
-		// Current line is fully within the selection range
 		beforeSelection = "";
-		selectedText = lineContent;
+		selectedText = `${lineContent} `;
 		afterSelection = "";
 	} else if (lineNumber - 1 === selectionEnd.line) {
-		// Selection ends on this line but may have started before
 		beforeSelection = "";
 		selectedText = lineContent.substring(0, selectionEnd.character);
 		afterSelection = lineContent.substring(selectionEnd.character);
+		if (!isLastLine) {
+			afterSelection += " ";
+		}
 	} else {
-		// No selection on this line
 		beforeSelection = lineContent;
 		selectedText = "";
 		afterSelection = "";

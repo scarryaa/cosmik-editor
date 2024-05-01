@@ -3,6 +3,7 @@ import type { Writable } from "svelte/store";
 import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
+import { lastMousePosition, selecting } from "../../stores/selection";
 import {
 	getCharacterIndex,
 	getLineIndex,
@@ -12,8 +13,14 @@ import {
 	getNumberOfLinesOnScreen,
 	scrollToCurrentLine,
 	scrollToCursor,
-	scrollToElement,
 } from "./AstroEditorScrolling";
+import {
+	handleMouseSelection,
+	handleSelectionDown,
+	handleSelectionLeft,
+	handleSelectionRight,
+	handleSelectionUp,
+} from "./AstroEditorSelection";
 
 export const cursorHorizOffset = 5;
 export const cursorVertOffset = 5;
@@ -50,6 +57,9 @@ export const handleKeyDown = async (
 		if (event.ctrlKey) {
 			handleCtrlA(event, $editor);
 			keyHandled = true;
+
+			updateCursorVerticalPosition(false);
+			updateCursorHorizontalPosition($editor, $astroEditor);
 		}
 	}
 
@@ -65,7 +75,7 @@ export const handleKeyDown = async (
 		}
 		scrollToCursor($cursor, $editor, $astroWrapperInner);
 	} else if (event.key === "Delete") {
-		handleDelete(event, $editor);
+		handleDelete(event, $editor, $astroEditor);
 	} else if (event.key === "Home") {
 		handleHome(event, $editor, $astroEditor);
 	} else if (event.key === "End") {
@@ -136,19 +146,43 @@ export const handleMouseDown = (
 
 	const maxLines = $editor.getTotalLines();
 	const content = $editor.getContent();
-	const char = getCharacterIndex(event);
+	const char = getCharacterIndex(event, $editor);
 	const line = getLineIndex(event, $editor.getTotalLines());
 
 	editor.update((model) => {
 		model.getCursor().setPosition(maxLines, content, char, line - 1, char);
+		model.getSelection().setSelectionEnd(model.getCursor().getPosition());
+		model.getSelection().setSelectionStart(model.getCursor().getPosition());
 		return model;
 	});
+
+	selecting.set(true);
 
 	updateCursorVerticalPosition(false);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 
 	updateTextareaPosition(event, input);
 	focusEditor(input);
+};
+
+export const handleMouseUp = (event: MouseEvent) => {
+	event.preventDefault();
+	selecting.set(false);
+};
+
+export const handleMouseMove = (
+	event: MouseEvent,
+	$editor: Editor,
+	$selecting: boolean,
+	$lastMousePosition: { left: number, top: number },
+) => {
+	event.preventDefault();
+
+	if ($selecting) {
+		handleMouseSelection(event, $editor, $lastMousePosition);
+	}
+
+	lastMousePosition.set({ left: event.clientX, top: event.clientY });
 };
 
 // Private
@@ -179,6 +213,12 @@ const handleCtrlA = (event: KeyboardEvent, $editor: Editor) => {
 
 	editor.update((model) => {
 		model.getSelection().selectAll(lineLength, totalLines, content);
+
+		// Place the cursor at the end of the last line
+		const line = $editor.getTotalLines();
+		const character = content[line - 1].content.length;
+		model.getCursor().moveToEndOfDocument(line, content, character, line);
+
 		return model;
 	});
 };
@@ -202,15 +242,32 @@ const handleTab = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-	// Insert tab
-	editor.update((model) => {
-		model.insertCharacter(" ");
-		model.insertCharacter(" ");
-		model.insertCharacter(" ");
-		model.insertCharacter(" ");
-		return model;
-	});
+	// Hacky fix -- if there was a selection, and we are not on the same line,
+	// insert 5 spaces (because one gets eaten)
+	if (
+		$editor.getSelection().isSelection() &&
+		$editor.getSelection().getSelectionStart().line !== $editor.getCursorLine()
+	) {
+		editor.update((model) => {
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			return model;
+		});
+	} else {
+		// Insert tab
+		editor.update((model) => {
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			model.insertCharacter(" ");
+			return model;
+		});
+	}
 
+	updateCursorVerticalPosition(false);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
@@ -222,6 +279,8 @@ const handleHome = (
 	// Move to beginning of line
 	editor.update((model) => {
 		model.getCursor().moveToBeginningOfLine();
+		// Clear selection
+		model.getSelection().clearSelection();
 		return model;
 	});
 
@@ -240,6 +299,9 @@ const handleEnd = (
 			.moveToEndOfLine(
 				model.getContent()[model.getCursorLine()].content.length,
 			);
+
+		// Clear selection
+		model.getSelection().clearSelection();
 		return model;
 	});
 
@@ -251,6 +313,12 @@ const handlePageDown = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
+	editor.update((model) => {
+		// Clear selection
+		model.getSelection().clearSelection();
+		return model;
+	});
+
 	// If at last line, go to end of last line
 	if ($editor.getCursor().isAtLastLine($editor.getTotalLines())) {
 		editor.update((model) => {
@@ -282,7 +350,13 @@ const handlePageUp = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-	// If at fiorst line, go to end of last line
+	editor.update((model) => {
+		// Clear selection
+		model.getSelection().clearSelection();
+		return model;
+	});
+
+	// If at first line, go to end of last line
 	if ($editor.getCursor().isAtFirstLine()) {
 		editor.update((model) => {
 			model.getCursor().moveToBeginningOfLine();
@@ -304,7 +378,11 @@ const handlePageUp = (
 	updateCursorVerticalPosition(false);
 };
 
-const handleDelete = (event: KeyboardEvent, $editor: Editor) => {
+const handleDelete = (
+	event: KeyboardEvent,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
 	if (event.ctrlKey) {
 		if ($editor.cursorIsAtEndOfLine()) {
 			editor.update((model) => {
@@ -323,6 +401,9 @@ const handleDelete = (event: KeyboardEvent, $editor: Editor) => {
 			return model;
 		});
 	}
+
+	updateCursorHorizontalPosition($editor, $astroEditor);
+	updateCursorVerticalPosition(false);
 };
 
 const handleArrowLeft = (
@@ -344,21 +425,43 @@ const handleArrowLeft = (
 			});
 		}
 	} else if (event.shiftKey) {
-		$editor.getSelection().setSelectionEnd({ line: 0, character: 0 });
+		handleSelectionLeft();
 	} else {
-		if (
-			!$editor.cursorIsAtBeginningOfDocument() &&
-			$editor.cursorIsAtBeginningOfLine()
-		) {
-			updateCursorVerticalPosition(false);
-		}
+		// If there is a selection, move cursor to start and deselect
+		if ($editor.getSelection().isSelection()) {
+			editor.update((model) => {
+				const selectionStart = model.getSelection().getSelectionStart();
+				const maxLines = model.getTotalLines();
+				const content = model.getContent();
 
-		editor.update((model) => {
-			model.moveCursorLeft();
-			return model;
-		});
+				model
+					.getCursor()
+					.setPosition(
+						maxLines,
+						content,
+						selectionStart.character,
+						selectionStart.line,
+						selectionStart.character,
+					);
+				model.getSelection().clearSelection();
+				return model;
+			});
+		} else {
+			if (
+				!$editor.cursorIsAtBeginningOfDocument() &&
+				$editor.cursorIsAtBeginningOfLine()
+			) {
+				updateCursorVerticalPosition(false);
+			}
+
+			editor.update((model) => {
+				model.moveCursorLeft();
+				return model;
+			});
+		}
 	}
 
+	updateCursorVerticalPosition(false);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
@@ -381,21 +484,43 @@ const handleArrowRight = (
 			});
 		}
 	} else if (event.shiftKey) {
-		$editor.getSelection().setSelectionEnd({ line: 0, character: 0 });
+		handleSelectionRight();
 	} else {
-		if (
-			!$editor.cursorIsAtBeginningOfDocument() &&
-			$editor.cursorIsAtEndOfLine()
-		) {
-			updateCursorVerticalPosition(false);
-		}
+		// If there is a selection, move cursor to end and deselect
+		if ($editor.getSelection().isSelection()) {
+			editor.update((model) => {
+				const selectionEnd = model.getSelection().getSelectionEnd();
+				const maxLines = model.getTotalLines();
+				const content = model.getContent();
 
-		editor.update((model) => {
-			model.moveCursorRight();
-			return model;
-		});
+				model
+					.getCursor()
+					.setPosition(
+						maxLines,
+						content,
+						selectionEnd.character,
+						selectionEnd.line,
+						selectionEnd.character,
+					);
+				model.getSelection().clearSelection();
+				return model;
+			});
+		} else {
+			if (
+				!$editor.cursorIsAtBeginningOfDocument() &&
+				$editor.cursorIsAtEndOfLine()
+			) {
+				updateCursorVerticalPosition(false);
+			}
+
+			editor.update((model) => {
+				model.moveCursorRight();
+				return model;
+			});
+		}
 	}
 
+	updateCursorVerticalPosition(true);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
@@ -405,11 +530,33 @@ const handleArrowUp = (
 	$astroEditor: HTMLDivElement,
 ) => {
 	if (event.shiftKey) {
+		handleSelectionUp();
 	} else {
-		editor.update((model) => {
-			model.moveCursorUp();
-			return model;
-		});
+		// If there is a selection, move cursor to one line above start and deselect
+		if ($editor.getSelection().isSelection()) {
+			editor.update((model) => {
+				const selectionStart = model.getSelection().getSelectionStart();
+				const maxLines = model.getTotalLines();
+				const content = model.getContent();
+
+				model
+					.getCursor()
+					.setPosition(
+						maxLines,
+						content,
+						selectionStart.character,
+						selectionStart.line - 1,
+						selectionStart.character,
+					);
+				model.getSelection().clearSelection();
+				return model;
+			});
+		} else {
+			editor.update((model) => {
+				model.moveCursorUp();
+				return model;
+			});
+		}
 	}
 
 	updateCursorVerticalPosition(false);
@@ -422,12 +569,33 @@ const handleArrowDown = (
 	$astroEditor: HTMLDivElement,
 ) => {
 	if (event.shiftKey) {
-		$editor.getSelection().setSelectionEnd({ line: 0, character: 0 });
+		handleSelectionDown();
 	} else {
-		editor.update((model) => {
-			model.moveCursorDown();
-			return model;
-		});
+		// If there is a selection, move cursor to one line below end and deselect
+		if ($editor.getSelection().isSelection()) {
+			editor.update((model) => {
+				const selectionEnd = model.getSelection().getSelectionEnd();
+				const maxLines = model.getTotalLines();
+				const content = model.getContent();
+
+				model
+					.getCursor()
+					.setPosition(
+						maxLines,
+						content,
+						selectionEnd.character,
+						selectionEnd.line + 1,
+						selectionEnd.character,
+					);
+				model.getSelection().clearSelection();
+				return model;
+			});
+		} else {
+			editor.update((model) => {
+				model.moveCursorDown();
+				return model;
+			});
+		}
 	}
 
 	updateCursorVerticalPosition(true);
@@ -534,9 +702,20 @@ const handleKey = (
 	$astroWrapper: HTMLDivElement,
 ) => {
 	editor.update((model) => {
-		model.insertCharacter(event.key);
+		// Hacky fix -- if there was a selection and we are not on the same line, insert twice
+		if (
+			$editor.getSelection().isSelection() &&
+			$editor.getSelection().getSelectionStart().line !==
+				$editor.getCursorLine()
+		) {
+			model.insertCharacter(event.key);
+			model.insertCharacter(event.key);
+		} else {
+			model.insertCharacter(event.key);
+		}
 		return model;
 	});
 
+	updateCursorVerticalPosition(true);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
