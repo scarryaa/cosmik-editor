@@ -9,7 +9,7 @@ export const highlightSyntax = (line: string): string => {
 	let escapedLine = escapeHtml(line);
 	let placeholdersMap = new Map();
 	let placeholderIndex = 0;
-    
+
 	const patterns = [
 		{ regex: /(\/\/.*)/g, type: "comment" },
 		{ regex: /(".*?"|'.*?'|`.*?`)/g, type: "string" },

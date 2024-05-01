@@ -7,11 +7,6 @@ use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_dialog::MessageDialogKind;
 use tauri_plugin_shell::ShellExt;
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 fn new_file(app: &AppHandle) -> std::io::Result<()> {
     println!("New file");
     Ok(())
@@ -125,7 +120,6 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![greet])
         .setup(move |app| {
             let handle = app.handle();
             let menu = Menu::new(handle)?;

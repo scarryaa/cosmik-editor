@@ -32,6 +32,83 @@ export class Editor {
 		);
 	};
 
+	private insertTextAtCursor = (text: string): void => {
+		const cursorPos = this.cursor.getPosition();
+		const lineIndex = cursorPos.line;
+		const charIndex = cursorPos.character;
+		const lines = text.split("\n");
+
+		// Insert the first line of text at the cursor position
+		let line = this.content[lineIndex];
+		let newContent =
+			line.getContent().substring(0, charIndex) +
+			lines[0] +
+			line.getContent().substring(charIndex);
+		line.setContent(newContent);
+
+		// Insert any additional lines as new lines in the content
+		for (let i = 1; i < lines.length; i++) {
+			this.content.splice(
+				lineIndex + i,
+				0,
+				new Line(lines[i], lineIndex + i + 1),
+			);
+		}
+
+		// Update line numbers for all lines following the inserted text
+		for (let i = lineIndex + lines.length; i < this.content.length; i++) {
+			this.content[i].setLineNumber(i + 1);
+		}
+
+		// Move the cursor to the end of the inserted text
+		if (lines.length > 1) {
+			// If multiple lines were inserted, move the cursor to the beginning of the last inserted line
+			this.cursor.setPosition(
+				this.getTotalLines(),
+				this.content,
+				0,
+				lineIndex + lines.length - 1,
+			);
+		} else {
+			// If only one line was inserted, move the cursor to the end of the inserted text
+			this.cursor.setPosition(
+				this.getTotalLines(),
+				this.content,
+				charIndex + lines[0].length,
+				lineIndex,
+			);
+		}
+	};
+
+	private copySelection = async (): Promise<string> => {
+		return this.selection.copy(this.content);
+	};
+
+	private copyCurrentLine = async (): Promise<string> => {
+		const cursorPositon = this.cursor.getPosition();
+		const contentToCopy = this.content[cursorPositon.line].getContent();
+		return contentToCopy;
+	};
+
+	private parsePastedText = (text: string): string[] => {
+		return text.split("\n");
+	};
+
+	private pasteInternal = async (text: string) => {
+		if (this.selection.isSelection()) {
+			this.selection.deleteSelection(this.content, this.cursor);
+		}
+		try {
+			this.insertTextAtCursor(text);
+		} catch (err) {
+			console.error("Failed to paste content: ", err);
+		}
+	};
+
+	clearCurrentLine = (): void => {
+		this.content[this.cursor.getPosition().line].clearLine();
+	};
+
 	setContent = (content: string): void => {
 		this.content = this.parseInitialContent(content);
 	};
@@ -277,6 +354,19 @@ export class Editor {
 					line.getContent().substring(charIndex + 1),
 			);
 		}
+	};
+
+	copy = async (): Promise<string> => {
+		// Copy selection or the current line
+		if (this.selection.isSelection()) {
+			return this.copySelection();
+		}
+
+		return this.copyCurrentLine();
+	};
+
+	paste = async (text: string): Promise<void> => {
+		await this.pasteInternal(text);
 	};
 
 	deleteCharacter = (): void => {

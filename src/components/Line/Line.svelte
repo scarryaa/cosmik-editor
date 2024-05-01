@@ -11,6 +11,7 @@ export let selectionEnd: number;
 export let wrapperWidth: number;
 export let wrapperHeight: number;
 export let cursorPosition: CursorPosition;
+export let wrapperScroll: number;
 
 export let registerLineRef: (
 	lineNumber: number,
@@ -28,15 +29,15 @@ $: isSelected =
 	selectionStart <= lineContent.length ||
 	selectionEnd >= 0;
 
-$: selectedContent = lineContent.substring(selectionStart, selectionEnd);
-
 $: if (isSelected) {
-	selectionTop = `${5 + (lineNumber - 1) * 19}px`;
+	selectionTop = `${5 + (lineNumber - 1) * 19 - (wrapperScroll ?? 0)}px`;
 	selectionLeft = `${65 + measureTextWidth("a") * selectionStart}px`;
 	selectionRight = `${
 		-6 + wrapperWidth - measureTextWidth("a") * selectionEnd
 	}px`;
-	selectionBottom = `${wrapperHeight - (lineNumber - 1) * 19 - 4}px`;
+	selectionBottom = `${
+		wrapperHeight - (lineNumber - 1) * 19 - 4 + (wrapperScroll ?? 0)
+	}px`;
 	registerLineRef(lineNumber, lineElement);
 }
 

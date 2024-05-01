@@ -55,7 +55,6 @@ export const handleKeyDown = async (
 	// Ctrl combos
 	if (event.key === "A" || event.key === "a") {
 		if (event.ctrlKey) {
-			handleCtrlA(event, $editor);
 			keyHandled = true;
 
 			updateCursorVerticalPosition(false);
@@ -185,9 +184,7 @@ export const handleMouseMove = (
 	lastMousePosition.set({ left: event.clientX, top: event.clientY });
 };
 
-// Private
-
-const updateCursorHorizontalPosition = (
+export const updateCursorHorizontalPosition = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
@@ -203,26 +200,11 @@ const updateCursorHorizontalPosition = (
 	cursorHorizPos.set(measuredWidth + cursorHorizOffset + cursorLeft);
 };
 
-const updateCursorVerticalPosition = (add: boolean) => {
+export const updateCursorVerticalPosition = (add: boolean) => {
 	cursorVertPos.update((value) => value + (add ? lineHeight : -lineHeight));
 };
 
-const handleCtrlA = (event: KeyboardEvent, $editor: Editor) => {
-	const totalLines = $editor.getTotalLines();
-	const content = $editor.getContent();
-	const lineLength = content[totalLines - 1].getContent().length;
-
-	editor.update((model) => {
-		model.getSelection().selectAll(lineLength, totalLines, content);
-
-		// Place the cursor at the end of the last line
-		const line = $editor.getTotalLines();
-		const character = content[line - 1].getContent().length;
-		model.getCursor().moveToEndOfDocument(line, content, character, line);
-
-		return model;
-	});
-};
+// Private
 
 const handleShiftTab = (
 	event: KeyboardEvent,

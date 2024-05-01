@@ -59,4 +59,8 @@ export class Line {
 		this.selectionStart = 0;
 		this.selectionEnd = this.content.length;
 	};
+
+	clearLine = (): void => {
+		this.content = "";
+	};
 }

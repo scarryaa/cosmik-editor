@@ -432,7 +432,43 @@ export class Selection {
 		}
 	};
 
-	public updateLineSelection = (line: Line) => {
+	public copy = (content: Content): string => {
+		if (this.isSelection()) {
+			let copiedText = "";
+			// If the selection is within a single line
+			if (this.selectionStart.line === this.selectionEnd.line) {
+				copiedText = content[this.selectionStart.line]
+					.getContent()
+					.substring(
+						this.selectionStart.character,
+						this.selectionEnd.character,
+					);
+			} else {
+				// Add the part of the start line from the selection start to the end of the line
+				copiedText += content[this.selectionStart.line]
+					.getContent()
+					.substring(this.selectionStart.character);
+				// Add a newline if there are multiple lines in the selection
+				copiedText += "\n";
+				// Loop through any lines fully within the selection
+				for (
+					let i = this.selectionStart.line + 1;
+					i < this.selectionEnd.line;
+					i++
+				) {
+					copiedText += `${content[i].getContent()}\n`;
+				}
+				// Add the part of the end line from the start to the selection end
+				copiedText += content[this.selectionEnd.line]
+					.getContent()
+					.substring(0, this.selectionEnd.character);
+			}
+			return copiedText;
+		}
+		return "";
+	};
+
+	public updateLineSelection = (line: Line): void => {
 		const lineNumber = line.getLineNumber();
 
 		if (
@@ -593,6 +629,7 @@ export class Selection {
 		this.content = content.map((line) => line.getContent()).join("\n");
 
 		this.selectAllLines(content);
+		this.updateAllLnes(content);
 	};
 
 	public invertSelectionUp = (cursor: Cursor, content: Content): void => {

@@ -12,6 +12,12 @@
 		"menu:default",
 		"tray:default",
 		"shell:allow-open",
-		"shell:default"
+		"shell:default",
+		"clipboard-manager:allow-read-text",
+		"clipboard-manager:allow-write-text",
+		"clipboard-manager:allow-clear",
+		"clipboard-manager:allow-read-image",
+		"clipboard-manager:allow-write-image",
+		"clipboard-manager:allow-write-html"
 	]
 }
