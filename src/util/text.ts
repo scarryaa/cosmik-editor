@@ -1,11 +1,12 @@
 import { font } from "../const/const";
 import type { CursorPosition } from "../models/Cursor";
 import type { Editor } from "../models/Editor";
+import type { Line } from "../models/Line";
 
 const textWidthCache = new Map<string, number>();
 
 export const findPreviousWordOrSymbol = (
-	lines: { number: number; content: string }[],
+	lines: Line[],
 	cursorPosition: CursorPosition,
 ): CursorPosition => {
 	let currentIndex = cursorPosition.character - 1;
@@ -14,7 +15,7 @@ export const findPreviousWordOrSymbol = (
 	let foundWord = false;
 
 	while (currentLine >= 0) {
-		const line = lines[currentLine].content;
+		const line = lines[currentLine].getContent();
 		while (currentIndex >= 0) {
 			const char = line[currentIndex];
 			const isWordChar = /\w/.test(char);
@@ -60,7 +61,7 @@ export const findPreviousWordOrSymbol = (
 };
 
 export const findNextWordOrSymbol = (
-	lines: { number: number; content: string }[],
+	lines: Line[],
 	cursorPosition: CursorPosition,
 ): CursorPosition => {
 	let currentIndex = cursorPosition.character;
@@ -69,7 +70,7 @@ export const findNextWordOrSymbol = (
 	let foundWordStart = false;
 
 	while (currentLine < lines.length) {
-		const line = lines[currentLine].content;
+		const line = lines[currentLine].getContent();
 		while (currentIndex < line.length) {
 			const char = line[currentIndex];
 			if (!/\w/.test(char)) {
@@ -100,7 +101,7 @@ export const findNextWordOrSymbol = (
 	const lastLineIndex = lines.length - 1;
 	return {
 		line: lastLineIndex + 1,
-		character: lines[lastLineIndex].content.length,
+		character: lines[lastLineIndex].getContent().length,
 		characterBasis: cursorPosition.characterBasis,
 	};
 };
@@ -125,32 +126,35 @@ export const measureTextWidth = (content: string): number => {
 	return width;
 };
 
-export const getCharacterIndex = (event: MouseEvent, $editor: Editor): number => {
-    const target = event.target as HTMLElement;
-    const { left } = target.getBoundingClientRect();
-    const clickX = event.clientX - left;
+export const getCharacterIndex = (
+	event: MouseEvent,
+	$editor: Editor,
+): number => {
+	const target = event.target as HTMLElement;
+	const { left } = target.getBoundingClientRect();
+	const clickX = event.clientX - left;
 
-    let cumulativeWidth = 0;
+	let cumulativeWidth = 0;
 	const line = getLineIndex(event, $editor.getTotalLines());
-    const content = $editor.getContent()[line - 1].content;
-    let characterIndex = content.length;
+	const content = $editor.getContent()[line - 1].getContent();
+	let characterIndex = content.length;
 
-    for (let i = 0; i < content.length; i++) {
-        const charWidth = measureTextWidth(content[i]);
-        cumulativeWidth += charWidth;
-        if (cumulativeWidth >= clickX) {
-            characterIndex = i;
-            break;
-        }
-    }
+	for (let i = 0; i < content.length; i++) {
+		const charWidth = measureTextWidth(content[i]);
+		cumulativeWidth += charWidth;
+		if (cumulativeWidth >= clickX) {
+			characterIndex = i;
+			break;
+		}
+	}
 
-    // Removed redundant console.log for cleaner code
-    return characterIndex;
+	// Removed redundant console.log for cleaner code
+	return characterIndex;
 };
 
 export const getLineIndex = (event: MouseEvent, totalLines: number): number => {
 	const target = event.target as HTMLElement;
 	const lineNumber =
-	target.dataset.lineNumber ?? target.parentElement?.dataset.lineNumber;
+		target.dataset.lineNumber ?? target.parentElement?.dataset.lineNumber;
 	return lineNumber ? Number.parseInt(lineNumber, 10) : totalLines;
 };

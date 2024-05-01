@@ -6,7 +6,7 @@ import { getCharacterIndex, getLineIndex } from "../../util/text";
 export const handleMouseSelection = (
 	event: MouseEvent,
 	$editor: Editor,
-    $lastMousePosition: { left: number, top: number },
+	$lastMousePosition: { left: number; top: number },
 ): void => {
 	const char = getCharacterIndex(event, $editor);
 	const line = getLineIndex(event, $editor.getTotalLines());

@@ -1,14 +1,16 @@
 <script lang="ts">
 import type { CursorPosition } from "../../models/Cursor";
-import type { SelectionProps } from "../../models/Selection";
+import { highlightSyntax } from "../../util/syntax";
+import { measureTextWidth } from "../../util/text";
 import "./Line.scss";
 
 export let lineContent: string;
 export let lineNumber: number;
-export let selectionStart: SelectionProps;
-export let selectionEnd: SelectionProps;
+export let selectionStart: number;
+export let selectionEnd: number;
+export let wrapperWidth: number;
+export let wrapperHeight: number;
 export let cursorPosition: CursorPosition;
-export let totalNumberOfLines: number;
 
 export let registerLineRef: (
 	lineNumber: number,
@@ -16,82 +18,39 @@ export let registerLineRef: (
 ) => void;
 
 let lineElement: HTMLDivElement;
-
-let selectedText = "";
-let beforeSelection = "";
-let afterSelection = "";
+let selectionTop = "0px";
+let selectionRight = "0px";
+let selectionBottom = "0px";
+let selectionLeft = "0px";
 
 $: isSelected =
-	(lineNumber - 1 === selectionStart.line &&
-		lineNumber - 1 === selectionEnd.line &&
-		selectionStart.character <= selectionEnd.character) ||
-	(lineNumber - 1 === selectionStart.line &&
-		selectionStart.character <= lineContent.length) ||
-	(lineNumber - 1 > selectionStart.line &&
-		lineNumber - 1 < selectionEnd.line) ||
-	(lineNumber - 1 === selectionEnd.line && selectionEnd.character >= 0);
+	selectionStart <= selectionEnd ||
+	selectionStart <= lineContent.length ||
+	selectionEnd >= 0;
 
-$: {
-	let isLastLine = lineNumber === totalNumberOfLines;
+$: selectedContent = lineContent.substring(selectionStart, selectionEnd);
 
-	if (
-		lineNumber - 1 === selectionStart.line &&
-		lineNumber - 1 === selectionEnd.line
-	) {
-		beforeSelection = lineContent.substring(0, selectionStart.character);
-		selectedText = lineContent.substring(
-			selectionStart.character,
-			selectionEnd.character,
-		);
-		afterSelection = lineContent.substring(selectionEnd.character);
-		if (!isLastLine) {
-			afterSelection += " ";
-		}
-	} else if (lineNumber - 1 === selectionStart.line) {
-		beforeSelection = lineContent.substring(0, selectionStart.character);
-		selectedText = lineContent.substring(selectionStart.character);
-		afterSelection = "";
-		if (!isLastLine) {
-			selectedText += " ";
-		}
-	} else if (
-		lineNumber - 1 > selectionStart.line &&
-		lineNumber - 1 < selectionEnd.line
-	) {
-		beforeSelection = "";
-		selectedText = `${lineContent} `;
-		afterSelection = "";
-	} else if (lineNumber - 1 === selectionEnd.line) {
-		beforeSelection = "";
-		selectedText = lineContent.substring(0, selectionEnd.character);
-		afterSelection = lineContent.substring(selectionEnd.character);
-		if (!isLastLine) {
-			afterSelection += " ";
-		}
-	} else {
-		beforeSelection = lineContent;
-		selectedText = "";
-		afterSelection = "";
-	}
-}
-
-$: if (lineElement) {
+$: if (isSelected) {
+	selectionTop = `${5 + (lineNumber - 1) * 19}px`;
+	selectionLeft = `${65 + measureTextWidth("a") * selectionStart}px`;
+	selectionRight = `${
+		-6 + wrapperWidth - measureTextWidth("a") * selectionEnd
+	}px`;
+	selectionBottom = `${wrapperHeight - (lineNumber - 1) * 19 - 4}px`;
 	registerLineRef(lineNumber, lineElement);
 }
+
+const applyHighlighting = (text: string) => {
+	return highlightSyntax(text);
+};
+
+$: highlightedContent = applyHighlighting(lineContent);
 </script>
 
-<div class="line" bind:this={lineElement} data-line-number={lineNumber}>
-  {#if selectedText === "" && beforeSelection === "" && afterSelection === ""}
-    {#if isSelected}
-      <span class={cursorPosition.line + 1 !== lineNumber ? "selected empty-line-placeholder" : "selected"}><br></span>
-    {:else}
-      <br>
-    {/if}
-  {:else}
-    <span>{beforeSelection}</span>
-    {#if selectedText}
-        <span class="selected">{selectedText}</span>
-    {/if}
-    <span>{afterSelection}</span>
+<div class="line" bind:this={lineElement} data-line-number={lineNumber} class:selected={isSelected} style="--selection-top: {selectionTop}; --selection-right: {selectionRight}; --selection-bottom: {selectionBottom}; --selection-left: {selectionLeft}">
+  {#if lineContent === ""}
+  <span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
+  {:else }
+  {@html highlightedContent}
   {/if}
 </div>

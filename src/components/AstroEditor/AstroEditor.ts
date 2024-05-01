@@ -174,7 +174,7 @@ export const handleMouseMove = (
 	event: MouseEvent,
 	$editor: Editor,
 	$selecting: boolean,
-	$lastMousePosition: { left: number, top: number },
+	$lastMousePosition: { left: number; top: number },
 ) => {
 	event.preventDefault();
 
@@ -195,7 +195,8 @@ const updateCursorHorizontalPosition = (
 	if (cursorLeft === 0) return;
 
 	const cursorPosition = $editor.getCursor().getPosition();
-	const lineContent = $editor.getContent()[cursorPosition.line]?.content ?? "";
+	const lineContent =
+		$editor.getContent()[cursorPosition.line]?.getContent() ?? "";
 	const textUpToCursor = lineContent.substring(0, cursorPosition.character);
 
 	const measuredWidth = measureTextWidth(textUpToCursor);
@@ -209,14 +210,14 @@ const updateCursorVerticalPosition = (add: boolean) => {
 const handleCtrlA = (event: KeyboardEvent, $editor: Editor) => {
 	const totalLines = $editor.getTotalLines();
 	const content = $editor.getContent();
-	const lineLength = content[totalLines - 1].content.length;
+	const lineLength = content[totalLines - 1].getContent().length;
 
 	editor.update((model) => {
 		model.getSelection().selectAll(lineLength, totalLines, content);
 
 		// Place the cursor at the end of the last line
 		const line = $editor.getTotalLines();
-		const character = content[line - 1].content.length;
+		const character = content[line - 1].getContent().length;
 		model.getCursor().moveToEndOfDocument(line, content, character, line);
 
 		return model;
@@ -297,7 +298,7 @@ const handleEnd = (
 		model
 			.getCursor()
 			.moveToEndOfLine(
-				model.getContent()[model.getCursorLine()].content.length,
+				model.getContent()[model.getCursorLine()].getContent().length,
 			);
 
 		// Clear selection
@@ -325,7 +326,7 @@ const handlePageDown = (
 			model
 				.getCursor()
 				.moveToEndOfLine(
-					model.getContent()[model.getCursorLine()].content.length,
+					model.getContent()[model.getCursorLine()].getContent().length,
 				);
 			return model;
 		});

@@ -1,5 +1,6 @@
 import type { Cursor } from "./Cursor";
 import type { Content } from "./Editor";
+import type { Line } from "./Line";
 
 export type SelectionProps = { line: number; character: number };
 export enum SelectionDirection {
@@ -9,7 +10,6 @@ export enum SelectionDirection {
 	Up = "up",
 	Unknown = "unknown",
 }
-
 export class Selection {
 	private selectionStart: SelectionProps;
 	private selectionEnd: SelectionProps;
@@ -66,12 +66,13 @@ export class Selection {
 		};
 	};
 
-	private clearSelectionIfEmpty = (): void => {
+	private clearSelectionIfEmpty = (content: Content): void => {
 		if (
 			this.selectionStart.character === this.selectionEnd.character &&
 			this.selectionStart.line === this.selectionEnd.line
 		) {
 			this.clearSelection();
+			this.updateAllLnes(content);
 		}
 	};
 
@@ -81,7 +82,7 @@ export class Selection {
 			this.selectionStart.line -= 1;
 			this.selectionStart.character += Math.min(
 				diff,
-				content[this.selectionStart.line].content.length,
+				content[this.selectionStart.line].getContent().length,
 			);
 			this.selectionEnd.character -= diff;
 		} else if (this.selectionEnd.character < this.selectionStart.character) {
@@ -103,7 +104,7 @@ export class Selection {
 			this.selectionEnd.line += 1;
 			this.selectionStart.character += Math.min(
 				diff,
-				content[this.selectionStart.line].content.length,
+				content[this.selectionStart.line].getContent().length,
 			);
 			this.selectionEnd.character -= diff;
 		} else if (this.selectionEnd.character < this.selectionStart.character) {
@@ -155,7 +156,8 @@ export class Selection {
 		}
 
 		if (selectionEnd.line > 0) {
-			const previousLineLength = content[selectionEnd.line - 1].content.length;
+			const previousLineLength =
+				content[selectionEnd.line - 1].getContent().length;
 			return { line: selectionEnd.line - 1, character: previousLineLength };
 		}
 
@@ -168,7 +170,7 @@ export class Selection {
 		content: Content,
 	): SelectionProps => {
 		// Contract the selection by moving the start character right
-		const lineLength = content[this.selectionStart.line].content.length;
+		const lineLength = content[this.selectionStart.line].getContent().length;
 		if (this.selectionStart.character < lineLength) {
 			return { ...selectionStart, character: selectionStart.character + 1 };
 		}
@@ -196,7 +198,7 @@ export class Selection {
 				line: selectionStart.line + 1,
 				character: Math.min(
 					cursor.getPosition().characterBasis,
-					content[this.selectionStart.line].content.length,
+					content[this.selectionStart.line].getContent().length,
 				),
 			};
 		}
@@ -204,7 +206,7 @@ export class Selection {
 		// If already at the bottom line, just move the character to the end
 		return {
 			...selectionStart,
-			character: content[this.selectionStart.line].content.length,
+			character: content[this.selectionStart.line].getContent().length,
 		};
 	};
 
@@ -220,7 +222,7 @@ export class Selection {
 				line: selectionEnd.line - 1,
 				character: Math.min(
 					cursor.getPosition().characterBasis,
-					content[this.selectionEnd.line].content.length,
+					content[this.selectionEnd.line].getContent().length,
 				),
 			};
 		}
@@ -289,7 +291,7 @@ export class Selection {
 		}
 
 		if (line > 0) {
-			const previousLineLength = content[line - 1].content.length;
+			const previousLineLength = content[line - 1].getContent().length;
 			return {
 				line: line - 1,
 				character: previousLineLength ? previousLineLength : 0,
@@ -304,7 +306,8 @@ export class Selection {
 		content: Content,
 	): SelectionProps => {
 		const { line, character } = this.selectionEnd;
-		const currentLineLength = content[this.selectionEnd.line].content.length;
+		const currentLineLength =
+			content[this.selectionEnd.line].getContent().length;
 
 		if (this.selectionEnd.character < currentLineLength) {
 			return { line, character: character + 1 };
@@ -328,7 +331,7 @@ export class Selection {
 				line: line - 1,
 				character: Math.min(
 					cursor.getPosition().characterBasis,
-					content[this.selectionStart.line].content.length,
+					content[this.selectionStart.line].getContent().length,
 				),
 			};
 		}
@@ -347,12 +350,15 @@ export class Selection {
 				line: line + 1,
 				character: Math.min(
 					cursor.getPosition().characterBasis,
-					content[this.selectionEnd.line].content.length,
+					content[this.selectionEnd.line].getContent().length,
 				),
 			};
 		}
 
-		return { line, character: content[this.selectionEnd.line].content.length };
+		return {
+			line,
+			character: content[this.selectionEnd.line].getContent().length,
+		};
 	};
 
 	private adjustSelectionBoundary = (
@@ -414,6 +420,54 @@ export class Selection {
 		}
 	};
 
+	private selectAllLines = (content: Content): void => {
+		for (const line of content) {
+			line.selectAll();
+		}
+	};
+
+	private updateAllLnes = (content: Content): void => {
+		for (const line of content) {
+			this.updateLineSelection(line);
+		}
+	};
+
+	public updateLineSelection = (line: Line) => {
+		const lineNumber = line.getLineNumber();
+
+		if (
+			lineNumber === this.selectionStart.line + 1 &&
+			lineNumber === this.selectionEnd.line + 1
+		) {
+			// The line is the only line in the selection
+			line.setSelectionStart(this.selectionStart.character);
+			line.setSelectionEnd(this.selectionEnd.character);
+		} else if (lineNumber === this.selectionStart.line + 1) {
+			// The line is the start line of the selection
+			line.setSelectionStart(this.selectionStart.character);
+			// Select to the end of the line since the selection extends beyond this line
+			line.setSelectionEnd(line.getContent().length);
+		} else if (lineNumber === this.selectionEnd.line + 1) {
+			// The line is the end line of the selection
+			// Start selection from the beginning of the line up to the selectionEnd.character
+			line.setSelectionStart(0);
+			line.setSelectionEnd(this.selectionEnd.character);
+		} else if (
+			lineNumber > this.selectionStart.line + 1 &&
+			lineNumber < this.selectionEnd.line + 1
+		) {
+			// The line is within the selection range but not the start or end line
+			// Select the entire line
+			line.setSelectionStart(0);
+			line.setSelectionEnd(line.getContent().length);
+		}
+		// If the line number does not fall within the selection range, clear
+		else {
+			line.setSelectionStart(-99);
+			line.setSelectionEnd(-99);
+		}
+	};
+
 	public handleSelectionLeft = (cursor: Cursor, content: Content): void => {
 		if (
 			this.direction === SelectionDirection.Left ||
@@ -426,6 +480,8 @@ export class Selection {
 			// Contract selection
 			this.contractSelectionLeft(cursor, content);
 		}
+
+		this.updateAllLnes(content);
 	};
 
 	public handleSelectionRight = (cursor: Cursor, content: Content): void => {
@@ -440,6 +496,8 @@ export class Selection {
 			// Contract selection
 			this.contractSelectionRight(cursor, content);
 		}
+
+		this.updateAllLnes(content);
 	};
 
 	public handleSelectionUp = (cursor: Cursor, content: Content): void => {
@@ -466,6 +524,8 @@ export class Selection {
 			// Contract selection
 			this.contractSelectionDown(cursor, content);
 		}
+
+		this.updateAllLnes(content);
 	};
 
 	public handleSelectionDown = (cursor: Cursor, content: Content): void => {
@@ -495,6 +555,8 @@ export class Selection {
 			this.selectionEnd = end;
 			this.direction = direction;
 		}
+
+		this.updateAllLnes(content);
 	};
 
 	public getSelectionStart = (): SelectionProps => {
@@ -528,7 +590,9 @@ export class Selection {
 		this.selectionStart = { line: 0, character: 0 };
 		this.selectionEnd = { line: totalLines - 1, character: textLength };
 
-		this.content = content.map((line) => line.content).join("\n");
+		this.content = content.map((line) => line.getContent()).join("\n");
+
+		this.selectAllLines(content);
 	};
 
 	public invertSelectionUp = (cursor: Cursor, content: Content): void => {
@@ -601,25 +665,25 @@ export class Selection {
 
 	public contractSelectionLeft = (cursor: Cursor, content: Content): void => {
 		this.contractSelection(cursor, SelectionDirection.Left, content);
-		this.clearSelectionIfEmpty();
+		this.clearSelectionIfEmpty(content);
 		cursor.moveLeft(content);
 	};
 
 	public contractSelectionRight = (cursor: Cursor, content: Content): void => {
 		this.contractSelection(cursor, SelectionDirection.Right, content);
-		this.clearSelectionIfEmpty();
+		this.clearSelectionIfEmpty(content);
 		cursor.moveRight(content);
 	};
 
 	public contractSelectionUp = (cursor: Cursor, content: Content): void => {
 		this.contractSelection(cursor, SelectionDirection.Up, content);
-		this.clearSelectionIfEmpty();
+		this.clearSelectionIfEmpty(content);
 		cursor.moveDown(content, content.length);
 	};
 
 	public contractSelectionDown = (cursor: Cursor, content: Content): void => {
 		this.contractSelection(cursor, SelectionDirection.Down, content);
-		this.clearSelectionIfEmpty();
+		this.clearSelectionIfEmpty(content);
 		cursor.moveUp(content);
 	};
 
@@ -657,24 +721,29 @@ export class Selection {
 		if (start.line === end.line) {
 			// Selection within a single line
 			let line = content[start.line];
-			line.content =
-				line.content.substring(0, start.character) +
-				line.content.substring(end.character);
+			line.setContent(
+				line.getContent().substring(0, start.character) +
+					line.getContent().substring(end.character),
+			);
 		} else {
 			// Selection spans multiple lines
 			// Remove text from the start line up to the start character
-			content[start.line].content = content[start.line].content.substring(
-				0,
-				start.character,
+			content[start.line].setContent(
+				content[start.line].getContent().substring(0, start.character),
 			);
 			// Remove text from the end character to the end of the end line
-			content[end.line].content = content[end.line].content.substring(
-				end.character,
+			content[end.line].setContent(
+				content[end.line].getContent().substring(end.character),
 			);
 			// Remove lines fully within the selection
 			content.splice(start.line + 1, end.line - start.line - 1);
 			// Merge start and end lines if they are not the same
-			content[start.line].content += content[start.line + 1].content;
+			// Merge the content of the current line with the next line
+			let mergedContent =
+				content[start.line].getContent() + content[start.line + 1].getContent();
+			content[start.line].setContent(mergedContent);
+
+			// Remove the next line after merging
 			content.splice(start.line + 1, 1);
 		}
 		// Clear the selection after deleting
@@ -682,6 +751,7 @@ export class Selection {
 
 		// Move cursor to the start of the selection
 		cursor.setPosition(content.length, content, start.character, start.line);
+		this.updateAllLnes(content);
 	};
 
 	public getContent = (): string => {

@@ -66,7 +66,8 @@ export const scrollToCursor = (
 	const cursorPosition = $editor.getCursor().getPosition();
 	const contentUpToCursor = $editor
 		.getContent()
-		[cursorPosition.line].content.substring(0, cursorPosition.character);
+		[cursorPosition.line].getContent()
+		.substring(0, cursorPosition.character);
 	const cursorLeft = measureTextWidth(contentUpToCursor);
 
 	// Visible area calculation

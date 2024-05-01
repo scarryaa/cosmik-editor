@@ -20,7 +20,8 @@ export const calculateCursorHorizontalPosition = (
 	scrollPosition: number,
 ) => {
 	const cursorPosition = $editor.getCursor().getPosition();
-	const lineContent = $editor.getContent()[cursorPosition.line]?.content ?? "";
+	const lineContent =
+		$editor.getContent()[cursorPosition.line]?.getContent() ?? "";
 	const textUpToCursor = lineContent.substring(0, cursorPosition.character);
 
 	return measureTextWidth(textUpToCursor) - scrollPosition + cursorLeft;

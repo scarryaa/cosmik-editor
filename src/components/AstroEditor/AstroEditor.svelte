@@ -31,6 +31,9 @@ import {
 } from "./AstroEditor";
 import "./AstroEditor.scss";
 
+export let editorWidth: number;
+export let editorHeight: number;
+
 let input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
 let linesMap = new Map<number, HTMLDivElement>();
@@ -102,7 +105,7 @@ onMount(() => {
     
 <div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp}>
     {#each $editor.getContentString().split('\n') as line, index}
-        <Line cursorPosition={$editor.getCursor().getPosition()} totalNumberOfLines={$editor.getTotalLines()} selectionStart={$editor.getSelection().getSelectionStart()} selectionEnd={$editor.getSelection().getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperWidth={editorWidth} wrapperHeight={editorHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
     {/each}
 </div>
 <textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, $editor, $astroWrapper, $app, $astroEditor, linesMap.get($editor.getCursorLine() + 1)!, $astroWrapperInner, $cursor)}} class="astro-input"></textarea>

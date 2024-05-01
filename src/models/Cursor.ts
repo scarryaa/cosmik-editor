@@ -24,7 +24,7 @@ export class Cursor {
 			this.position.line = newLine;
 			this.position.character = Math.min(
 				this.position.characterBasis,
-				content[newLine].content.length,
+				content[newLine].getContent().length,
 			);
 		}
 	};
@@ -32,14 +32,14 @@ export class Cursor {
 	moveDown = (content: Content, totalLines: number): void => {
 		// If at the last line, move to the end
 		if (this.isAtLastLine(totalLines)) {
-			this.moveToEndOfLine(content[totalLines - 1].content.length);
+			this.moveToEndOfLine(content[totalLines - 1].getContent().length);
 		} else if (this.position.line < totalLines - 1) {
 			// Try to move to character basis
 			const newLine = this.position.line + 1;
 			this.position.line = newLine;
 			this.position.character = Math.min(
 				this.position.characterBasis,
-				content[newLine].content.length,
+				content[newLine].getContent().length,
 			);
 		}
 	};
@@ -50,16 +50,17 @@ export class Cursor {
 			if (this.position.line > 0) {
 				this.position.line -= 1;
 				// Set character position to the end of the previous line
-				this.position.character = content[this.position.line].content.length;
+				this.position.character =
+					content[this.position.line].getContent().length;
 			}
 			// If on the first line, do nothing
 		} else {
 			// Check for a tab (4 spaces) before the cursor and move left by 4 if found
 			const isTabBeforeCursor =
-				content[this.position.line].content.substring(
-					this.position.character - 4,
-					this.position.character,
-				) === "    ";
+				content[this.position.line]
+					.getContent()
+					.substring(this.position.character - 4, this.position.character) ===
+				"    ";
 			if (isTabBeforeCursor) {
 				this.position.character -= 4;
 			} else {
@@ -72,7 +73,7 @@ export class Cursor {
 	};
 
 	moveRight = (content: Content): void => {
-		const currentLineLength = content[this.position.line].content.length;
+		const currentLineLength = content[this.position.line].getContent().length;
 		if (this.position.character >= currentLineLength) {
 			// Move to the next line if not the last line
 			if (this.position.line < content.length - 1) {
@@ -83,10 +84,10 @@ export class Cursor {
 		} else {
 			// Check for a tab (4 spaces) after the cursor and move right by 4 if found
 			const isTabAfterCursor =
-				content[this.position.line].content.substring(
-					this.position.character,
-					this.position.character + 4,
-				) === "    ";
+				content[this.position.line]
+					.getContent()
+					.substring(this.position.character, this.position.character + 4) ===
+				"    ";
 			if (isTabAfterCursor) {
 				this.position.character += 4;
 			} else {
@@ -151,7 +152,8 @@ export class Cursor {
 				0,
 				Math.min(
 					basis ?? character,
-					content[Math.max(0, Math.min(line, maxLines - 1))].content.length,
+					content[Math.max(0, Math.min(line, maxLines - 1))].getContent()
+						.length,
 				),
 			),
 			line: Math.max(0, Math.min(line, maxLines - 1)),

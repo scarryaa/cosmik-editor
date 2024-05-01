@@ -1,8 +1,9 @@
 import { findNextWordOrSymbol, findPreviousWordOrSymbol } from "../util/text";
 import { Cursor, type CursorPosition } from "./Cursor";
+import { Line } from "./Line";
 import { Selection } from "./Selection";
 
-export type Content = Array<{ number: number; content: string }>;
+export type Content = Line[];
 
 export class Editor {
 	private static EDITOR_DEFAULT_CONTENT = "";
@@ -18,19 +19,15 @@ export class Editor {
 	}
 
 	private parseInitialContent = (content: string): Content => {
-		return content.split("\n").map((lineContent, index) => ({
-			number: index + 1,
-			content: lineContent,
-		}));
+		return content
+			.split("\n")
+			.map((lineContent, index) => new Line(lineContent, index + 1));
 	};
 
 	private resetContent = (): void => {
 		this.content = Array.from(Editor.EDITOR_DEFAULT_CONTENT).map(
 			(line, index) => {
-				return {
-					number: index + 1,
-					content: line,
-				};
+				return new Line(line, index + 1);
 			},
 		);
 	};
@@ -44,7 +41,7 @@ export class Editor {
 	};
 
 	getContentString = (): string => {
-		return this.content.map((line) => line.content).join("\n");
+		return this.content.map((line) => line.getContent()).join("\n");
 	};
 
 	insertCharacter = (char: string): void => {
@@ -61,21 +58,21 @@ export class Editor {
 		// Check if the character being inserted is a newline character
 		if (char === "\n") {
 			// Split the current line at the cursor position
-			const beforeCursor = line.content.substring(0, charIndex);
-			const afterCursor = line.content.substring(charIndex);
+			const beforeCursor = line.getContent().substring(0, charIndex);
+			const afterCursor = line.getContent().substring(charIndex);
 
 			// Update the current line with the content before the cursor
-			line.content = beforeCursor;
+			line.setContent(beforeCursor);
 
 			// Create a new line with the content after the cursor
-			const newLine = { number: lineIndex + 2, content: afterCursor };
+			const newLine = new Line(afterCursor, lineIndex + 2);
 
 			// Insert the new line into the content array
 			this.content.splice(lineIndex + 1, 0, newLine);
 
 			// Update line numbers for all lines following the new line
 			for (let i = lineIndex + 2; i < this.content.length; i++) {
-				this.content[i].number = i + 1;
+				this.content[i].setLineNumber(i + 1);
 			}
 
 			// Move the cursor to the beginning of the new line
@@ -88,14 +85,27 @@ export class Editor {
 		} else {
 			// If not inserting a newline, proceed with normal character insertion
 			let newContent =
-				line.content.substring(0, charIndex) +
+				line.getContent().substring(0, charIndex) +
 				char +
-				line.content.substring(charIndex);
-			line.content = newContent;
+				line.getContent().substring(charIndex);
+			line.setContent(newContent);
 
 			// Move the cursor to the right
 			this.cursor.moveRight(this.content);
 		}
+	};
+
+	isLineSelected = (lineNumber: number): boolean => {
+		// Check if there's an active selection
+		if (!this.selection.isSelection()) {
+			return false;
+		}
+
+		// Get the start and end positions of the selection
+		const { start, end } = this.selection.getSelectionRange();
+
+		// Check if the line number is within the selection range
+		return lineNumber >= start.line && lineNumber <= end.line;
 	};
 
 	deletePreviousWord = (): void => {
@@ -118,9 +128,9 @@ export class Editor {
 			if (currentLineIndex === lastWordLineIndex) {
 				let line = this.content[currentLineIndex];
 				let newContent =
-					line.content.substring(0, lastWordCharIndex) +
-					line.content.substring(currentCharIndex);
-				line.content = newContent;
+					line.getContent().substring(0, lastWordCharIndex) +
+					line.getContent().substring(currentCharIndex);
+				line.setContent(newContent);
 
 				// Move cursor to the start of the deleted word
 				this.cursor.setPosition(
@@ -156,9 +166,9 @@ export class Editor {
 				nextWordCharIndex > currentCharIndex
 			) {
 				let newContent =
-					line.content.substring(0, currentCharIndex) +
-					line.content.substring(nextWordCharIndex);
-				line.content = newContent;
+					line.getContent().substring(0, currentCharIndex) +
+					line.getContent().substring(nextWordCharIndex);
+				line.setContent(newContent);
 			}
 		}
 	};
@@ -168,6 +178,7 @@ export class Editor {
 		const lineIndex = cursorPos.line;
 		const charIndex = cursorPos.character;
 		let line = this.content[lineIndex];
+		let nextLine = this.content[lineIndex + 1];
 
 		// Check for selection and delete
 		if (this.selection.isSelection()) {
@@ -175,29 +186,34 @@ export class Editor {
 		}
 
 		// Attempt to delete a tab forward first
-		const originalContent = line.content;
+		const originalContent = line.getContent();
 		this.deleteTabForward();
 		// If the content has changed, a tab was deleted, and we don't need to do anything further
-		if (line.content !== originalContent) {
+		if (line.getContent() !== originalContent) {
 			return;
 		}
 
 		// If no tab was deleted, proceed with the original forward delete logic
-		if (charIndex < line.content.length) {
+		if (charIndex < line.getContent().length) {
 			// Delete character immediately after the cursor in the current line
 			let newContent =
-				line.content.substring(0, charIndex) +
-				line.content.substring(charIndex + 1);
-			line.content = newContent;
+				line.getContent().substring(0, charIndex) +
+				line.getContent().substring(charIndex + 1);
+			line.setContent(newContent);
 		} else if (lineIndex < this.content.length - 1) {
 			// If at the end of a line, merge this line with the next line
-			let nextLine = this.content[lineIndex + 1];
-			line.content += nextLine.content;
-			this.content.splice(lineIndex + 1, 1); // Remove the next line
+			let currentLineContent = line.getContent();
+			let nextLineContent = nextLine.getContent();
+
+			// Merge the content of the current line with the next line
+			line.setContent(currentLineContent + nextLineContent);
+
+			// Now, you need to remove the next line from the content array
+			this.content.splice(lineIndex + 1, 1);
 
 			// Update line numbers for all lines following the merged line
 			for (let i = lineIndex + 1; i < this.content.length; i++) {
-				this.content[i].number = i + 1;
+				this.content[i].setLineNumber(i + 1);
 			}
 		}
 	};
@@ -210,9 +226,9 @@ export class Editor {
 		let line = this.content[lineIndex];
 
 		// Check for 4 spaces or a tab character at the start of the line
-		if (line.content.startsWith("    ")) {
+		if (line.getContent().startsWith("    ")) {
 			// Delete 4 spaces at the start
-			line.content = line.content.substring(4);
+			line.setContent(line.getContent().substring(4));
 			for (let i = 0; i < 4; i++) {
 				this.cursor.moveLeft(this.content);
 			}
@@ -228,11 +244,12 @@ export class Editor {
 		let line = this.content[lineIndex];
 
 		// Check for 4 spaces before the cursor
-		if (line.content.substring(charIndex - 4, charIndex) === "    ") {
+		if (line.getContent().substring(charIndex - 4, charIndex) === "    ") {
 			// Delete 4 spaces
-			line.content =
-				line.content.substring(0, charIndex - 4) +
-				line.content.substring(charIndex);
+			line.setContent(
+				line.getContent().substring(0, charIndex - 4) +
+					line.getContent().substring(charIndex),
+			);
 			// Move cursor left by 4 for manual tab (4 spaces)
 			for (let i = 0; i < 4; i++) {
 				this.cursor.moveLeft(this.content);
@@ -247,16 +264,18 @@ export class Editor {
 		let line = this.content[lineIndex];
 
 		// Check for 4 spaces or a tab character immediately after the cursor
-		if (line.content.substring(charIndex, charIndex + 4) === "    ") {
+		if (line.getContent().substring(charIndex, charIndex + 4) === "    ") {
 			// Delete 4 spaces
-			line.content =
-				line.content.substring(0, charIndex) +
-				line.content.substring(charIndex + 4);
-		} else if (line.content.charAt(charIndex) === "\t") {
+			line.setContent(
+				line.getContent().substring(0, charIndex) +
+					line.getContent().substring(charIndex + 4),
+			);
+		} else if (line.getContent().charAt(charIndex) === "\t") {
 			// Delete a tab character
-			line.content =
-				line.content.substring(0, charIndex) +
-				line.content.substring(charIndex + 1);
+			line.setContent(
+				line.getContent().substring(0, charIndex) +
+					line.getContent().substring(charIndex + 1),
+			);
 		}
 	};
 
@@ -278,21 +297,22 @@ export class Editor {
 					this.deleteTab();
 					// If no tab was deleted, delete a single character
 					if (this.cursor.getPosition().character === charIndex) {
-						line.content =
-							line.content.substring(0, charIndex - 1) +
-							line.content.substring(charIndex);
+						line.setContent(
+							line.getContent().substring(0, charIndex - 1) +
+								line.getContent().substring(charIndex),
+						);
 						this.cursor.moveLeft(this.content);
 					}
 				} else if (lineIndex > 0) {
 					// Handle line merging for deletion at the beginning of a line
-					let prevLine = this.content[lineIndex - 1];
+					let prevLine = this.content[lineIndex - 1].getContent();
 					let currentLine = this.content[lineIndex];
-					prevLine.content += currentLine.content;
+					prevLine += currentLine.getContent();
 					this.content.splice(lineIndex, 1); // Remove the current line
 					this.cursor.setPosition(
 						this.getTotalLines(),
 						this.content,
-						prevLine.content.length,
+						prevLine.length,
 						lineIndex - 1,
 					);
 				}
@@ -312,7 +332,7 @@ export class Editor {
 
 	cursorIsAtEndOfLine = (): boolean => {
 		return this.cursor.isAtEndofLine(
-			this.content[this.cursor.getPosition().line].content.length,
+			this.content[this.cursor.getPosition().line].getContent().length,
 		);
 	};
 
