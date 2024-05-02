@@ -2,20 +2,26 @@
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 import { onDestroy, onMount } from "svelte";
+    import { contentStore } from "../../stores/content";
 import { sideBarOpen } from "../../stores/sidebar";
-import { openFolder } from "../../util/tauri-events";
+    import { activeTabId } from "../../stores/tabs";
+import { openFolder, saveFile } from "../../util/tauri-events";
 import "./Sidebar.scss";
 
+let _saveFile: any;
 const toggleSidebar = (): void => {
 	sideBarOpen.set(!$sideBarOpen);
 };
 
 onMount(() => {
 	openFolder();
+	// @TODO move somewhere else?
+	_saveFile = saveFile(() => $activeTabId ?? "", () => $contentStore.contents.get($activeTabId ?? "") ?? "")
 });
 
 onDestroy(() => {
 	openFolder();
+	_saveFile();
 });
 </script>
   

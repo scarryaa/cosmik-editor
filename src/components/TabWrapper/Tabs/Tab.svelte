@@ -1,13 +1,18 @@
 <script lang="ts">
-import { onMount } from "svelte";
 import { contentStore } from "../../../stores/content";
 import { editor, showEditor } from "../../../stores/editor";
 import { activeTabId, lastActiveTabs, tabs } from "../../../stores/tabs";
 import "./Tab.scss";
 
+let closeHovered = false;
+
 const closeTab = (id: string) => {
 	lastActiveTabs.update((tabs) => tabs.filter((tabId) => tabId !== id));
 	tabs.update((currentTabs) => currentTabs.filter((tab) => tab.id !== id));
+
+	if ($contentStore.originalContents.get(id) === $contentStore.contents.get(id)) {
+		$contentStore.contentModified.set(id, false);
+	}
 
 	lastActiveTabs.update((tabs) => {
 		if (tabs.length > 0) {
@@ -38,7 +43,7 @@ const setActiveTab = (id: string | null) => {
 			return tabs;
 		});
 
-		const activeContent = $contentStore.get(id);
+		const activeContent = $contentStore.contents.get(id);
 		editor.update((model) => {
 			model.setContent(activeContent ?? "");
 			return model;
@@ -47,7 +52,6 @@ const setActiveTab = (id: string | null) => {
 };
 
 const handleClick = (event: MouseEvent, tabId: string) => {
-	console.log(event.button);
 	// Middle click closes the tab
 	if (event.button === 1) {
 		closeTab(tabId);
@@ -58,8 +62,14 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 </script>
   
 {#each $tabs as tab (tab.id)}
-  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:keypress={() => setActiveTab(tab.id)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
+  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { closeHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { closeHovered = true }} on:keypress={() => setActiveTab(tab.id)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
     <span class="tab-name">{tab.name}</span>
-    <button class="no-button-style" on:click|stopPropagation={() => closeTab(tab.id)}>×</button>
+	{#if $contentStore.contentModified.get(tab.id) && !closeHovered}
+		<div role="img" class="modified-indicator-wrapper">
+			<div class="modified-indicator"></div>
+		</div>
+	{:else}
+		<button class="no-button-style" on:mouseenter|stopPropagation|preventDefault={() => { closeHovered = true }} on:click|stopPropagation|preventDefault={() => closeTab(tab.id)}>×</button>
+	{/if}
   </div>
 {/each}

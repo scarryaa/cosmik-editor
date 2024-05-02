@@ -67,6 +67,7 @@ const handleFileClick = async () => {
 		name: fileName,
 		isActive: true,
 		tooltip: fullPath,
+		contentModified: false,
 	};
 
 	lastActiveTabs.update((tabs) => {
@@ -78,10 +79,12 @@ const handleFileClick = async () => {
 		return tabs;
 	});
 
-	$contentStore.set(newTab.id, await loadFileContents());
+	const contents = await loadFileContents();
+	$contentStore.originalContents.set(newTab.id, contents)
+	$contentStore.contents.set(newTab.id, contents);
 
 	editor.update((model) => {
-		model.setContent($contentStore.get(newTab.id) ?? "");
+		model.setContent($contentStore.contents.get(newTab.id) ?? "");
 		return model;
 	});
 

@@ -1,6 +1,7 @@
 .tabs-wrapper-outer {
   display: flex;
   flex-direction: column;
+  z-index: 99;
   
   .tabs-wrapper {
       height: 30px;
@@ -12,5 +13,6 @@
       -moz-user-select: none;
       -webkit-user-select: none;
       background-color: #9c9c9c;
+      z-index: 99;
     }
 }

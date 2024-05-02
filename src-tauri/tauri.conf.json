@@ -19,7 +19,8 @@
 	"productName": "meteor",
 	"version": "0.0.0",
 	"identifier": "com.tauri.dev",
-	"plugins": {},
+	"plugins": {
+	},
 	"app": {
 		"security": {
 			"csp": null

@@ -4,4 +4,5 @@ export interface Tab {
 	icon?: string;
 	isActive: boolean;
 	tooltip: string;
+	contentModified: boolean;
 }

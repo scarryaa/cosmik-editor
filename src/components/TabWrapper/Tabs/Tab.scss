@@ -11,6 +11,7 @@
     flex-wrap: nowrap;
     min-width: 100px;
     cursor: pointer;
+    z-index: 99;
 
     .tab-name {
         overflow: hidden;
@@ -23,13 +24,34 @@
         background-color: #ffffff;
     }
 
+    .modified-indicator-wrapper {
+        width: 20px;
+        height: 20px;
+        z-index: 0;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background-color: transparent;
+        
+        .modified-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #666666;
+        }
+    }
+
     button {
+        z-index: 9;
+        display: flex;
         align-items: center;
         margin-left: 8px;
         background-color: transparent;
         border: none;
         cursor: pointer;
         border-radius: 4px;
+        width: 20px;
+        height: 20px;
 
         &:hover {
             background-color: rgb(136, 136, 135);

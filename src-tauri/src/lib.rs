@@ -1,5 +1,6 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
+use tauri_plugin_fs::FsExt;
 use std::env;
 use std::fs::{self, DirEntry};
 use std::path::Path;
@@ -81,6 +82,15 @@ fn get_file_contents(path: String) -> Result<String, String> {
     let file_contents = fs::read_to_string(path).map_err(|e| e.to_string())?;
     Ok(file_contents)
 }
+
+#[tauri::command]
+fn expand_scope(app_handle: tauri::AppHandle, folder_path: std::path::PathBuf) -> Result<(), String> {
+  app_handle.fs_scope().allow_directory(folder_path.clone(), true);
+  app_handle.fs_scope().allow_directory(folder_path.join("/.*"), true);
+  app_handle.fs_scope().allow_directory(folder_path.join("/**/.*"), true);
+  Ok(())
+}
+
 // Handlers
 
 fn new_file(app: &AppHandle) -> std::io::Result<()> {
@@ -103,8 +113,9 @@ fn open_folder(app: &AppHandle) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn save_file(app: &AppHandle) -> std::io::Result<()> {
-    Ok(())
+fn save_file_emitter(app: &AppHandle) -> std::io::Result<()> {
+    app.emit("save-file", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "save-file failed"))
 }
 
 fn save_as_file(app: &AppHandle) -> std::io::Result<()> {
@@ -207,10 +218,12 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             get_root_folder_name,
             list_files_in_dir,
-            get_file_contents
+            get_file_contents,
+            expand_scope
         ])
         .setup(move |app| {
             let handle = app.handle();
@@ -371,7 +384,7 @@ pub fn run() {
                 } else if event.id() == "open_folder_menu_item" {
                     open_folder(app).expect("Could not open folder");
                 } else if event.id() == "save_menu_item" {
-                    save_file(app).expect("Could not save file");
+                    save_file_emitter(app).expect("Could not save file");
                 } else if event.id() == "save_as_menu_item" {
                     save_as_file(app).expect("Could not save as file");
                 } else if event.id() == "quit_menu_item" {

@@ -13,7 +13,8 @@
     -o-user-select: none;
     overflow: hidden;
     padding-bottom: var(--status-pane-height);
-    z-index: 98;
+    z-index: 99;
+    background-color: white;
 
     scrollbar, ::-webkit-scrollbar {
         display: none;

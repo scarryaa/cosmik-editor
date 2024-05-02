@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { writeFile } from '@tauri-apps/plugin-fs';
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import {
@@ -64,8 +65,8 @@ export const cut = (
 		await tick();
 		updateCursorVerticalPosition(true);
 		updateCursorHorizontalPosition($editor, $astroEditor);
-		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		scrollToCurrentLine(() => currentLineElement, () => $astroWrapperInner, "down");
+		scrollToCursor($cursor, () => $editor, () => $astroWrapperInner);
 		contentStore.updateContent($activeTabId(), $editor.getContentString());
 	});
 };
@@ -98,3 +99,11 @@ export const openFolder = () => {
 		folder.set((event as any).payload);
 	});
 };
+
+export const saveFile = async ($activeTabId: () => string, content: () => string): Promise<void> => {
+	listen("save-file", async () => {
+		console.log("Saving file");
+		const encoder = new TextEncoder();
+		await writeFile($activeTabId(), encoder.encode(content()));
+	});
+}

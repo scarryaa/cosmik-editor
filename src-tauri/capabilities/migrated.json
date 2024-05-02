@@ -4,6 +4,12 @@
 	"local": true,
 	"windows": ["main"],
 	"permissions": [
+		{
+			"identifier": "fs:write-all"
+		},
+		{
+			"identifier": "fs:allow-write-file"
+		},
 		"path:default",
 		"event:default",
 		"window:default",

@@ -50,7 +50,10 @@ export const handleKeyDown = async (
 	currentLineElement: () => HTMLDivElement,
 	$astroWrapperInner: () => HTMLDivElement,
 	$activeTabId: string,
-	$contentStore: Map<string, string>,
+	$contentStore: {
+		contents: Map<string, string>;
+		contentModified: Map<string, boolean>;
+	},
 	$cursor: () => HTMLDivElement,
 ) => {
 	event.preventDefault();
@@ -662,7 +665,10 @@ const handleBackspace = (
 	$editor: Editor,
 	$astroWrapper: HTMLDivElement,
 	$app: HTMLDivElement,
-	$contentStore: Map<string, string>,
+	$contentStore: {
+		contents: Map<string, string>;
+		contentModified: Map<string, boolean>;
+	},
 	$activeTabId: string,
 	$astroEditor: HTMLDivElement,
 ) => {
@@ -697,7 +703,7 @@ const handleBackspace = (
 		});
 	}
 
-	$contentStore.set($activeTabId, $editor.getContentString());
+	$contentStore.contents.set($activeTabId, $editor.getContentString());
 
 	if (isSelection) {
 		updateCursorVerticalPosition(false);
