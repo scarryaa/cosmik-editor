@@ -28,7 +28,7 @@ onMount(() => {
     editorWrapperOuter.set(wrapperOuter);
 
     sideBarOpen.subscribe(isOpen => {
-        wrapperOuter.style.width = `calc(100% - ${isOpen ? sidebarOpenWidth + sidebarClosedWidth : sidebarClosedWidth }px)`
+        wrapperOuter.style.width = `calc(100% - ${isOpen ? sidebarOpenWidth : sidebarClosedWidth }px)`
     })
 });
 </script>
