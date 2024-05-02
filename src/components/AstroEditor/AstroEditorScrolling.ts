@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
 import { measureTextWidth } from "../../util/text";
@@ -16,12 +17,13 @@ export const scrollToElement = (
 	element.scrollIntoView({ behavior: "auto", block });
 };
 
-export const scrollToCurrentLine = (
+export const scrollToCurrentLine = async (
 	currentLineElement: () => HTMLDivElement,
 	$astroWrapperInner: () => HTMLDivElement,
 	direction: "up" | "down",
 	override?: number,
-): void => {
+): Promise<void> => {
+	await tick();
 	let adjustedCurrentLineElement: HTMLDivElement | null = currentLineElement();
 
 	if (override) {

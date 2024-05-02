@@ -10,7 +10,6 @@ import {
 	astroWrapper,
 	astroWrapperInner,
 	cursor,
-	tabs,
 } from "../../stores/elements";
 import {
 	scrollHorizontalPosition,
@@ -49,8 +48,6 @@ let tabsHeight: number;
 const handleLineRef = (lineNumber: number, element: HTMLDivElement) => {
 	linesMap.set(lineNumber, element);
 };
-
-$: _activeTabId = $activeTabId;
 
 tick().then(() => {
 	// Have to add it here

@@ -1,11 +1,14 @@
 <script lang="ts">
 import { onMount } from "svelte";
+    import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
 import { editor, showEditor } from "../../stores/editor";
 import {
 	astroWrapper,
 	astroWrapperInner,
+	editorWrapperOuter,
 	lineNumbers,
 } from "../../stores/elements";
+    import { sideBarOpen } from "../../stores/sidebar";
 import AstroEditor from "../AstroEditor/AstroEditor.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
 import SidebarInner from "../Sidebar/Inner/SidebarInner.svelte";
@@ -17,10 +20,16 @@ import "./AstroWrapper.scss";
 let editorScroll: number;
 let wrapper: HTMLDivElement;
 let wrapperInner: HTMLDivElement;
+let wrapperOuter: HTMLDivElement;
 
 onMount(() => {
 	astroWrapper.set(wrapper);
 	astroWrapperInner.set(wrapperInner);
+    editorWrapperOuter.set(wrapperOuter);
+
+    sideBarOpen.subscribe(isOpen => {
+        wrapperOuter.style.width = `calc(100% - ${isOpen ? sidebarOpenWidth + sidebarClosedWidth : sidebarClosedWidth }px)`
+    })
 });
 </script>
 
@@ -30,7 +39,7 @@ onMount(() => {
     <div id="astro-wrapper-inner">
         <TabWrapper />
         <!-- @TODO {#if $showEditor} -->
-            <div id="editor-wrapper-outer">
+            <div id="editor-wrapper-outer" bind:this={wrapperOuter}>
                 <LineNumbers lineCount={$editor.getTotalLines()} />
                 <div id="editor-wrapper-inner" bind:this={wrapperInner} on:scroll={() => { $lineNumbers.scrollTop = wrapperInner.scrollTop; editorScroll = wrapperInner.scrollTop; } }>
                     <AstroEditor editorScroll={editorScroll} editorHeight={wrapperInner?.clientHeight} editorWidth={wrapperInner?.clientWidth} />

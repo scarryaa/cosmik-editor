@@ -12,7 +12,6 @@ export const handleMouseSelection = (
 	const line = getLineIndex(event, $editor.getTotalLines());
 
 	editor.update((model) => {
-		const currentSelectionEnd = model.getSelection().getSelectionEnd();
 		const selectionStart = model.getSelection().getSelectionStart();
 
 		// Improved direction determination

@@ -41,16 +41,18 @@ $: if (isSelected) {
 	selectionRight = `${
 		-6 +
 		wrapperWidth -
-		sidebarClosedWidth / 2.5 -
+		sidebarClosedWidth -
 		measureTextWidth("a") * selectionEnd -
 		wrapperLeft +
+		+ 80 +
 		($editor.getTotalLines() === lineNumber ? 110 : 105)
 	}px`;
 	selectionBottom = `${
 		wrapperHeight -
 		(lineNumber - 1) * 19 -
 		4 +
-		(wrapperScroll ?? 0) -
+		(wrapperScroll ?? 0) + 
+		34 -
 		tabsHeight
 	}px`;
 	registerLineRef(lineNumber, lineElement);
