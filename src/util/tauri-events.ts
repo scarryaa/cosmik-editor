@@ -11,6 +11,7 @@ import {
 	scrollToCursor,
 } from "../components/AstroEditor/AstroEditorScrolling";
 import type { Editor } from "../models/Editor";
+import { contentStore } from "../stores/content";
 import { folder } from "../stores/folder";
 import { pasteInternal } from "./util";
 
@@ -39,6 +40,7 @@ export const cut = (
 	editor: Writable<Editor>,
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
+	$activeTabId: () => string,
 ) => {
 	listen("cut", async () => {
 		let cutText: string;
@@ -64,6 +66,7 @@ export const cut = (
 		updateCursorHorizontalPosition($editor, $astroEditor);
 		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		contentStore.updateContent($activeTabId(), $editor.getContentString());
 	});
 };
 
@@ -72,6 +75,7 @@ export const paste = (
 	$astroWrapperInner: HTMLDivElement,
 	editor: Writable<Editor>,
 	$editor: Editor,
+	$activeTabId: () => string,
 	$astroEditor: HTMLDivElement,
 ) =>
 	listen("paste", async () => {
@@ -82,6 +86,11 @@ export const paste = (
 			$editor,
 			$astroEditor,
 		);
+
+		await tick();
+		setTimeout(() => {
+			contentStore.updateContent($activeTabId(), $editor.getContentString());
+		}, 0);
 	});
 
 export const openFolder = () => {

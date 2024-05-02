@@ -1,4 +1,8 @@
 .file-item {
+    &.isRoot {
+        font-weight: 600;
+    }
+
     cursor: pointer;
     align-items: center;
     padding-block: 2px;

@@ -1,3 +1,7 @@
+:root {
+    --sidebar-inner-width: 200px;
+}
+
 .sidebar-inner {
     position: relative;
     width: 0px;
@@ -10,6 +14,7 @@
     border-right: 1px solid white;
 
     &.open {
-        width: 300px;
+        width: var(--sidebar-inner-width);
+        min-width: var(--sidebar-inner-width);
     }
 }

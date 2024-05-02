@@ -1,0 +1,16 @@
+.tabs-wrapper-outer {
+  display: flex;
+  flex-direction: column;
+  
+  .tabs-wrapper {
+      height: 30px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      overflow: hidden;
+      user-select: none;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: #9c9c9c;
+    }
+}

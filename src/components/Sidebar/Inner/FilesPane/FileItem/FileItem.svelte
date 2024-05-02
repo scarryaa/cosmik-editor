@@ -1,7 +1,15 @@
 <script lang="ts">
 import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
-    import { folder } from "../../../../../stores/folder";
+import { contentStore } from "../../../../../stores/content";
+import { editor, showEditor } from "../../../../../stores/editor";
+import { folder } from "../../../../../stores/folder";
+import {
+	activeTabId,
+	lastActiveTabs,
+	openTab,
+} from "../../../../../stores/tabs";
+import type { Tab } from "../../../../TabWrapper/Tabs/types";
 import type { FileItemType } from "../types";
 import "./FileItem.scss";
 
@@ -9,6 +17,7 @@ export let fileName: string;
 export let isFolder: boolean;
 export let indent: number;
 export let fullPath: string;
+export let isRoot = false;
 export let expandedFolders = new Set();
 
 let isOpen = false;
@@ -30,6 +39,14 @@ const loadFolderContents = async (): Promise<FileItemType[]> => {
 	});
 };
 
+const loadFileContents = async (): Promise<string> => {
+	const content = await invoke("get_file_contents", {
+		path: fullPath,
+	});
+
+	return content as string;
+};
+
 const toggleOpen = async (): Promise<void> => {
 	isOpen = !isOpen;
 
@@ -44,6 +61,35 @@ const toggleOpen = async (): Promise<void> => {
 	}
 };
 
+const handleFileClick = async () => {
+	const newTab: Tab = {
+		id: fullPath,
+		name: fileName,
+		isActive: true,
+		tooltip: fullPath,
+	};
+
+	lastActiveTabs.update((tabs) => {
+		const index = tabs.indexOf(newTab.id);
+		if (index !== -1) {
+			tabs.splice(index, 1);
+		}
+		tabs.push(newTab.id);
+		return tabs;
+	});
+
+	$contentStore.set(newTab.id, await loadFileContents());
+
+	editor.update((model) => {
+		model.setContent($contentStore.get(newTab.id) ?? "");
+		return model;
+	});
+
+	showEditor.set(true);
+
+	openTab(newTab);
+};
+
 $: fileClass = "file-icon fa-regular fa-file";
 $: folderClass =
 	isOpen && isFolder
@@ -52,7 +98,7 @@ $: folderClass =
 
 onMount(() => {
 	isOpen = expandedFolders.has(fullPath);
-	
+
 	if (isOpen && isFolder) {
 		loadFolderContents().then((contents) => {
 			folderContents = contents;
@@ -61,12 +107,12 @@ onMount(() => {
 
 	folder.subscribe(async () => {
 		isOpen = false;
-	})
+	});
 });
 </script>
 
 {#if fullPath}
-    <button style="padding-left: {indent}px" class="file-item no-button-style" on:click={toggleOpen}>
+    <button style="padding-left: {indent}px" class="file-item no-button-style" on:click={() => isFolder ? toggleOpen() : handleFileClick()} class:isRoot={isRoot}>
         {#if isFolder}
             <i class={folderClass}></i>
         {:else}

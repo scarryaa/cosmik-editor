@@ -76,6 +76,11 @@ fn list_files_in_dir(path: String) -> Result<Vec<FileItem>, String> {
     entries_results
 }
 
+#[tauri::command]
+fn get_file_contents(path: String) -> Result<String, String> {
+    let file_contents = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    Ok(file_contents)
+}
 // Handlers
 
 fn new_file(app: &AppHandle) -> std::io::Result<()> {
@@ -204,7 +209,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             get_root_folder_name,
-            list_files_in_dir
+            list_files_in_dir,
+            get_file_contents
         ])
         .setup(move |app| {
             let handle = app.handle();

@@ -148,7 +148,6 @@ export const getCharacterIndex = (
 		}
 	}
 
-	// Removed redundant console.log for cleaner code
 	return characterIndex;
 };
 

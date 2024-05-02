@@ -1,12 +1,7 @@
-:root {
-    --line-number-bg-color: #eeeeee;
-}
-
 .line-numbers {
     flex-shrink: 0;
-    width: 50px;
+    width: 30px;
     position: relative;
-    background: var(--line-number-bg-color);
     padding-top: 5px;
     padding-right: 10px;
     font-size: 14px;

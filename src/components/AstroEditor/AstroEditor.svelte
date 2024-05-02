@@ -2,6 +2,7 @@
 import { onDestroy, onMount, tick } from "svelte";
 import { derived } from "svelte/store";
 import { lineHeight } from "../../const/const";
+import { contentStore } from "../../stores/content";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import {
 	app,
@@ -9,14 +10,16 @@ import {
 	astroWrapper,
 	astroWrapperInner,
 	cursor,
+	tabs,
 } from "../../stores/elements";
 import {
 	scrollHorizontalPosition,
 	scrollVerticalPosition,
 } from "../../stores/scroll";
 import { lastMousePosition, selecting } from "../../stores/selection";
-    import { sideBarOpen } from "../../stores/sidebar";
-import { copy, cut, openFolder, paste, selectAll } from "../../util/tauri-events";
+import { sideBarOpen } from "../../stores/sidebar";
+import { activeTabId } from "../../stores/tabs";
+import { copy, cut, paste, selectAll } from "../../util/tauri-events";
 import {
 	calculateCursorHorizontalPosition,
 	calculateCursorVerticalPosition,
@@ -29,7 +32,7 @@ import {
 	handleMouseDown,
 	handleMouseMove,
 	handleMouseUp,
-    updateCursorHorizontalPosition,
+	updateCursorHorizontalPosition,
 } from "./AstroEditor";
 import "./AstroEditor.scss";
 
@@ -41,10 +44,13 @@ let input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
 let linesMap = new Map<number, HTMLDivElement>();
 let wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
+let tabsHeight: number;
 
 const handleLineRef = (lineNumber: number, element: HTMLDivElement) => {
 	linesMap.set(lineNumber, element);
 };
+
+$: _activeTabId = $activeTabId;
 
 tick().then(() => {
 	// Have to add it here
@@ -60,6 +66,7 @@ const cursorVerticalPosition = derived(
 		if ($astroWrapper) {
 			await tick();
 			const verticalPosition = calculateCursorVerticalPosition(
+				tabsHeight,
 				$editor,
 				$scrollVerticalPosition,
 			);
@@ -97,6 +104,8 @@ cursorHorizontalPosition.subscribe(async ($cursorHorizontalPosition) => {
 	cursorHorizPos.set(left);
 });
 
+$: tabsHeight = $astroWrapperInner?.getBoundingClientRect().top;
+
 onMount(async () => {
 	focusEditor(input);
 
@@ -117,9 +126,16 @@ onMount(async () => {
 		editor,
 		$editor,
 		$astroEditor,
+		() => $activeTabId ?? "",
 	);
-	await paste($cursor, $astroWrapperInner, editor, $editor, $astroEditor);
-	openFolder();
+	await paste(
+		$cursor,
+		$astroWrapperInner,
+		editor,
+		$editor,
+		() => $activeTabId ?? "",
+		$astroEditor,
+	);
 
 	sideBarOpen.subscribe(async () => {
 		await tick();
@@ -134,16 +150,30 @@ onDestroy(() => {
 
 	selectAll(editor);
 	copy($editor);
-	cut($cursor, currentLine, $astroWrapperInner, editor, $editor, $astroEditor);
-	paste($cursor, $astroWrapperInner, editor, $editor, $astroEditor);
-	openFolder();
+	cut(
+		$cursor,
+		currentLine,
+		$astroWrapperInner,
+		editor,
+		$editor,
+		$astroEditor,
+		() => $activeTabId ?? "",
+	);
+	paste(
+		$cursor,
+		$astroWrapperInner,
+		editor,
+		$editor,
+		() => $activeTabId ?? "",
+		$astroEditor,
+	);
 });
 </script>
     
 <div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp}>
     {#each $editor.getContentString().split('\n') as line, index}
-        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperLeft={wrapperLeft} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperLeft={wrapperLeft} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} tabsHeight={tabsHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
     {/each}
 </div>
-<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, $editor, $astroWrapper, $app, $astroEditor, linesMap.get($editor.getCursorLine() + 1)!, $astroWrapperInner, $cursor)}} class="astro-input"></textarea>
+<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor)}} class="astro-input"></textarea>
 <Cursor left={$cursorHorizPos} top={$cursorVertPos}/>

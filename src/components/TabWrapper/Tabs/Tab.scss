@@ -1,0 +1,38 @@
+.tab {
+    display: flex;
+    height: 34px;
+    padding: 8px;
+    font-size: 12px;
+    align-items: center;
+    justify-content: space-between;
+    background-color: lightgray;
+    border-inline: 1px solid #e9e9e9;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    min-width: 100px;
+    cursor: pointer;
+
+    .tab-name {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+
+    &.active {
+        background-color: #ffffff;
+    }
+
+    button {
+        align-items: center;
+        margin-left: 8px;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+
+        &:hover {
+            background-color: rgb(136, 136, 135);
+        }
+    }
+}

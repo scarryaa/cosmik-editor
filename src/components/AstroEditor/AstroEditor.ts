@@ -2,9 +2,9 @@ import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
+import { contentStore } from "../../stores/content";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import { lastMousePosition, selecting } from "../../stores/selection";
-import { paste } from "../../util/tauri-events";
 import {
 	getCharacterIndex,
 	getLineIndex,
@@ -43,13 +43,15 @@ export const focusEditor = (input: HTMLTextAreaElement) => {
 export const handleKeyDown = async (
 	event: KeyboardEvent,
 	editor: Writable<Editor>,
-	$editor: Editor,
-	$astroWrapper: HTMLDivElement,
+	$editor: () => Editor,
+	$astroWrapper: () => HTMLDivElement,
 	$app: HTMLDivElement,
-	$astroEditor: HTMLDivElement,
-	currentLineElement: HTMLDivElement,
-	$astroWrapperInner: HTMLDivElement,
-	$cursor: HTMLDivElement,
+	$astroEditor: () => HTMLDivElement,
+	currentLineElement: () => HTMLDivElement,
+	$astroWrapperInner: () => HTMLDivElement,
+	$activeTabId: string,
+	$contentStore: Map<string, string>,
+	$cursor: () => HTMLDivElement,
 ) => {
 	event.preventDefault();
 	let keyHandled = false;
@@ -60,71 +62,79 @@ export const handleKeyDown = async (
 			keyHandled = true;
 
 			updateCursorVerticalPosition(false);
-			updateCursorHorizontalPosition($editor, $astroEditor);
+			updateCursorHorizontalPosition($editor(), $astroEditor());
 		}
 	} else if (event.key === "V" || event.key === "v") {
 		if (event.ctrlKey && event.shiftKey) {
-			console.log("a");
 			keyHandled = true;
 
 			await handleCtrlShiftV(
-				$cursor,
-				$astroWrapperInner,
+				$cursor(),
+				$astroWrapperInner(),
 				editor,
-				$editor,
-				$astroEditor,
+				$editor(),
+				$astroEditor(),
 			);
 		}
 	}
 
 	if (event.key === "Backspace") {
-		handleBackspace(event, editor, $editor, $astroWrapper, $app, $astroEditor);
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		handleBackspace(
+			event,
+			editor,
+			$editor(),
+			$astroWrapper(),
+			$app,
+			$contentStore,
+			$activeTabId,
+			$astroEditor(),
+		);
+		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.code === "Tab") {
 		// For some reason this works with shift but "Tab" does not
 		if (event.shiftKey) {
-			handleShiftTab(event, $editor, $astroEditor);
+			handleShiftTab(event, $editor(), $astroEditor());
 		} else {
-			handleTab(event, $editor, $astroEditor);
+			handleTab(event, $editor(), $astroEditor());
 		}
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key === "Delete") {
-		handleDelete(event, $editor, $astroEditor);
+		handleDelete(event, $editor(), $astroEditor());
 	} else if (event.key === "Home") {
-		handleHome(event, $editor, $astroEditor);
+		handleHome(event, $editor(), $astroEditor());
 	} else if (event.key === "End") {
-		handleEnd(event, $editor, $astroEditor);
+		handleEnd(event, $editor(), $astroEditor());
 	} else if (event.key === "PageUp") {
-		handlePageUp(event, $editor, $astroEditor);
+		handlePageUp(event, $editor(), $astroEditor());
 		await tick();
 		scrollToCurrentLine(
 			currentLineElement,
 			$astroWrapperInner,
 			"up",
-			$editor.getCursorLine() + 1,
+			$editor().getCursorLine() + 1,
 		);
 	} else if (event.key === "PageDown") {
-		handlePageDown(event, $editor, $astroEditor);
+		handlePageDown(event, $editor(), $astroEditor());
 		await tick();
 		scrollToCurrentLine(
 			currentLineElement,
 			$astroWrapperInner,
 			"down",
-			$editor.getCursorLine() + 1,
+			$editor().getCursorLine() + 1,
 		);
 	} else if (event.key === "Enter") {
 		handleEnter(
 			event,
 			editor,
-			$editor,
-			$astroEditor,
-			$astroWrapperInner,
-			currentLineElement,
-			$cursor,
+			$editor(),
+			$astroEditor(),
+			$astroWrapperInner(),
+			currentLineElement(),
+			$cursor(),
 		);
 
 		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (
 		["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(event.key)
 	) {
@@ -135,19 +145,22 @@ export const handleKeyDown = async (
 			currentLineElement,
 			$astroWrapperInner,
 		);
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key.length === 1 && !keyHandled) {
 		handleKey(
 			event,
 			editor,
-			$editor,
-			$astroEditor,
-			$astroEditor,
-			$astroWrapper,
+			$editor(),
+			$astroEditor(),
+			$astroEditor(),
+			$astroWrapper(),
 		);
 
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
+		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	}
+
+	await tick();
+	contentStore.updateContent($activeTabId, $editor().getContentString());
 };
 
 export const handleMouseDown = (
@@ -618,26 +631,26 @@ const handleArrowDown = (
 
 const handleArrowKeys = (
 	event: KeyboardEvent,
-	$editor: Editor,
-	$astroEditor: HTMLDivElement,
-	currentLineElement: HTMLDivElement,
-	$astroWrapperInner: HTMLDivElement,
+	$editor: () => Editor,
+	$astroEditor: () => HTMLDivElement,
+	currentLineElement: () => HTMLDivElement,
+	$astroWrapperInner: () => HTMLDivElement,
 ) => {
 	switch (event.key) {
 		case "ArrowRight":
-			handleArrowRight(event, $editor, $astroEditor);
+			handleArrowRight(event, $editor(), $astroEditor());
 			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 			break;
 		case "ArrowLeft":
-			handleArrowLeft(event, $editor, $astroEditor);
+			handleArrowLeft(event, $editor(), $astroEditor());
 			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "up");
 			break;
 		case "ArrowUp":
-			handleArrowUp(event, $editor, $astroEditor);
+			handleArrowUp(event, $editor(), $astroEditor());
 			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "up");
 			break;
 		case "ArrowDown":
-			handleArrowDown(event, $editor, $astroEditor);
+			handleArrowDown(event, $editor(), $astroEditor());
 			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 			break;
 	}
@@ -649,6 +662,8 @@ const handleBackspace = (
 	$editor: Editor,
 	$astroWrapper: HTMLDivElement,
 	$app: HTMLDivElement,
+	$contentStore: Map<string, string>,
+	$activeTabId: string,
 	$astroEditor: HTMLDivElement,
 ) => {
 	let isSelection = $editor.getSelection().isSelection();
@@ -681,6 +696,8 @@ const handleBackspace = (
 			return model;
 		});
 	}
+
+	$contentStore.set($activeTabId, $editor.getContentString());
 
 	if (isSelection) {
 		updateCursorVerticalPosition(false);

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
-    import { folder } from "../../../../stores/folder";
+import { folder } from "../../../../stores/folder";
 import FileItem from "./FileItem/FileItem.svelte";
 import "./FilesPane.scss";
 import type { FileItemType } from "./types";
@@ -28,9 +28,8 @@ onMount(async () => {
 
 	folder.subscribe(async (value) => {
 		rootFolderName = value;
-	})
-
+	});
 });
 </script>
   
-<FileItem indent={4} fileName={rootFolderName.split("/")[rootFolderName.split("/").length - 1]} isFolder={true} fullPath={rootFolderName} />
+<FileItem isRoot={true} indent={4} fileName={rootFolderName.split("/")[rootFolderName.split("/").length - 1]} isFolder={true} fullPath={rootFolderName} />

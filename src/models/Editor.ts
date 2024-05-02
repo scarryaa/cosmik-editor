@@ -136,6 +136,7 @@ export class Editor {
 
 	setContent = (content: string): void => {
 		this.content = this.parseInitialContent(content);
+		this.convertTabsToSpaces();
 	};
 
 	getContent = (): Content => {
