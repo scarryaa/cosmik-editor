@@ -1,0 +1,52 @@
+.file-item {
+    cursor: pointer;
+    align-items: center;
+    padding-block: 2px;
+    display: flex;
+    line-height: 20px;
+    flex: 1;
+    flex-shrink: 1;
+    width: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+
+    &:hover {
+        background-color: #f0f0f0 !important;
+    }
+
+    .folder-chevron, .file-icon {
+        padding-right: 5px;
+        width: 15px;
+        width: 15px;
+    }
+
+    .file-name {
+        padding-right: 5px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+}
+
+.folder-contents {
+    cursor: pointer;
+    align-items: center;
+    padding-block: 2px;
+    flex-shrink: 1;
+    width: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+}

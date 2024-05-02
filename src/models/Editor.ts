@@ -32,6 +32,28 @@ export class Editor {
 		);
 	};
 
+	private convertTabsToSpaces = (): void => {
+		const tabSize = 4;
+		this.content = this.content.map((line) => {
+			const updatedLineContent = line
+				.getContent()
+				.replace(/\t/g, " ".repeat(tabSize));
+			line.setContent(updatedLineContent);
+			return line;
+		});
+	};
+
+	private convertSpacesToTabs = (content: Content): Content => {
+		const spaceGroup = " ".repeat(4);
+		return content.map((line) => {
+			const updatedLineContent = line
+				.getContent()
+				.replace(new RegExp(spaceGroup, "g"), "\t");
+			line.setContent(updatedLineContent);
+			return line;
+		});
+	};
+
 	private insertTextAtCursor = (text: string): void => {
 		const cursorPos = this.cursor.getPosition();
 		const lineIndex = cursorPos.line;
@@ -78,10 +100,13 @@ export class Editor {
 				lineIndex,
 			);
 		}
+
+		this.convertTabsToSpaces();
 	};
 
 	private copySelection = async (): Promise<string> => {
-		return this.selection.copy(this.content);
+		const toTabs = this.convertSpacesToTabs(this.content);
+		return this.selection.copy(toTabs);
 	};
 
 	private copyCurrentLine = async (): Promise<string> => {

@@ -1,4 +1,5 @@
 <script lang="ts">
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import { onMount } from "svelte";
 import AstroWrapper from "./components/AstroWrapper/AstroWrapper.svelte";
 import { app } from "./stores/elements";

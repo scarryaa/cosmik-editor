@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { readText, writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import {
@@ -11,6 +11,8 @@ import {
 	scrollToCursor,
 } from "../components/AstroEditor/AstroEditorScrolling";
 import type { Editor } from "../models/Editor";
+import { folder } from "../stores/folder";
+import { pasteInternal } from "./util";
 
 export const selectAll = (editor: Writable<Editor>) =>
 	listen("select-all", () => {
@@ -73,19 +75,17 @@ export const paste = (
 	$astroEditor: HTMLDivElement,
 ) =>
 	listen("paste", async () => {
-		const textToPaste = await readText();
-        
-		editor.update((model) => {
-            $editor.paste(textToPaste);
-			return model;
-		});
-        
-		await tick();
-        const newLine = document.querySelector(`[data-line-number="${$editor.getCursor().getPosition().line - 1}"]`) as HTMLDivElement;
-        console.log(newLine);
-		updateCursorHorizontalPosition($editor, $astroEditor);
-		updateCursorVerticalPosition(true);
-		scrollToCursor($cursor, $editor, $astroWrapperInner);
-        console.log(newLine);
-		scrollToCurrentLine(newLine, $astroWrapperInner, "down");
+		await pasteInternal(
+			$cursor,
+			$astroWrapperInner,
+			editor,
+			$editor,
+			$astroEditor,
+		);
 	});
+
+export const openFolder = () => {
+	listen("open-folder", async (event: unknown) => {
+		folder.set((event as any).payload);
+	});
+};

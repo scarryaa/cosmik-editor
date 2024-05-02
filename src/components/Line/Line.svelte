@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { CursorPosition } from "../../models/Cursor";
+    import { editor } from "../../stores/editor";
 import { highlightSyntax } from "../../util/syntax";
 import { measureTextWidth } from "../../util/text";
 import "./Line.scss";
@@ -12,6 +13,7 @@ export let wrapperWidth: number;
 export let wrapperHeight: number;
 export let cursorPosition: CursorPosition;
 export let wrapperScroll: number;
+export let wrapperLeft: number;
 
 export let registerLineRef: (
 	lineNumber: number,
@@ -31,9 +33,9 @@ $: isSelected =
 
 $: if (isSelected) {
 	selectionTop = `${5 + (lineNumber - 1) * 19 - (wrapperScroll ?? 0)}px`;
-	selectionLeft = `${65 + measureTextWidth("a") * selectionStart}px`;
+	selectionLeft = `${wrapperLeft + 5 + measureTextWidth("a") * selectionStart}px`;
 	selectionRight = `${
-		-6 + wrapperWidth - measureTextWidth("a") * selectionEnd
+		-6 + wrapperWidth - measureTextWidth("a") * selectionEnd - wrapperLeft + ($editor.getTotalLines() === lineNumber ? 110 : 105)
 	}px`;
 	selectionBottom = `${
 		wrapperHeight - (lineNumber - 1) * 19 - 4 + (wrapperScroll ?? 0)

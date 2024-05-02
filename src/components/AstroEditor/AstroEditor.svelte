@@ -15,7 +15,8 @@ import {
 	scrollVerticalPosition,
 } from "../../stores/scroll";
 import { lastMousePosition, selecting } from "../../stores/selection";
-import { copy, cut, paste, selectAll } from "../../util/tauri-events";
+    import { sideBarOpen } from "../../stores/sidebar";
+import { copy, cut, openFolder, paste, selectAll } from "../../util/tauri-events";
 import {
 	calculateCursorHorizontalPosition,
 	calculateCursorVerticalPosition,
@@ -28,6 +29,7 @@ import {
 	handleMouseDown,
 	handleMouseMove,
 	handleMouseUp,
+    updateCursorHorizontalPosition,
 } from "./AstroEditor";
 import "./AstroEditor.scss";
 
@@ -38,6 +40,7 @@ export let editorHeight: number;
 let input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
 let linesMap = new Map<number, HTMLDivElement>();
+let wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
 
 const handleLineRef = (lineNumber: number, element: HTMLDivElement) => {
 	linesMap.set(lineNumber, element);
@@ -115,13 +118,14 @@ onMount(async () => {
 		$editor,
 		$astroEditor,
 	);
-	await paste(
-		$cursor,
-		$astroWrapperInner,
-		editor,
-		$editor,
-		$astroEditor,
-	);
+	await paste($cursor, $astroWrapperInner, editor, $editor, $astroEditor);
+	openFolder();
+
+	sideBarOpen.subscribe(async () => {
+		await tick();
+		wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
+		updateCursorHorizontalPosition($editor, $astroEditor);
+	});
 });
 
 onDestroy(() => {
@@ -131,19 +135,14 @@ onDestroy(() => {
 	selectAll(editor);
 	copy($editor);
 	cut($cursor, currentLine, $astroWrapperInner, editor, $editor, $astroEditor);
-	paste(
-		$cursor,
-		$astroWrapperInner,
-		editor,
-		$editor,
-		$astroEditor,
-	);
+	paste($cursor, $astroWrapperInner, editor, $editor, $astroEditor);
+	openFolder();
 });
 </script>
     
 <div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp}>
     {#each $editor.getContentString().split('\n') as line, index}
-        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperLeft={wrapperLeft} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
     {/each}
 </div>
 <textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, $editor, $astroWrapper, $app, $astroEditor, linesMap.get($editor.getCursorLine() + 1)!, $astroWrapperInner, $cursor)}} class="astro-input"></textarea>

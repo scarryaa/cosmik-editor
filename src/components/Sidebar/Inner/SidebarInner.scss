@@ -1,0 +1,15 @@
+.sidebar-inner {
+    position: relative;
+    width: 0px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #dfdfdf;
+    overflow: hidden;
+    overflow-y: scroll;
+    border-right: 1px solid white;
+
+    &.open {
+        width: 300px;
+    }
+}

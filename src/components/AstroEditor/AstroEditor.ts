@@ -4,11 +4,13 @@ import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import { lastMousePosition, selecting } from "../../stores/selection";
+import { paste } from "../../util/tauri-events";
 import {
 	getCharacterIndex,
 	getLineIndex,
 	measureTextWidth,
 } from "../../util/text";
+import { pasteInternal } from "../../util/util";
 import {
 	getNumberOfLinesOnScreen,
 	scrollToCurrentLine,
@@ -59,6 +61,19 @@ export const handleKeyDown = async (
 
 			updateCursorVerticalPosition(false);
 			updateCursorHorizontalPosition($editor, $astroEditor);
+		}
+	} else if (event.key === "V" || event.key === "v") {
+		if (event.ctrlKey && event.shiftKey) {
+			console.log("a");
+			keyHandled = true;
+
+			await handleCtrlShiftV(
+				$cursor,
+				$astroWrapperInner,
+				editor,
+				$editor,
+				$astroEditor,
+			);
 		}
 	}
 
@@ -205,6 +220,22 @@ export const updateCursorVerticalPosition = (add: boolean) => {
 };
 
 // Private
+
+const handleCtrlShiftV = async (
+	$cursor: HTMLDivElement,
+	$astroWrapperInner: HTMLDivElement,
+	editor: Writable<Editor>,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+) => {
+	await pasteInternal(
+		$cursor,
+		$astroWrapperInner,
+		editor,
+		$editor,
+		$astroEditor,
+	);
+};
 
 const handleShiftTab = (
 	event: KeyboardEvent,

@@ -9,3 +9,26 @@ html, body, #app {
 #app {
   overflow: hidden;
 }
+
+.flat-button {
+  background-color: inherit;
+  color: inherit;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: inherit;
+  }
+}
+
+.no-button-style {
+  background-color: inherit;
+  color: inherit;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: inherit;
+  }
+}
