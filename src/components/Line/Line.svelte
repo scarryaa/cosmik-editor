@@ -1,5 +1,7 @@
 <script lang="ts">
-import { sidebarClosedWidth } from "../../const/const";
+    import { onMount } from "svelte";
+    import SelectionHighlight from "../../SelectionHighlight/SelectionHighlight.svelte";
+import { lineNumberPadding, lineNumberPaddingLg, lineNumberWidth, sidebarClosedWidth } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
 import { editor } from "../../stores/editor";
 import { activeTabId, tabs } from "../../stores/tabs";
@@ -27,10 +29,6 @@ export let registerLineRef: (
 ) => void;
 
 let lineElement: HTMLDivElement;
-let selectionTop = "0px";
-let selectionRight = "0px";
-let selectionBottom = "0px";
-let selectionLeft = "0px";
 
 $: isSelected =
 	selectionStart <= selectionEnd ||
@@ -38,29 +36,10 @@ $: isSelected =
 	selectionEnd >= 0;
 
 $: if (isSelected) {
-	selectionTop = `${
-		5 + (lineNumber - 1) * 19 - (wrapperScroll ?? 0) + tabsHeight
-	}px`;
-	selectionLeft = `${wrapperLeft + measureTextWidth("a") * selectionStart}px`;
-	selectionRight = `${
-		-6 +
-		wrapperWidth -
-		sidebarClosedWidth -
-		measureTextWidth("a") * selectionEnd -
-		wrapperLeft +
-		+80 +
-		($editor.getTotalLines() === lineNumber ? 110 : 105)
-	}px`;
-	selectionBottom = `${
-		wrapperHeight -
-		(lineNumber - 1) * 19 -
-		4 +
-		(wrapperScroll ?? 0) +
-		34 -
-		tabsHeight
-	}px`;
 	registerLineRef(lineNumber, lineElement);
 }
+
+$: selectedText = lineContent.substring(selectionStart, selectionEnd);
 
 const applyHighlighting = (extension: ParseType, text: string) => {
 	return parseBasedOnExtension(extension, text);
@@ -77,10 +56,11 @@ $: highlightedContent = applyHighlighting(
 );
 </script>
 
-<div class="line" bind:this={lineElement} data-line-number={lineNumber} class:selected={isSelected} style="--selection-top: {selectionTop}; --selection-right: {selectionRight}; --selection-bottom: {selectionBottom}; --selection-left: {selectionLeft}">
-  {#if lineContent === ""}
-  <span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
-  {:else }
-  {@html highlightedContent}
-  {/if}
+<div class="line" bind:this={lineElement} data-line-number={lineNumber}>
+	{#if lineContent === ""}
+	<span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
+	{:else }
+	<SelectionHighlight selectedText={selectedText} offsetLeft={selectionStart * measureTextWidth("a")}/>
+	{@html highlightedContent}
+	{/if}
 </div>

@@ -1,9 +1,10 @@
 import { highlightCss } from "./css";
 import { highlightHtmlSyntax } from "./html";
 import { highlightJson } from "./json";
+import { highlightSvelte } from "./svelte";
 import { highlightTypescript } from "./typescript";
 
-export type ParseType = "ts" | "html" | "css" | "scss" | "json";
+export type ParseType = "ts" | "html" | "css" | "scss" | "json" | "svelte";
 
 export const escapeHtml = (unsafe: string): string => {
 	return unsafe
@@ -27,7 +28,10 @@ export const parseBasedOnExtension = (
             return highlightCss(content);
         case "json":
             return highlightJson(content);
+        case "svelte":{
+            return highlightSvelte(content);
+        }
         default:
-            return escapeHtml(content);
+            return content;
 	}
 };

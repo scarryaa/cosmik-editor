@@ -5,3 +5,6 @@ export const scrollVertOffset = lineHeight * 3;
 export const scrollHorizOffset = lineHeight * 2;
 export const sidebarOpenWidth = 200;
 export const sidebarClosedWidth = 50;
+export const lineNumberWidth = 30;
+export const lineNumberPadding = 5;
+export const lineNumberPaddingLg = 10;

@@ -1,0 +1,9 @@
+.highlight {
+    background-color: rgba(0, 120, 215, 0.2);
+    pointer-events: none;
+    max-width: min-content;
+    position: absolute;
+    transform: translateX(var(--selection-left));
+    contain: content;
+    color: transparent;
+  }

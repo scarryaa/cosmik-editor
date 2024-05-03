@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
+    import { lineHeight } from "../../const/const";
 import { lineNumbers } from "../../stores/elements";
 import "./LineNumbers.scss";
 
@@ -8,9 +9,12 @@ let _lineNumbers: HTMLDivElement;
 
 $: if (lineCount > 1000) {
 	_lineNumbers.style.paddingLeft = "10px";
+    
 } else if (_lineNumbers) {
 	_lineNumbers.style.paddingLeft = "5px";
 }
+
+$: if (_lineNumbers) _lineNumbers.style.height = `${lineCount * lineHeight}px`;
 
 onMount(() => {
 	lineNumbers.set(_lineNumbers);

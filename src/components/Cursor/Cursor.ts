@@ -4,14 +4,12 @@ import { measureTextWidth } from "../../util/text";
 import { cursorVertOffset } from "../AstroEditor/AstroEditor";
 
 export const calculateCursorVerticalPosition = (
-	tabsWrapperHeight: number,
 	$editor: Editor,
 	scrollPosition: number,
 ) => {
 	return (
 		lineHeight * $editor.getCursor().getPosition().line -
 		scrollPosition +
-		tabsWrapperHeight +
 		cursorVertOffset
 	);
 };

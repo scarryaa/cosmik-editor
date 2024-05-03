@@ -1,17 +1,8 @@
 .line {
     color: black;
+    position: relative;
 }
 
 .empty-line-placeholder {
     width: 10px;
-}
-
-.line.selected::before {
-    content: '';
-    position: absolute;
-    background-color: rgba(0, 120, 215, 0.2);
-    top: var(--selection-top, 19px);
-    left: var(--selection-left, 65px);
-    right: var(--selection-right, 0);
-    bottom: var(--selection-bottom, -19px);
 }

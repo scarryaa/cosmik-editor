@@ -1,7 +1,7 @@
 .line-numbers {
     flex-shrink: 0;
     width: 30px;
-    position: relative;
+    position: absolute;
     padding-top: 5px;
     padding-right: 10px;
     font-size: 14px;
@@ -11,10 +11,12 @@
     -moz-user-select: none;
     -ms-user-select: none;
     -o-user-select: none;
-    overflow: hidden;
     padding-bottom: var(--status-pane-height);
-    z-index: 99;
+    z-index: 220;
     background-color: white;
+    transform: translate3d(0px, 0px, 0px);
+    contain: strict;
+    left: 0;
 
     scrollbar, ::-webkit-scrollbar {
         display: none;

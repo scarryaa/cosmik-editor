@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onDestroy, onMount, tick } from "svelte";
 import { derived } from "svelte/store";
-import { lineHeight } from "../../const/const";
+import { lineHeight, lineNumberPadding, lineNumberPaddingLg, lineNumberWidth } from "../../const/const";
 import { contentStore } from "../../stores/content";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import {
@@ -19,6 +19,7 @@ import { lastMousePosition, selecting } from "../../stores/selection";
 import { sideBarOpen } from "../../stores/sidebar";
 import { activeTabId } from "../../stores/tabs";
 import { copy, cut, paste, selectAll } from "../../util/tauri-events";
+    import { measureTextWidth } from "../../util/text";
 import {
 	calculateCursorHorizontalPosition,
 	calculateCursorVerticalPosition,
@@ -63,7 +64,6 @@ const cursorVerticalPosition = derived(
 		if ($astroWrapper) {
 			await tick();
 			const verticalPosition = calculateCursorVerticalPosition(
-				tabsHeight,
 				$editor,
 				$scrollVerticalPosition,
 			);
@@ -98,7 +98,7 @@ cursorVerticalPosition.subscribe(async ($cursorVerticalPosition) => {
 
 cursorHorizontalPosition.subscribe(async ($cursorHorizontalPosition) => {
 	const left = await $cursorHorizontalPosition;
-	cursorHorizPos.set(left);
+	cursorHorizPos.set(left + measureTextWidth("a"));
 });
 
 $: tabsHeight = $astroWrapperInner?.getBoundingClientRect().top;
