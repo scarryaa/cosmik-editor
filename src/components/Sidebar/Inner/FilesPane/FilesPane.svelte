@@ -27,11 +27,14 @@ onMount(async () => {
 	});
 
 	folder.subscribe(async (value) => {
-		rootFolderName = value;
-		invoke("expand_scope", { folderPath: value });
-		invoke("expand_scope", { folderPath: `${value}/.gitignore` });
-		invoke("expand_scope", { folderPath: `${value}/*` });
-		invoke("expand_scope", { folderPath: '**/.*' });
+		if (value !== undefined && value !== "") {
+			rootFolderName = value;
+
+			invoke("expand_scope", { folderPath: value });
+			invoke("expand_scope", { folderPath: `${value}/.gitignore` });
+			invoke("expand_scope", { folderPath: `${value}/*` });
+			invoke("expand_scope", { folderPath: "**/.*" });
+		}
 	});
 });
 </script>

@@ -31,6 +31,14 @@ export const pasteInternal = async (
 	) as HTMLDivElement;
 	updateCursorHorizontalPosition($editor, $astroEditor);
 	updateCursorVerticalPosition(true);
-	scrollToCursor($cursor, $editor, $astroWrapperInner);
-	scrollToCurrentLine(newLine, $astroWrapperInner, "down");
+	scrollToCursor(
+		$cursor,
+		() => $editor,
+		() => $astroWrapperInner,
+	);
+	scrollToCurrentLine(
+		() => newLine,
+		() => $astroWrapperInner,
+		"down",
+	);
 };

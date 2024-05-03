@@ -2,9 +2,9 @@
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 import { onDestroy, onMount } from "svelte";
-    import { contentStore } from "../../stores/content";
+import { contentStore } from "../../stores/content";
 import { sideBarOpen } from "../../stores/sidebar";
-    import { activeTabId } from "../../stores/tabs";
+import { activeTabId } from "../../stores/tabs";
 import { openFolder, saveFile } from "../../util/tauri-events";
 import "./Sidebar.scss";
 
@@ -16,7 +16,10 @@ const toggleSidebar = (): void => {
 onMount(() => {
 	openFolder();
 	// @TODO move somewhere else?
-	_saveFile = saveFile(() => $activeTabId ?? "", () => $contentStore.contents.get($activeTabId ?? "") ?? "")
+	_saveFile = saveFile(
+		() => $activeTabId ?? "",
+		() => $contentStore.contents.get($activeTabId ?? "") ?? "",
+	);
 });
 
 onDestroy(() => {

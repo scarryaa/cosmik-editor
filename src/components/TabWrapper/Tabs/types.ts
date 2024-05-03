@@ -5,4 +5,5 @@ export interface Tab {
 	isActive: boolean;
 	tooltip: string;
 	contentModified: boolean;
+	isHovered: boolean;
 }

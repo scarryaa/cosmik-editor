@@ -59,6 +59,8 @@
     cursor: text;
 }
 
+// TypeScript
+
 .keyword {
     color: #0000ff;
 }
@@ -69,4 +71,66 @@
 
 .comment {
     color: #008000;
+}
+
+.second-keyword {
+    color: #7a2594;
+}
+
+.variable-keyword {
+    color: rgb(54, 126, 126);
+}
+
+// HTML
+
+.html-tag {
+    color: blue;
+}
+
+.html-attribute, .html-literal {
+    color: red;
+}
+
+.html-value {
+    color: green;
+}
+
+.html-comment {
+    color: green;
+}
+
+.html-special {
+    color: rgb(73, 73, 73);
+}
+
+// CSS
+
+.css-property {
+    color: blue;
+}
+
+.css-value {
+    color: green;
+}
+
+.css-selector {
+    color: #af6006;
+}
+
+// JSON
+
+.json-key {
+    color: #11686e;
+}
+
+.json-string {
+    color: #9b590d;
+}
+
+.json-number {
+    color: #50b4c5;
+}
+
+.json-boolean {
+    color: blue;
 }

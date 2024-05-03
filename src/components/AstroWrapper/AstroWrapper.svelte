@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
-    import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
+import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
 import { editor, showEditor } from "../../stores/editor";
 import {
 	astroWrapper,
@@ -8,7 +8,7 @@ import {
 	editorWrapperOuter,
 	lineNumbers,
 } from "../../stores/elements";
-    import { sideBarOpen } from "../../stores/sidebar";
+import { sideBarOpen } from "../../stores/sidebar";
 import AstroEditor from "../AstroEditor/AstroEditor.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
 import SidebarInner from "../Sidebar/Inner/SidebarInner.svelte";
@@ -21,22 +21,25 @@ let editorScroll: number;
 let wrapper: HTMLDivElement;
 let wrapperInner: HTMLDivElement;
 let wrapperOuter: HTMLDivElement;
+let _astroWrapperInner: HTMLDivElement;
 
 onMount(() => {
 	astroWrapper.set(wrapper);
 	astroWrapperInner.set(wrapperInner);
-    editorWrapperOuter.set(wrapperOuter);
+	editorWrapperOuter.set(wrapperOuter);
 
-    sideBarOpen.subscribe(isOpen => {
-        wrapperOuter.style.width = `calc(100% - ${isOpen ? sidebarOpenWidth : sidebarClosedWidth }px)`
-    })
+	sideBarOpen.subscribe((isOpen) => {
+		_astroWrapperInner.style.width = `calc(100% - ${
+			isOpen ? sidebarClosedWidth + sidebarOpenWidth : sidebarClosedWidth
+		}px)`;
+	});
 });
 </script>
 
 <div id="astro-wrapper" bind:this={wrapper}>
     <Sidebar />
     <SidebarInner />
-    <div id="astro-wrapper-inner">
+    <div id="astro-wrapper-inner" bind:this={_astroWrapperInner}>
         <TabWrapper />
         <!-- @TODO {#if $showEditor} -->
             <div id="editor-wrapper-outer" bind:this={wrapperOuter}>

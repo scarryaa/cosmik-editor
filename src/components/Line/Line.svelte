@@ -2,7 +2,11 @@
 import { sidebarClosedWidth } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
 import { editor } from "../../stores/editor";
-import { highlightSyntax } from "../../util/syntax";
+import { activeTabId, tabs } from "../../stores/tabs";
+import {
+	type ParseType,
+	parseBasedOnExtension,
+} from "../../syntax-parsers/common";
 import { measureTextWidth } from "../../util/text";
 import "./Line.scss";
 
@@ -44,25 +48,33 @@ $: if (isSelected) {
 		sidebarClosedWidth -
 		measureTextWidth("a") * selectionEnd -
 		wrapperLeft +
-		+ 80 +
+		+80 +
 		($editor.getTotalLines() === lineNumber ? 110 : 105)
 	}px`;
 	selectionBottom = `${
 		wrapperHeight -
 		(lineNumber - 1) * 19 -
 		4 +
-		(wrapperScroll ?? 0) + 
+		(wrapperScroll ?? 0) +
 		34 -
 		tabsHeight
 	}px`;
 	registerLineRef(lineNumber, lineElement);
 }
 
-const applyHighlighting = (text: string) => {
-	return highlightSyntax(text);
+const applyHighlighting = (extension: ParseType, text: string) => {
+	return parseBasedOnExtension(extension, text);
 };
 
-$: highlightedContent = applyHighlighting(lineContent);
+$: highlightedContent = applyHighlighting(
+	($tabs
+		.find((tab) => tab.id === $activeTabId)
+		?.id.split("/")
+		.at(-1)
+		?.split(".")
+		.at(-1) as ParseType) ?? ".ts",
+	lineContent,
+);
 </script>
 
 <div class="line" bind:this={lineElement} data-line-number={lineNumber} class:selected={isSelected} style="--selection-top: {selectionTop}; --selection-right: {selectionRight}; --selection-bottom: {selectionBottom}; --selection-left: {selectionLeft}">

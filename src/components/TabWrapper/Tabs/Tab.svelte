@@ -4,13 +4,13 @@ import { editor, showEditor } from "../../../stores/editor";
 import { activeTabId, lastActiveTabs, tabs } from "../../../stores/tabs";
 import "./Tab.scss";
 
-let closeHovered = false;
-
 const closeTab = (id: string) => {
 	lastActiveTabs.update((tabs) => tabs.filter((tabId) => tabId !== id));
 	tabs.update((currentTabs) => currentTabs.filter((tab) => tab.id !== id));
 
-	if ($contentStore.originalContents.get(id) === $contentStore.contents.get(id)) {
+	if (
+		$contentStore.originalContents.get(id) === $contentStore.contents.get(id)
+	) {
 		$contentStore.contentModified.set(id, false);
 	}
 
@@ -62,14 +62,14 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 </script>
   
 {#each $tabs as tab (tab.id)}
-  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { closeHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { closeHovered = true }} on:keypress={() => setActiveTab(tab.id)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
+  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { tab.isHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:keypress={() => setActiveTab(tab.id)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
     <span class="tab-name">{tab.name}</span>
-	{#if $contentStore.contentModified.get(tab.id) && !closeHovered}
+	{#if $contentStore.contentModified.get(tab.id) && !tab.isHovered}
 		<div role="img" class="modified-indicator-wrapper">
 			<div class="modified-indicator"></div>
 		</div>
 	{:else}
-		<button class="no-button-style" on:mouseenter|stopPropagation|preventDefault={() => { closeHovered = true }} on:click|stopPropagation|preventDefault={() => closeTab(tab.id)}>×</button>
+		<button class="no-button-style" on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:click|stopPropagation|preventDefault={() => closeTab(tab.id)}>×</button>
 	{/if}
   </div>
 {/each}

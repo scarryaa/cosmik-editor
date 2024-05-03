@@ -7,9 +7,9 @@ export let lineCount: number;
 let _lineNumbers: HTMLDivElement;
 
 $: if (lineCount > 1000) {
-    _lineNumbers.style.paddingLeft = "10px";    
+	_lineNumbers.style.paddingLeft = "10px";
 } else if (_lineNumbers) {
-    _lineNumbers.style.paddingLeft = "5px";   
+	_lineNumbers.style.paddingLeft = "5px";
 }
 
 onMount(() => {

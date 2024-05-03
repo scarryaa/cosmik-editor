@@ -1,11 +1,6 @@
-export const escapeHtml = (unsafe: string): string => {
-	return unsafe
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;");
-};
+import { escapeHtml } from "./common";
 
-export const highlightSyntax = (line: string): string => {
+export const highlightTypescript = (line: string): string => {
 	let escapedLine = escapeHtml(line);
 	let placeholdersMap = new Map();
 	let placeholderIndex = 0;
@@ -24,9 +19,22 @@ export const highlightSyntax = (line: string): string => {
 	}
 
 	const keywordsPattern = /\b(function|const|let|if|else)\b/g;
+	const otherKeywords = /\b(export|return|from|import)\b/g;
+	const constPattern = /\bconst\s+(\w+)/g;
+
+    escapedLine = escapedLine.replace(
+        constPattern,
+        "const <span class='variable-keyword'>$1</span>",
+    );
+
 	escapedLine = escapedLine.replace(
 		keywordsPattern,
 		'<span class="keyword">$1</span>',
+	);
+
+	escapedLine = escapedLine.replace(
+		otherKeywords,
+		'<span class="second-keyword">$1</span>',
 	);
 
 	placeholdersMap.forEach((value, key) => {

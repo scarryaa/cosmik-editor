@@ -33,14 +33,17 @@ const createContentStore = (): {
 		subscribe,
 		updateOriginalContent: (id: string, content: string) => {
 			update((state) => {
-                state.originalContents.set(id, content);
-                return { ...state };
-            });
+				state.originalContents.set(id, content);
+				return { ...state };
+			});
 		},
 		updateContent: (id: string, content: string) => {
 			update((state) => {
 				state.contents.set(id, content);
-				state.contentModified.set(id, content !== state.originalContents.get(id));
+				state.contentModified.set(
+					id,
+					content !== state.originalContents.get(id),
+				);
 				return { ...state };
 			});
 		},

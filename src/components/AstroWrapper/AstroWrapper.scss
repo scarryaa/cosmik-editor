@@ -4,11 +4,8 @@
     width: 100vw;
 
     #astro-wrapper-inner {
-        width: 100%;
-
         #editor-wrapper-outer {
             display: flex;
-            width: 100%;
             height: calc(100% - 34px);
 
             #editor-wrapper-inner {

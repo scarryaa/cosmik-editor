@@ -68,6 +68,7 @@ const handleFileClick = async () => {
 		isActive: true,
 		tooltip: fullPath,
 		contentModified: false,
+		isHovered: false,
 	};
 
 	lastActiveTabs.update((tabs) => {
@@ -80,7 +81,7 @@ const handleFileClick = async () => {
 	});
 
 	const contents = await loadFileContents();
-	$contentStore.originalContents.set(newTab.id, contents)
+	$contentStore.originalContents.set(newTab.id, contents);
 	$contentStore.contents.set(newTab.id, contents);
 
 	editor.update((model) => {
