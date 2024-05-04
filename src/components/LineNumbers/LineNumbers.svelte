@@ -19,7 +19,7 @@ $: if (lineCount > 1000) {
 }
 
 $: if (_lineNumbers) _lineNumbers.style.height = `${lineCount * lineHeight}px`;
-
+$: if (_lineNumbers && lineCount > 1000) _lineNumbers.style.paddingLeft = "15px";
 const updateVisibleLines = () => {
 	const containerScrollTop = $astroWrapperInner?.scrollTop;
 	const linesOnScreen = getNumberOfLinesOnScreen();
@@ -44,7 +44,9 @@ onMount(() => {
 	updateVisibleLines();
 
 	activeTabId.subscribe(() => {
-		updateVisibleLines();
+        requestAnimationFrame(() => {
+            updateVisibleLines();
+        })
 	});
 
 	return () => {
@@ -55,7 +57,7 @@ onMount(() => {
   
 <div class="line-numbers" bind:this={_lineNumbers}>
     <!-- Hack to fix lines 0 - X (viewport size) not showing on rapid scrolls -->
-    {#each Array.from({ length: Math.min(lineCount, endLine - startLine) }, (_, i) => i + startLine) as lineNumber}
+    {#each Array.from({ length: Math.min(lineCount + 1, 1 + endLine - startLine) }, (_, i) => i + startLine) as lineNumber}
         {#if lineNumber >= linesOnScreen}
             <div class="line-number" style={`top: ${(lineNumber) * lineHeight}px`}>{lineNumber + 1}</div>
         {/if}

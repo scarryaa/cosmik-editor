@@ -12,7 +12,7 @@
     overflow: hidden;
     overflow-y: scroll;
     border-right: 1px solid white;
-    z-index: 100;
+    z-index: 400;
 
     &.open {
         width: var(--sidebar-inner-width);

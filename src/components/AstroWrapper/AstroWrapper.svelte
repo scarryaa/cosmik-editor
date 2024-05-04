@@ -29,15 +29,6 @@ let wrapperInner: HTMLDivElement;
 let wrapperOuter: HTMLDivElement;
 let _astroWrapperInner: HTMLDivElement;
 
-$: if (wrapperInner)
-	wrapperInner.style.marginLeft = `${
-		lineNumberWidth +
-		5 +
-		($editor.getTotalLines() > 1000
-			? lineNumberPaddingLg + 5
-			: lineNumberPadding)
-	}px`;
-
 onMount(() => {
 	astroWrapper.set(wrapper);
 	astroWrapperInner.set(wrapperInner);
