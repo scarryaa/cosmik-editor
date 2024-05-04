@@ -1,14 +1,8 @@
 <script lang="ts">
-import { onMount } from "svelte";
 import {
     lineHeight,
-	lineNumberPadding,
-	lineNumberPaddingLg,
-	lineNumberWidth,
-	sidebarClosedWidth,
 } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
-import { editor } from "../../stores/editor";
 import { activeTabId, tabs } from "../../stores/tabs";
 import {
 	type ParseType,
@@ -22,12 +16,7 @@ export let lineContent: string;
 export let lineNumber: number;
 export let selectionStart: number;
 export let selectionEnd: number;
-export let wrapperWidth: number;
-export let wrapperHeight: number;
 export let cursorPosition: CursorPosition;
-export let wrapperScroll: number;
-export let wrapperLeft: number;
-export let tabsHeight: number;
 
 export let registerLineRef: (
 	lineNumber: number,

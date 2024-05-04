@@ -37,10 +37,6 @@ import {
 import "./AstroEditor.scss";
 import { getNumberOfLinesOnScreen } from "./AstroEditorScrolling";
 
-export let editorWidth: number;
-export let editorScroll: number;
-export let editorHeight: number;
-
 let visibleStartIndex = 0;
 let visibleEndIndex = 10;
 let input: HTMLTextAreaElement;
@@ -48,6 +44,20 @@ let presentation: HTMLDivElement;
 let linesMap = new Map<number, HTMLDivElement>();
 let wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
 let tabsHeight: number;
+let maxWidth = 0;
+const lines = $editor.getContentString().split("\n");
+
+$: {
+	let longestLine = 0;
+	for (const line of $editor.getContent()) {
+		const lineWidth = line.getContent().length;
+		if (lineWidth > longestLine) {
+			longestLine = lineWidth;
+		}
+	}
+
+	maxWidth = measureTextWidth("a") * longestLine + 50;
+}
 
 const handleLineRef = (lineNumber: number, element: HTMLDivElement) => {
 	linesMap.set(lineNumber, element);
@@ -158,12 +168,12 @@ onMount(async () => {
 	cursorVertPos.subscribe(async () => {
 		await tick();
 		updateLinesOnScreen();
-	})
+	});
 
 	activeTabId.subscribe(async () => {
 		await tick();
 		updateLinesOnScreen();
-	})
+	});
 });
 
 onDestroy(() => {
@@ -192,10 +202,10 @@ onDestroy(() => {
 });
 </script>
     
-<div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp}>
+<div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp} style={`padding-right: ${maxWidth}px`}>
     {#each $editor.getContentString().split('\n').slice(visibleStartIndex, visibleEndIndex) as line, index (index + visibleStartIndex)}
-        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperLeft={wrapperLeft} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} tabsHeight={tabsHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleStartIndex} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleStartIndex} registerLineRef={handleLineRef} />
     {/each}
+	<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor)}} class="astro-input"></textarea>
 </div>
 <Cursor left={(65 + ($editor.getTotalLines() > 1000 ? 10 : 0)) + $cursorHorizPos} top={$cursorVertPos}/>
-<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor)}} class="astro-input"></textarea>

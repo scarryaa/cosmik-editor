@@ -5,7 +5,10 @@
     overflow: hidden;
 
     #astro-wrapper-inner {
+        overflow: hidden;
+
         #editor-wrapper-outer {
+            overflow: hidden;
             position: relative;
             display: flex;
             height: calc(100% - 34px);
@@ -15,7 +18,6 @@
                 height: 100%;
                 width: 100%;
                 display: flex;
-                padding-right: 50px;
             }
         }
     }

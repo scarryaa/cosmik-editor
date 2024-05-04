@@ -108,7 +108,7 @@ onMount(() => {
 });
 </script>
     
-<div class="tabs-wrapper-outer" bind:this={tabsWrapper} style="width: {left}px;">
+<div class="tabs-wrapper-outer" bind:this={tabsWrapper}>
     <ScrollbarThin bind:this={scrollbarThin} {...reactiveProps}>
         <Tab />
     </ScrollbarThin>
