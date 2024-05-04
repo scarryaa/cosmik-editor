@@ -1,7 +1,5 @@
-# Tauri + Svelte + Typescript
+# Meteor
 
-This template should help get you started developing with Tauri, Svelte and TypeScript in Vite.
+A simple, cross-platform text/code editor
 
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+![image](https://github.com/scarryaa/meteor/assets/77030329/cd8eb562-1138-47a6-9392-1a8428aa824e)
