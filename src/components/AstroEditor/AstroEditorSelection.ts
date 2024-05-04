@@ -14,7 +14,6 @@ export const handleMouseSelection = (
 	editor.update((model) => {
 		const selectionStart = model.getSelection().getSelectionStart();
 
-		// Improved direction determination
 		const isSelectingDownwards =
 			line > selectionStart.line ||
 			(line === selectionStart.line && char > selectionStart.character);
@@ -28,9 +27,6 @@ export const handleMouseSelection = (
 		} else if (isSelectingUpwards) {
 			model.getSelection().setSelectionStart({ line, character: char });
 		} else {
-			// This case handles when the mouse moves but stays within the same character cell,
-			// potentially useful for click-and-drag scenarios where the cursor doesn't move.
-			// It's an edge case that might not need handling, but here for completeness.
 		}
 
 		return model;
@@ -40,8 +36,20 @@ export const handleMouseSelection = (
 export const handleSelectionLeft = (): void => {
 	editor.update((model) => {
 		const selection = model.getSelection();
+		const cursorPosition = model.getCursor().getPosition();
 
-		selection.handleSelectionLeft(model.getCursor(), model.getContent());
+		// Check for tab
+		if (
+			model
+				.getContent()
+				[cursorPosition.line].getContent()
+				.substring(cursorPosition.character - 4, cursorPosition.character) ===
+			" ".repeat(4)
+		) {
+			selection.handleSelectionLeft(model.getCursor(), model.getContent(), 4);
+		} else {
+			selection.handleSelectionLeft(model.getCursor(), model.getContent(), 1);
+		}
 
 		// Needed to trigger reactivity
 		setSelectionStartAndEnd(selection);
@@ -52,8 +60,20 @@ export const handleSelectionLeft = (): void => {
 export const handleSelectionRight = (): void => {
 	editor.update((model) => {
 		const selection = model.getSelection();
+		const cursorPosition = model.getCursor().getPosition();
 
-		selection.handleSelectionRight(model.getCursor(), model.getContent());
+		// Check for tab
+		if (
+			model
+				.getContent()
+				[cursorPosition.line].getContent()
+				.substring(cursorPosition.character, cursorPosition.character + 4) ===
+			" ".repeat(4)
+		) {
+			selection.handleSelectionRight(model.getCursor(), model.getContent(), 4);
+		} else {
+			selection.handleSelectionRight(model.getCursor(), model.getContent(), 1);
+		}
 
 		// Needed to trigger reactivity
 		setSelectionStartAndEnd(selection);
@@ -65,7 +85,7 @@ export const handleSelectionUp = (): void => {
 	editor.update((model) => {
 		const selection = model.getSelection();
 
-		selection.handleSelectionUp(model.getCursor(), model.getContent());
+		selection.handleSelectionUp(model.getCursor(), model.getContent(), 1);
 
 		// Needed to trigger reactivity
 		setSelectionStartAndEnd(selection);
@@ -77,7 +97,7 @@ export const handleSelectionDown = (): void => {
 	editor.update((model) => {
 		const selection = model.getSelection();
 
-		selection.handleSelectionDown(model.getCursor(), model.getContent());
+		selection.handleSelectionDown(model.getCursor(), model.getContent(), 1);
 
 		// Needed to trigger reactivity
 		setSelectionStartAndEnd(selection);

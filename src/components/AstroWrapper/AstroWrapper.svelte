@@ -1,9 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import {
-	sidebarClosedWidth,
-	sidebarOpenWidth,
-} from "../../const/const";
+import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
 import { editor } from "../../stores/editor";
 import {
 	astroWrapper,
@@ -48,7 +45,7 @@ onMount(() => {
             <div id="editor-wrapper-outer" bind:this={wrapperOuter}>
                 <LineNumbers lineCount={$editor.getTotalLines()} />
                 <div id="editor-wrapper-inner" bind:this={wrapperInner} on:scroll={() => { $lineNumbers.style.transform = `translateY(${-wrapperInner.scrollTop}px)`} }>
-                    <AstroEditor editorScroll={editorScroll} editorHeight={wrapperInner?.clientHeight} editorWidth={wrapperInner?.clientWidth} />
+                    <AstroEditor />
                 </div> 
             </div>
         <!-- {/if} -->

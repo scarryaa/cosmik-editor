@@ -175,7 +175,11 @@ onMount(async () => {
 		updateLinesOnScreen();
 		
 		const activeTab = $tabs.find(tab => tab.id === $activeTabId);
-		requestAnimationFrame(() => {
+		requestAnimationFrame(async () => {
+			await tick();
+			input.style.top = `${activeTab?.scrollPosition.top ?? 0}px`;
+			input.style.left = `${activeTab?.scrollPosition.left ?? 0}px`;
+			focusEditor(input);
 			$astroWrapperInner.scrollLeft = activeTab?.scrollPosition.left ?? 0;
 			$astroWrapperInner.scrollTop = activeTab?.scrollPosition.top ?? 0;
 		})
@@ -210,7 +214,7 @@ onDestroy(() => {
     
 <div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp} style={`padding-right: ${maxWidth}px`}>
     {#each $editor.getContentString().split('\n').slice(visibleStartIndex, visibleEndIndex) as line, index (index + visibleStartIndex)}
-        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleStartIndex} registerLineRef={handleLineRef} />
+        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getContent()[index + visibleStartIndex].getSelectionStart()} selectionEnd={$editor.getContent()[index + visibleStartIndex].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleStartIndex} registerLineRef={handleLineRef} />
     {/each}
 	<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor)}} class="astro-input"></textarea>
 </div>

@@ -1,6 +1,5 @@
 <script lang="ts">
-import { dirname } from "@tauri-apps/api/path";
-    import { tick } from "svelte";
+import { tick } from "svelte";
 import { contentStore } from "../../../stores/content";
 import { editor, showEditor } from "../../../stores/editor";
 import { astroEditor, astroWrapperInner } from "../../../stores/elements";
@@ -9,7 +8,6 @@ import {
 	updateCursorHorizontalPosition,
 	updateCursorVerticalPosition,
 } from "../../AstroEditor/AstroEditor";
-import { scrollToCurrentLine } from "../../AstroEditor/AstroEditorScrolling";
 import "./Tab.scss";
 
 const closeTab = (id: string) => {
@@ -35,7 +33,6 @@ const closeTab = (id: string) => {
 const setActiveTab = async (id: string | null) => {
 	let scrollDirection = "down";
 	const currentTab = $tabs.find(tab => tab.id === $activeTabId);
-	if (!currentTab) return;
 
 	activeTabId.set(id);
 
@@ -57,7 +54,9 @@ const setActiveTab = async (id: string | null) => {
 
 		const tab = $tabs.find((tab) => tab.id === id);
 		if (!tab) return;
-		scrollDirection = tab.cursorPosition.line > currentTab.cursorPosition.line ? "down" : "up";
+		if (currentTab) {
+			scrollDirection = tab.cursorPosition.line > currentTab.cursorPosition.line ? "down" : "up";
+		}
 
 		const activeContent = $contentStore.contents.get(id);
 		editor.update((model) => {
@@ -81,6 +80,7 @@ const setActiveTab = async (id: string | null) => {
 			updateCursorHorizontalPosition($editor, $astroEditor);
 			updateCursorVerticalPosition(scrollDirection === "down");
 		})
+
 	}
 };
 

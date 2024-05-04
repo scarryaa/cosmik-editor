@@ -3,6 +3,7 @@ import {
     lineHeight,
 } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
+    import { editor } from "../../stores/editor";
 import { activeTabId, tabs } from "../../stores/tabs";
 import {
 	type ParseType,
@@ -34,8 +35,6 @@ $: if (isSelected) {
 	registerLineRef(lineNumber, lineElement);
 }
 
-$: selectedText = lineContent.substring(selectionStart, selectionEnd);
-
 const applyHighlighting = (extension: ParseType, text: string) => {
 	return parseBasedOnExtension(extension, text);
 };
@@ -49,11 +48,13 @@ $: highlightedContent = applyHighlighting(
 		.at(-1) as ParseType) ?? ".ts",
 	lineContent,
 );
+
+$: selectedText = $editor.getContent()[lineNumber - 1]?.getContent().substring(selectionStart, selectionEnd);
 </script>
 
 <div class="line" bind:this={lineElement} data-line-number={lineNumber} style={`top: ${(lineNumber - 1) * lineHeight}px`}>
 	{#if lineContent === ""}
-		<span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
+	<span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
 	{:else}
 		{#if selectedText}
 			<SelectionHighlight selectedText={selectedText} offsetLeft={selectionStart * measureTextWidth("a")}/>

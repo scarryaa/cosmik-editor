@@ -3,14 +3,18 @@ import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
 import { contentStore } from "../../../../../stores/content";
 import { editor, showEditor } from "../../../../../stores/editor";
-    import { astroEditor } from "../../../../../stores/elements";
+import { astroEditor, astroWrapperInner } from "../../../../../stores/elements";
 import { folder } from "../../../../../stores/folder";
 import {
 	activeTabId,
 	lastActiveTabs,
 	openTab,
+	tabs,
 } from "../../../../../stores/tabs";
-    import { updateCursorHorizontalPosition, updateCursorVerticalPosition } from "../../../../AstroEditor/AstroEditor";
+import {
+	updateCursorHorizontalPosition,
+	updateCursorVerticalPosition,
+} from "../../../../AstroEditor/AstroEditor";
 import type { Tab } from "../../../../TabWrapper/Tabs/types";
 import type { FileItemType } from "../types";
 import "./FileItem.scss";
@@ -87,8 +91,17 @@ const handleFileClick = async () => {
 		return tabs;
 	});
 
-	const contents = await loadFileContents();
-	$contentStore.originalContents.set(newTab.id, contents);
+	let contents = "";
+	let originalContents: string;
+	originalContents = await loadFileContents();
+
+	if ($contentStore.contents.get(newTab.id)) {
+		contents = $contentStore.contents.get(newTab.id) ?? "";
+	} else {
+		contents = originalContents;
+	}
+
+	$contentStore.originalContents.set(newTab.id, originalContents);
 	$contentStore.contents.set(newTab.id, contents);
 
 	editor.update((model) => {
@@ -105,6 +118,17 @@ const handleFileClick = async () => {
 		return model;
 	});
 
+	const currentTab = $tabs.find((tab) => tab.id === $activeTabId);
+	if (currentTab) {
+		// Update cursor position
+		currentTab.cursorPosition = $editor.getCursor().getPosition();
+		// Save the current scroll position
+		currentTab.scrollPosition = {
+			left: $astroWrapperInner.scrollLeft,
+			top: $astroWrapperInner.scrollTop,
+		};
+	}
+
 	updateCursorVerticalPosition(false);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 
@@ -118,6 +142,10 @@ $: folderClass =
 	isOpen && isFolder
 		? "folder-chevron fa-regular fa-chevron-down"
 		: "folder-chevron fa-regular fa-chevron-right";
+$: fileModified = $contentStore.contentModified.get(fullPath);
+$: folderModified = folderContents?.some((content) =>
+	$contentStore.contentModified.get(`${fullPath}/${content.name}`),
+);
 
 onMount(() => {
 	isOpen = expandedFolders.has(fullPath);
@@ -135,13 +163,14 @@ onMount(() => {
 </script>
 
 {#if fullPath}
-    <button style="padding-left: {indent}px" class="file-item no-button-style" on:click={() => isFolder ? toggleOpen() : handleFileClick()} class:isRoot={isRoot}>
+    <button style="padding-left: {indent}px" class="file-item no-button-style" on:click={() => isFolder ? toggleOpen() : handleFileClick()} class:isRoot={isRoot} class:modified={fileModified} class:folder={isFolder} class:folder-modified={folderModified}>
         {#if isFolder}
             <i class={folderClass}></i>
         {:else}
             <i class={fileClass}></i>
         {/if}
         <span class="file-name">{fileName}</span>
+		<span class="file-flag"></span>
     </button>
 {/if}
 
