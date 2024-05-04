@@ -157,11 +157,7 @@ onMount(() => {
 		}
 	};
 
-	tabs.subscribe(async (tabs) => {
-		await scrollToActiveTab();
-	});
-
-	activeTabId?.subscribe(async () => {
+	activeTabId?.subscribe(async (value) => {
 		scrollToActiveTab();
 	});
 

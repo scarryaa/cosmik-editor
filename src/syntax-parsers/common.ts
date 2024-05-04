@@ -22,16 +22,16 @@ export const parseBasedOnExtension = (
 			return highlightTypescript(content);
 		case "html":
 			return highlightHtmlSyntax(content);
-        case "css":
-            return highlightCss(content);
-        case "scss":
-            return highlightCss(content);
-        case "json":
-            return highlightJson(content);
-        case "svelte":{
-            return highlightSvelte(content);
-        }
-        default:
-            return content;
+		case "css":
+			return highlightCss(content);
+		case "scss":
+			return highlightCss(content);
+		case "json":
+			return highlightJson(content);
+		case "svelte": {
+			return highlightSvelte(content);
+		}
+		default:
+			return escapeHtml(content);
 	}
 };

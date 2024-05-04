@@ -1,7 +1,12 @@
 <script lang="ts">
 import { onDestroy, onMount, tick } from "svelte";
 import { derived } from "svelte/store";
-import { lineHeight, lineNumberPadding, lineNumberPaddingLg, lineNumberWidth } from "../../const/const";
+import {
+	lineHeight,
+	lineNumberPadding,
+	lineNumberPaddingLg,
+	lineNumberWidth,
+} from "../../const/const";
 import { contentStore } from "../../stores/content";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import {
@@ -19,7 +24,7 @@ import { lastMousePosition, selecting } from "../../stores/selection";
 import { sideBarOpen } from "../../stores/sidebar";
 import { activeTabId } from "../../stores/tabs";
 import { copy, cut, paste, selectAll } from "../../util/tauri-events";
-    import { measureTextWidth } from "../../util/text";
+import { measureTextWidth } from "../../util/text";
 import {
 	calculateCursorHorizontalPosition,
 	calculateCursorVerticalPosition,

@@ -1,7 +1,12 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import SelectionHighlight from "../../SelectionHighlight/SelectionHighlight.svelte";
-import { lineNumberPadding, lineNumberPaddingLg, lineNumberWidth, sidebarClosedWidth } from "../../const/const";
+import { onMount } from "svelte";
+import SelectionHighlight from "../../SelectionHighlight/SelectionHighlight.svelte";
+import {
+	lineNumberPadding,
+	lineNumberPaddingLg,
+	lineNumberWidth,
+	sidebarClosedWidth,
+} from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
 import { editor } from "../../stores/editor";
 import { activeTabId, tabs } from "../../stores/tabs";
@@ -58,9 +63,11 @@ $: highlightedContent = applyHighlighting(
 
 <div class="line" bind:this={lineElement} data-line-number={lineNumber}>
 	{#if lineContent === ""}
-	<span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
-	{:else }
-	<SelectionHighlight selectedText={selectedText} offsetLeft={selectionStart * measureTextWidth("a")}/>
-	{@html highlightedContent}
+		<span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
+	{:else}
+		{#if selectedText}
+			<SelectionHighlight selectedText={selectedText} offsetLeft={selectionStart * measureTextWidth("a")}/>
+		{/if}
+		{@html highlightedContent}
 	{/if}
 </div>

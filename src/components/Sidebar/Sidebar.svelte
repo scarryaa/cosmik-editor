@@ -3,8 +3,9 @@ import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 import { onDestroy, onMount } from "svelte";
 import { contentStore } from "../../stores/content";
+import { editor } from "../../stores/editor";
 import { sideBarOpen } from "../../stores/sidebar";
-import { activeTabId } from "../../stores/tabs";
+import { activeTabId, tabs } from "../../stores/tabs";
 import { openFolder, saveFile } from "../../util/tauri-events";
 import "./Sidebar.scss";
 
@@ -19,6 +20,7 @@ onMount(() => {
 	_saveFile = saveFile(
 		() => $activeTabId ?? "",
 		() => $contentStore.contents.get($activeTabId ?? "") ?? "",
+		$editor,
 	);
 });
 

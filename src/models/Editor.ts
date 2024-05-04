@@ -421,14 +421,19 @@ export class Editor {
 					}
 				} else if (lineIndex > 0) {
 					// Handle line merging for deletion at the beginning of a line
-					let prevLine = this.content[lineIndex - 1].getContent();
-					let currentLine = this.content[lineIndex];
-					prevLine += currentLine.getContent();
-					this.content.splice(lineIndex, 1); // Remove the current line
+					let prevLineContent = this.content[lineIndex - 1].getContent();
+					let currentLineContent = this.content[lineIndex].getContent();
+					// Merge the content of the previous line with the current line
+					this.content[lineIndex - 1].setContent(
+						prevLineContent + currentLineContent,
+					);
+					// Remove the current line
+					this.content.splice(lineIndex, 1);
+					// Update the cursor position to the end of the previous line (now merged)
 					this.cursor.setPosition(
 						this.getTotalLines(),
 						this.content,
-						prevLine.length,
+						prevLineContent.length,
 						lineIndex - 1,
 					);
 				}

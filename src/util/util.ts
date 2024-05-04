@@ -9,6 +9,7 @@ import {
 	scrollToCurrentLine,
 	scrollToCursor,
 } from "../components/AstroEditor/AstroEditorScrolling";
+import { lineHeight } from "../const/const";
 import type { Editor } from "../models/Editor";
 
 export const pasteInternal = async (

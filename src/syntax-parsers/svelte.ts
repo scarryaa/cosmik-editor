@@ -21,14 +21,14 @@ export const highlightSvelte = (input: string): string => {
 		});
 	}
 
-    const keywordsPattern = /\b(function|const|let|if|else)\b/g;
+	const keywordsPattern = /\b(function|const|let|if|else)\b/g;
 	const otherKeywords = /\b(export|return|from|import)\b/g;
 	const constPattern = /\bconst\s+(\w+)/g;
 
-    escapedInput = escapedInput.replace(
-        constPattern,
-        "const <span class='variable-keyword'>$1</span>",
-    );
+	escapedInput = escapedInput.replace(
+		constPattern,
+		"const <span class='variable-keyword'>$1</span>",
+	);
 
 	escapedInput = escapedInput.replace(
 		keywordsPattern,

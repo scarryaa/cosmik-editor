@@ -98,7 +98,7 @@ export const scrollToCursor = (
 };
 
 export const getDocumentHeight = (): number => {
-	return document.documentElement.scrollHeight;
+	return document.documentElement.clientHeight;
 };
 
 export const getNumberOfLinesOnScreen = (): number => {

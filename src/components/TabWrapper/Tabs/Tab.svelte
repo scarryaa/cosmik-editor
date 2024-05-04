@@ -68,7 +68,7 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 		<div role="img" class="modified-indicator-wrapper">
 			<div class="modified-indicator"></div>
 		</div>
-	{:else}
+	{:else if (tab.isHovered)}
 		<button class="no-button-style" on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:click|stopPropagation|preventDefault={() => closeTab(tab.id)}>×</button>
 	{/if}
   </div>

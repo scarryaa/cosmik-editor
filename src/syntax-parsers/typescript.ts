@@ -22,10 +22,10 @@ export const highlightTypescript = (line: string): string => {
 	const otherKeywords = /\b(export|return|from|import)\b/g;
 	const constPattern = /\bconst\s+(\w+)/g;
 
-    escapedLine = escapedLine.replace(
-        constPattern,
-        "const <span class='variable-keyword'>$1</span>",
-    );
+	escapedLine = escapedLine.replace(
+		constPattern,
+		"const <span class='variable-keyword'>$1</span>",
+	);
 
 	escapedLine = escapedLine.replace(
 		keywordsPattern,

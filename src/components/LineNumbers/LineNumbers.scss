@@ -3,7 +3,6 @@
     width: 30px;
     position: absolute;
     padding-top: 5px;
-    padding-right: 10px;
     font-size: 14px;
     text-align: right;
     user-select: none;
@@ -12,11 +11,11 @@
     -ms-user-select: none;
     -o-user-select: none;
     padding-bottom: var(--status-pane-height);
-    z-index: 220;
+    z-index: -1;
     background-color: white;
     transform: translate3d(0px, 0px, 0px);
-    contain: strict;
-    left: 0;
+    left: 0px;
+    position: absolute;
 
     scrollbar, ::-webkit-scrollbar {
         display: none;
@@ -24,5 +23,13 @@
 
     >* {
         min-height: 19px;
+    }
+
+    .line-number {
+        background-color: white;
+        position: absolute;
+        width: 100%;
+        transform: translate3d(0px, 6px, 0px);
+        height: 19px;
     }
 }

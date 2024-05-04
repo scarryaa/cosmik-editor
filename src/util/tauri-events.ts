@@ -13,7 +13,9 @@ import {
 } from "../components/AstroEditor/AstroEditorScrolling";
 import type { Editor } from "../models/Editor";
 import { contentStore } from "../stores/content";
+import { editor } from "../stores/editor";
 import { folder } from "../stores/folder";
+import { tabs } from "../stores/tabs";
 import { pasteInternal } from "./util";
 
 export const selectAll = (editor: Writable<Editor>) =>
@@ -111,9 +113,16 @@ export const openFolder = () => {
 export const saveFile = async (
 	$activeTabId: () => string,
 	content: () => string,
+	$editor: Editor,
 ): Promise<void> => {
 	listen("save-file", async () => {
 		const encoder = new TextEncoder();
 		await writeFile($activeTabId(), encoder.encode(content()));
+
+		contentStore.resetModifiedFlag($activeTabId());
+		contentStore.updateOriginalContent(
+			$activeTabId(),
+			$editor.getContentString(),
+		);
 	});
 };

@@ -1,6 +1,12 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import { lineNumberPadding, lineNumberPaddingLg, lineNumberWidth, sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
+import {
+	lineNumberPadding,
+	lineNumberPaddingLg,
+	lineNumberWidth,
+	sidebarClosedWidth,
+	sidebarOpenWidth,
+} from "../../const/const";
 import { editor, showEditor } from "../../stores/editor";
 import {
 	astroWrapper,
@@ -23,7 +29,14 @@ let wrapperInner: HTMLDivElement;
 let wrapperOuter: HTMLDivElement;
 let _astroWrapperInner: HTMLDivElement;
 
-$: if (wrapperInner) wrapperInner.style.marginLeft = `${lineNumberWidth + 5 + ($editor.getTotalLines() > 1000 ? lineNumberPaddingLg : lineNumberPadding)}px`;
+$: if (wrapperInner)
+	wrapperInner.style.marginLeft = `${
+		lineNumberWidth +
+		5 +
+		($editor.getTotalLines() > 1000
+			? lineNumberPaddingLg + 5
+			: lineNumberPadding)
+	}px`;
 
 onMount(() => {
 	astroWrapper.set(wrapper);
@@ -46,7 +59,7 @@ onMount(() => {
         <!-- @TODO {#if $showEditor} -->
             <div id="editor-wrapper-outer" bind:this={wrapperOuter}>
                 <LineNumbers lineCount={$editor.getTotalLines()} />
-                <div id="editor-wrapper-inner" bind:this={wrapperInner} on:scroll={() => { $lineNumbers.style.top = -wrapperInner.scrollTop.toString() + "px"; } }>
+                <div id="editor-wrapper-inner" bind:this={wrapperInner} on:scroll={() => { $lineNumbers.style.transform = `translateY(${-wrapperInner.scrollTop}px)`} }>
                     <AstroEditor editorScroll={editorScroll} editorHeight={wrapperInner?.clientHeight} editorWidth={wrapperInner?.clientWidth} />
                 </div> 
             </div>
