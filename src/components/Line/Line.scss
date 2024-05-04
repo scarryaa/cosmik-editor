@@ -1,6 +1,7 @@
 .line {
     color: black;
-    position: relative;
+    position: absolute;
+    transform: translate3d(0px, 6px, 0px);
 }
 
 .empty-line-placeholder {

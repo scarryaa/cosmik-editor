@@ -1,5 +1,5 @@
 <script>
-import { measureTextWidth } from "../util/text";
+import { measureTextWidth } from "../../util/text";
 import "./SelectionHighlight.scss";
 
 export let selectedText = "";

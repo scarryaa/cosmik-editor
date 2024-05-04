@@ -1,12 +1,7 @@
 <script lang="ts">
 import { onDestroy, onMount, tick } from "svelte";
 import { derived } from "svelte/store";
-import {
-	lineHeight,
-	lineNumberPadding,
-	lineNumberPaddingLg,
-	lineNumberWidth,
-} from "../../const/const";
+import { lineHeight } from "../../const/const";
 import { contentStore } from "../../stores/content";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import {
@@ -40,11 +35,14 @@ import {
 	updateCursorHorizontalPosition,
 } from "./AstroEditor";
 import "./AstroEditor.scss";
+import { getNumberOfLinesOnScreen } from "./AstroEditorScrolling";
 
 export let editorWidth: number;
 export let editorScroll: number;
 export let editorHeight: number;
 
+let visibleStartIndex = 0;
+let visibleEndIndex = 10;
 let input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
 let linesMap = new Map<number, HTMLDivElement>();
@@ -60,6 +58,7 @@ tick().then(() => {
 	$astroWrapperInner.addEventListener("scroll", (event) => {
 		scrollVerticalPosition.set($astroWrapperInner.scrollTop);
 		scrollHorizontalPosition.set($astroWrapperInner.scrollLeft);
+		updateLinesOnScreen();
 	});
 });
 
@@ -95,6 +94,17 @@ const cursorHorizontalPosition = derived(
 		return 0;
 	},
 );
+
+const updateLinesOnScreen = (): void => {
+	const scrollTop = $astroWrapperInner?.scrollTop;
+	const linesOnScreen = getNumberOfLinesOnScreen();
+	visibleStartIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - 1);
+	visibleEndIndex = visibleStartIndex + linesOnScreen;
+
+	// Adjust for total lines to avoid rendering non-existent lines
+	visibleEndIndex = Math.min(visibleEndIndex + 1, $editor.getTotalLines());
+	presentation.style.height = `${$editor.getTotalLines() * lineHeight}px`;
+};
 
 cursorVerticalPosition.subscribe(async ($cursorVerticalPosition) => {
 	const top = await $cursorVerticalPosition;
@@ -144,6 +154,16 @@ onMount(async () => {
 		wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
 		updateCursorHorizontalPosition($editor, $astroEditor);
 	});
+
+	cursorVertPos.subscribe(async () => {
+		await tick();
+		updateLinesOnScreen();
+	})
+
+	activeTabId.subscribe(async () => {
+		await tick();
+		updateLinesOnScreen();
+	})
 });
 
 onDestroy(() => {
@@ -173,9 +193,9 @@ onDestroy(() => {
 </script>
     
 <div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp}>
-    {#each $editor.getContentString().split('\n') as line, index}
-        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperLeft={wrapperLeft} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} tabsHeight={tabsHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1} registerLineRef={handleLineRef} />
+    {#each $editor.getContentString().split('\n').slice(visibleStartIndex, visibleEndIndex) as line, index (index + visibleStartIndex)}
+        <Line cursorPosition={$editor.getCursor().getPosition()} wrapperLeft={wrapperLeft} wrapperScroll={editorScroll} wrapperWidth={editorWidth} wrapperHeight={editorHeight} tabsHeight={tabsHeight} selectionStart={$editor.getContent()[index].getSelectionStart()} selectionEnd={$editor.getContent()[index].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleStartIndex} registerLineRef={handleLineRef} />
     {/each}
 </div>
+<Cursor left={(65 + ($editor.getTotalLines() > 1000 ? 10 : 0)) + $cursorHorizPos} top={$cursorVertPos}/>
 <textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor)}} class="astro-input"></textarea>
-<Cursor left={$cursorHorizPos} top={$cursorVertPos}/>

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import SelectionHighlight from "../../SelectionHighlight/SelectionHighlight.svelte";
 import {
+    lineHeight,
 	lineNumberPadding,
 	lineNumberPaddingLg,
 	lineNumberWidth,
@@ -15,6 +15,7 @@ import {
 	parseBasedOnExtension,
 } from "../../syntax-parsers/common";
 import { measureTextWidth } from "../../util/text";
+import SelectionHighlight from "../SelectionHighlight/SelectionHighlight.svelte";
 import "./Line.scss";
 
 export let lineContent: string;
@@ -61,7 +62,7 @@ $: highlightedContent = applyHighlighting(
 );
 </script>
 
-<div class="line" bind:this={lineElement} data-line-number={lineNumber}>
+<div class="line" bind:this={lineElement} data-line-number={lineNumber} style={`top: ${(lineNumber - 1) * lineHeight}px`}>
 	{#if lineContent === ""}
 		<span class={cursorPosition.line + 1 !== lineNumber ? "empty-line-placeholder" : ""}><br></span>
 	{:else}

@@ -1,13 +1,10 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import {
-	lineNumberPadding,
-	lineNumberPaddingLg,
-	lineNumberWidth,
 	sidebarClosedWidth,
 	sidebarOpenWidth,
 } from "../../const/const";
-import { editor, showEditor } from "../../stores/editor";
+import { editor } from "../../stores/editor";
 import {
 	astroWrapper,
 	astroWrapperInner,
