@@ -1,4 +1,5 @@
 import type { CursorPosition } from "../../../models/Cursor";
+import type { EditorState } from "../../../models/Editor";
 
 export interface Tab {
 	id: string;
@@ -10,4 +11,6 @@ export interface Tab {
 	isHovered: boolean;
 	cursorPosition: CursorPosition;
 	scrollPosition: { left: number, top: number };
+	undoStack: EditorState[];
+	redoStack: EditorState[];
 }

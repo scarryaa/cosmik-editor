@@ -80,6 +80,8 @@ const handleFileClick = async () => {
 		isHovered: false,
 		cursorPosition: { character: 0, characterBasis: 0, line: 0 },
 		scrollPosition: { left: 0, top: 0 },
+		redoStack: [],
+		undoStack: [],
 	};
 
 	lastActiveTabs.update((tabs) => {
@@ -115,6 +117,8 @@ const handleFileClick = async () => {
 				newTab.cursorPosition.line,
 				newTab.cursorPosition.characterBasis,
 			);
+		model.setRedoStack(newTab.redoStack);
+		model.setUndoStack(newTab.undoStack);
 		return model;
 	});
 

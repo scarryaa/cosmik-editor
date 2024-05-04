@@ -12,10 +12,12 @@ import {
 	scrollToCursor,
 } from "../components/AstroEditor/AstroEditorScrolling";
 import type { Editor } from "../models/Editor";
-import { contentStore } from "../stores/content";
-import { editor } from "../stores/editor";
+import {
+	type ContentStore,
+	type WritableContentStore,
+	contentStore,
+} from "../stores/content";
 import { folder } from "../stores/folder";
-import { tabs } from "../stores/tabs";
 import { pasteInternal } from "./util";
 
 export const selectAll = (editor: Writable<Editor>) =>
@@ -29,6 +31,72 @@ export const selectAll = (editor: Writable<Editor>) =>
 			return model;
 		});
 	});
+
+export const undo = (
+	$cursor: HTMLDivElement,
+	editor: Writable<Editor>,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+	currentLineElement: HTMLDivElement,
+	$astroWrapperInner: HTMLDivElement,
+	$contentStore: WritableContentStore,
+	$activeTabId: () => string,
+) => {
+	listen("undo", () => {
+		editor.update((model) => {
+			model.undo();
+			return model;
+		});
+
+		$contentStore.updateContent($activeTabId(), $editor.getContentString());
+
+		updateCursorVerticalPosition(true);
+		updateCursorHorizontalPosition($editor, $astroEditor);
+		scrollToCurrentLine(
+			() => currentLineElement,
+			() => $astroWrapperInner,
+			"down",
+		);
+		scrollToCursor(
+			$cursor,
+			() => $editor,
+			() => $astroWrapperInner,
+		);
+	});
+};
+
+export const redo = (
+	$cursor: HTMLDivElement,
+	editor: Writable<Editor>,
+	$editor: Editor,
+	$astroEditor: HTMLDivElement,
+	currentLineElement: HTMLDivElement,
+	$astroWrapperInner: HTMLDivElement,
+	$contentStore: WritableContentStore,
+	$activeTabId: () => string,
+) => {
+	listen("redo", () => {
+		editor.update((model) => {
+			model.redo();
+			return model;
+		});
+
+		$contentStore.updateContent($activeTabId(), $editor.getContentString());
+
+		updateCursorVerticalPosition(true);
+		updateCursorHorizontalPosition($editor, $astroEditor);
+		scrollToCurrentLine(
+			() => currentLineElement,
+			() => $astroWrapperInner,
+			"down",
+		);
+		scrollToCursor(
+			$cursor,
+			() => $editor,
+			() => $astroWrapperInner,
+		);
+	});
+};
 
 export const copy = ($editor: Editor) =>
 	listen("copy", async () => {

@@ -11,7 +11,7 @@ export type ContentStore = {
 	contentModified: Map<string, boolean>;
 };
 
-const createContentStore = (): {
+export type WritableContentStore = {
 	subscribe: (
 		this: void,
 		run: Subscriber<ContentStore>,
@@ -22,7 +22,9 @@ const createContentStore = (): {
 	removeContent: (id: string) => void;
 	clearAll: () => void;
 	resetModifiedFlag: (id: string) => void;
-} => {
+}
+
+const createContentStore = (): WritableContentStore => {
 	const { subscribe, update } = writable<ContentStore>({
 		originalContents: new Map<string, string>(),
 		contents: new Map<string, string>(),

@@ -57,6 +57,15 @@ export const handleKeyDown = async (
 	$cursor: () => HTMLDivElement,
 ) => {
 	event.preventDefault();
+
+    // Ignore Ctrl, Ctrl + Shift, Ctrl + Z, Ctrl + Shift + Z
+    if (event.key === "Control" || 
+        (event.ctrlKey && event.key === "Shift") || 
+        (event.ctrlKey && event.key === "z") || 
+        (event.ctrlKey && event.shiftKey && event.key === "Z")) {
+        return;
+    }
+
 	let keyHandled = false;
 
 	// Ctrl combos
@@ -70,6 +79,7 @@ export const handleKeyDown = async (
 	} else if (event.key === "V" || event.key === "v") {
 		if (event.ctrlKey && event.shiftKey) {
 			keyHandled = true;
+			captureStateForUndo();
 
 			await handleCtrlShiftV(
 				$cursor(),
@@ -82,6 +92,8 @@ export const handleKeyDown = async (
 	}
 
 	if (event.key === "Backspace") {
+		captureStateForUndo();
+		
 		handleBackspace(
 			event,
 			editor,
@@ -94,6 +106,8 @@ export const handleKeyDown = async (
 		);
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.code === "Tab") {
+		captureStateForUndo();
+
 		// For some reason this works with shift but "Tab" does not
 		if (event.shiftKey) {
 			handleShiftTab(event, $editor(), $astroEditor());
@@ -102,6 +116,7 @@ export const handleKeyDown = async (
 		}
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key === "Delete") {
+		captureStateForUndo();
 		handleDelete(event, $editor(), $astroEditor());
 	} else if (event.key === "Home") {
 		handleHome(event, $editor(), $astroEditor());
@@ -126,6 +141,8 @@ export const handleKeyDown = async (
 			$editor().getCursorLine() + 1,
 		);
 	} else if (event.key === "Enter") {
+		captureStateForUndo();
+		
 		handleEnter(
 			event,
 			editor,
@@ -150,6 +167,8 @@ export const handleKeyDown = async (
 		);
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key.length === 1 && !keyHandled) {
+		captureStateForUndo();
+		
 		handleKey(
 			event,
 			editor,
@@ -236,6 +255,13 @@ export const updateCursorVerticalPosition = (add: boolean) => {
 };
 
 // Private
+
+const captureStateForUndo = () => {
+	editor.update((model) => {
+		model.captureStateForUndo();
+		return model;
+	});
+}
 
 const handleCtrlShiftV = async (
 	$cursor: HTMLDivElement,

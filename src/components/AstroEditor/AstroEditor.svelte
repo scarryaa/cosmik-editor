@@ -18,7 +18,14 @@ import {
 import { lastMousePosition, selecting } from "../../stores/selection";
 import { sideBarOpen } from "../../stores/sidebar";
 import { activeTabId, tabs } from "../../stores/tabs";
-import { copy, cut, paste, selectAll } from "../../util/tauri-events";
+import {
+	copy,
+	cut,
+	paste,
+	redo,
+	selectAll,
+	undo,
+} from "../../util/tauri-events";
 import { measureTextWidth } from "../../util/text";
 import {
 	calculateCursorHorizontalPosition,
@@ -158,6 +165,26 @@ onMount(async () => {
 		() => $activeTabId ?? "",
 		$astroEditor,
 	);
+	await undo(
+		$cursor,
+		editor,
+		$editor,
+		$astroEditor,
+		currentLine,
+		$astroWrapperInner,
+		contentStore,
+		() => $activeTabId ?? "",
+	);
+	await redo(
+		$cursor,
+		editor,
+		$editor,
+		$astroEditor,
+		currentLine,
+		$astroWrapperInner,
+		contentStore,
+		() => $activeTabId ?? "",
+	);
 
 	sideBarOpen.subscribe(async () => {
 		await tick();
@@ -173,8 +200,8 @@ onMount(async () => {
 	activeTabId.subscribe(async () => {
 		await tick();
 		updateLinesOnScreen();
-		
-		const activeTab = $tabs.find(tab => tab.id === $activeTabId);
+
+		const activeTab = $tabs.find((tab) => tab.id === $activeTabId);
 		requestAnimationFrame(async () => {
 			await tick();
 			input.style.top = `${activeTab?.scrollPosition.top ?? 0}px`;
@@ -182,7 +209,7 @@ onMount(async () => {
 			focusEditor(input);
 			$astroWrapperInner.scrollLeft = activeTab?.scrollPosition.left ?? 0;
 			$astroWrapperInner.scrollTop = activeTab?.scrollPosition.top ?? 0;
-		})
+		});
 	});
 });
 

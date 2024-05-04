@@ -128,11 +128,13 @@ fn quit(app: &AppHandle) -> std::io::Result<()> {
 }
 
 fn undo(app: &AppHandle) -> std::io::Result<()> {
-    Ok(())
+    app.emit("undo", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "undo failed"))
 }
 
 fn redo(app: &AppHandle) -> std::io::Result<()> {
-    Ok(())
+    app.emit("redo", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "redo failed"))
 }
 
 fn cut(app: &AppHandle) -> std::io::Result<()> {

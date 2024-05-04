@@ -32,7 +32,7 @@ const closeTab = (id: string) => {
 
 const setActiveTab = async (id: string | null) => {
 	let scrollDirection = "down";
-	const currentTab = $tabs.find(tab => tab.id === $activeTabId);
+	const currentTab = $tabs.find((tab) => tab.id === $activeTabId);
 
 	activeTabId.set(id);
 
@@ -55,7 +55,10 @@ const setActiveTab = async (id: string | null) => {
 		const tab = $tabs.find((tab) => tab.id === id);
 		if (!tab) return;
 		if (currentTab) {
-			scrollDirection = tab.cursorPosition.line > currentTab.cursorPosition.line ? "down" : "up";
+			scrollDirection =
+				tab.cursorPosition.line > currentTab.cursorPosition.line
+					? "down"
+					: "up";
 		}
 
 		const activeContent = $contentStore.contents.get(id);
@@ -70,6 +73,8 @@ const setActiveTab = async (id: string | null) => {
 					tab.cursorPosition.line,
 					tab.cursorPosition.characterBasis,
 				);
+			model.setRedoStack(tab.redoStack);
+			model.setUndoStack(tab.undoStack);
 
 			return model;
 		});
@@ -79,8 +84,7 @@ const setActiveTab = async (id: string | null) => {
 		requestAnimationFrame(() => {
 			updateCursorHorizontalPosition($editor, $astroEditor);
 			updateCursorVerticalPosition(scrollDirection === "down");
-		})
-
+		});
 	}
 };
 
@@ -95,9 +99,14 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 		// Update cursor position
 		currentTab.cursorPosition = $editor.getCursor().getPosition();
 		// Save the current scroll position
-		currentTab.scrollPosition = { left: $astroWrapperInner.scrollLeft, top: $astroWrapperInner.scrollTop };
+		currentTab.scrollPosition = {
+			left: $astroWrapperInner.scrollLeft,
+			top: $astroWrapperInner.scrollTop,
+		};
+		// Update undo and redo stacks
+		currentTab.undoStack = $editor.getUndoStack();
+		currentTab.redoStack = $editor.getRedoStack();
 		setActiveTab(tabId);
-
 	}
 };
 </script>

@@ -4,6 +4,11 @@ import { Line } from "./Line";
 import { Selection } from "./Selection";
 
 export type Content = Line[];
+export interface EditorState {
+	content: Content;
+	cursor: Cursor;
+	selection: Selection;
+}
 
 export class Editor {
 	private static EDITOR_DEFAULT_CONTENT = "";
@@ -11,6 +16,8 @@ export class Editor {
 	private content: Content;
 	private cursor: Cursor;
 	private selection: Selection;
+	private undoStack: EditorState[] = [];
+	private redoStack: EditorState[] = [];
 
 	constructor() {
 		this.cursor = new Cursor();
@@ -129,6 +136,82 @@ export class Editor {
 			console.error("Failed to paste content: ", err);
 		}
 	};
+
+	private createSnapshot(): EditorState {
+		const contentCopy = this.content.map(
+			(line) => new Line(line.getContent(), line.getLineNumber()),
+		);
+		const cursorCopy = new Cursor(
+			this.cursor.getPosition().line,
+			this.cursor.getPosition().character,
+			this.cursor.getPosition().characterBasis,
+		);
+		const selectionCopy = new Selection(
+			this.selection.getSelectionStart(),
+			this.selection.getSelectionEnd(),
+			this.selection.getContent(),
+		);
+
+		return {
+			content: contentCopy,
+			cursor: cursorCopy,
+			selection: selectionCopy,
+		};
+	}
+
+	private applySnapshot(state: EditorState) {
+		this.cursor = state.cursor;
+		this.content = state.content;
+		this.selection = state.selection;
+	}
+
+	private clearRedoStack() {
+		this.redoStack = [];
+	}
+
+	captureStateForUndo() {
+		const currentState = this.createSnapshot();
+		this.undoStack.push(currentState);
+		this.clearRedoStack();
+	}
+
+	undo() {
+		if (this.undoStack.length > 0) {
+			const stateToRevertTo = this.undoStack.pop();
+			if (!stateToRevertTo) return;
+
+			// Save current state for redo
+			this.redoStack.push(this.createSnapshot());
+			this.applySnapshot(stateToRevertTo);
+		}
+	}
+
+	redo() {
+		if (this.redoStack.length > 0) {
+			const stateToReapply = this.redoStack.pop();
+			if (!stateToReapply) return;
+
+			// Save current state for undo
+			this.undoStack.push(this.createSnapshot());
+			this.applySnapshot(stateToReapply);
+		}
+	}
+
+	setRedoStack = (stack: EditorState[]): void => {
+		this.redoStack = stack;
+	}
+
+	setUndoStack = (stack: EditorState[]): void => {
+		this.undoStack = stack;
+	}
+
+	getRedoStack = (): EditorState[] => {
+		return this.redoStack;
+	}
+
+	getUndoStack = (): EditorState[] => {
+		return this.undoStack;
+	}
 
 	clearCurrentLine = (): void => {
 		this.content[this.cursor.getPosition().line].clearLine();
