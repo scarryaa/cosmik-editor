@@ -18,10 +18,12 @@ export const scrollToElement = (
 };
 
 export const scrollToCurrentLine = async (
-	currentLineElement: () => HTMLDivElement,
+	currentLineElement: () => HTMLDivElement | null,
 	$astroWrapperInner: () => HTMLDivElement,
 	direction: "up" | "down",
 	override?: number,
+	attempt = 1, // Add an attempt parameter to keep track of retries
+	maxAttempts = 5, // Maximum number of attempts before giving up
 ): Promise<void> => {
 	await tick();
 	let adjustedCurrentLineElement: HTMLDivElement | null = currentLineElement();
@@ -32,7 +34,22 @@ export const scrollToCurrentLine = async (
 		);
 	}
 
-	if (!adjustedCurrentLineElement) return;
+	// Retry mechanism if the element is not found and we haven't reached max attempts
+	if (!adjustedCurrentLineElement && attempt <= maxAttempts) {
+		setTimeout(() => {
+			scrollToCurrentLine(
+				currentLineElement,
+				$astroWrapperInner,
+				direction,
+				override,
+				attempt + 1,
+				maxAttempts,
+			);
+		}, 100); // Retry after 100ms
+		return;
+	}
+
+	if (!adjustedCurrentLineElement) return; // Give up after reaching max attempts
 
 	const elementTop = adjustedCurrentLineElement.offsetTop;
 	const visibleTop = $astroWrapperInner().scrollTop;

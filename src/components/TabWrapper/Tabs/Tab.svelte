@@ -1,7 +1,15 @@
 <script lang="ts">
+import { dirname } from "@tauri-apps/api/path";
+    import { tick } from "svelte";
 import { contentStore } from "../../../stores/content";
 import { editor, showEditor } from "../../../stores/editor";
+import { astroEditor, astroWrapperInner } from "../../../stores/elements";
 import { activeTabId, lastActiveTabs, tabs } from "../../../stores/tabs";
+import {
+	updateCursorHorizontalPosition,
+	updateCursorVerticalPosition,
+} from "../../AstroEditor/AstroEditor";
+import { scrollToCurrentLine } from "../../AstroEditor/AstroEditorScrolling";
 import "./Tab.scss";
 
 const closeTab = (id: string) => {
@@ -24,7 +32,11 @@ const closeTab = (id: string) => {
 	});
 };
 
-const setActiveTab = (id: string | null) => {
+const setActiveTab = async (id: string | null) => {
+	let scrollDirection = "down";
+	const currentTab = $tabs.find(tab => tab.id === $activeTabId);
+	if (!currentTab) return;
+
 	activeTabId.set(id);
 
 	if (id == null) {
@@ -43,11 +55,32 @@ const setActiveTab = (id: string | null) => {
 			return tabs;
 		});
 
+		const tab = $tabs.find((tab) => tab.id === id);
+		if (!tab) return;
+		scrollDirection = tab.cursorPosition.line > currentTab.cursorPosition.line ? "down" : "up";
+
 		const activeContent = $contentStore.contents.get(id);
 		editor.update((model) => {
 			model.setContent(activeContent ?? "");
+			model
+				.getCursor()
+				.setPosition(
+					model.getTotalLines(),
+					model.getContent(),
+					tab.cursorPosition.character,
+					tab.cursorPosition.line,
+					tab.cursorPosition.characterBasis,
+				);
+
 			return model;
 		});
+
+		await tick();
+
+		requestAnimationFrame(() => {
+			updateCursorHorizontalPosition($editor, $astroEditor);
+			updateCursorVerticalPosition(scrollDirection === "down");
+		})
 	}
 };
 
@@ -56,7 +89,15 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 	if (event.button === 1) {
 		closeTab(tabId);
 	} else {
+		const currentTab = $tabs.find((tab) => tab.id === $activeTabId);
+		if (!currentTab) return;
+
+		// Update cursor position
+		currentTab.cursorPosition = $editor.getCursor().getPosition();
+		// Save the current scroll position
+		currentTab.scrollPosition = { left: $astroWrapperInner.scrollLeft, top: $astroWrapperInner.scrollTop };
 		setActiveTab(tabId);
+
 	}
 };
 </script>

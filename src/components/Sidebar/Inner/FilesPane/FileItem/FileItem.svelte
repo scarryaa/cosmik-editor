@@ -3,12 +3,14 @@ import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
 import { contentStore } from "../../../../../stores/content";
 import { editor, showEditor } from "../../../../../stores/editor";
+    import { astroEditor } from "../../../../../stores/elements";
 import { folder } from "../../../../../stores/folder";
 import {
 	activeTabId,
 	lastActiveTabs,
 	openTab,
 } from "../../../../../stores/tabs";
+    import { updateCursorHorizontalPosition, updateCursorVerticalPosition } from "../../../../AstroEditor/AstroEditor";
 import type { Tab } from "../../../../TabWrapper/Tabs/types";
 import type { FileItemType } from "../types";
 import "./FileItem.scss";
@@ -62,6 +64,9 @@ const toggleOpen = async (): Promise<void> => {
 };
 
 const handleFileClick = async () => {
+	// If tab is already open, do nothing
+	if ($activeTabId === fullPath) return;
+
 	const newTab: Tab = {
 		id: fullPath,
 		name: fileName,
@@ -69,6 +74,8 @@ const handleFileClick = async () => {
 		tooltip: fullPath,
 		contentModified: false,
 		isHovered: false,
+		cursorPosition: { character: 0, characterBasis: 0, line: 0 },
+		scrollPosition: { left: 0, top: 0 },
 	};
 
 	lastActiveTabs.update((tabs) => {
@@ -86,8 +93,20 @@ const handleFileClick = async () => {
 
 	editor.update((model) => {
 		model.setContent($contentStore.contents.get(newTab.id) ?? "");
+		model
+			.getCursor()
+			.setPosition(
+				model.getTotalLines(),
+				model.getContent(),
+				newTab.cursorPosition.character,
+				newTab.cursorPosition.line,
+				newTab.cursorPosition.characterBasis,
+			);
 		return model;
 	});
+
+	updateCursorVerticalPosition(false);
+	updateCursorHorizontalPosition($editor, $astroEditor);
 
 	showEditor.set(true);
 

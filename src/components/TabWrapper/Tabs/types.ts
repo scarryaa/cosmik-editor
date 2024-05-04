@@ -1,3 +1,5 @@
+import type { CursorPosition } from "../../../models/Cursor";
+
 export interface Tab {
 	id: string;
 	name: string;
@@ -6,4 +8,6 @@ export interface Tab {
 	tooltip: string;
 	contentModified: boolean;
 	isHovered: boolean;
+	cursorPosition: CursorPosition;
+	scrollPosition: { left: number, top: number };
 }

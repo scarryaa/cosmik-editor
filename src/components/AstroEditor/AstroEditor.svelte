@@ -17,7 +17,7 @@ import {
 } from "../../stores/scroll";
 import { lastMousePosition, selecting } from "../../stores/selection";
 import { sideBarOpen } from "../../stores/sidebar";
-import { activeTabId } from "../../stores/tabs";
+import { activeTabId, tabs } from "../../stores/tabs";
 import { copy, cut, paste, selectAll } from "../../util/tauri-events";
 import { measureTextWidth } from "../../util/text";
 import {
@@ -173,6 +173,12 @@ onMount(async () => {
 	activeTabId.subscribe(async () => {
 		await tick();
 		updateLinesOnScreen();
+		
+		const activeTab = $tabs.find(tab => tab.id === $activeTabId);
+		requestAnimationFrame(() => {
+			$astroWrapperInner.scrollLeft = activeTab?.scrollPosition.left ?? 0;
+			$astroWrapperInner.scrollTop = activeTab?.scrollPosition.top ?? 0;
+		})
 	});
 });
 
