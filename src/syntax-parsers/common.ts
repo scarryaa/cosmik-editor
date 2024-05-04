@@ -13,7 +13,7 @@ export type ParseType =
 	| "md"
 	| "toml" | "txt" | "gitignore";
 
-export const highlighter = await getHighlighter({
+export const highlighter = async () => await getHighlighter({
 	themes: ["github-light"],
 	langs: [
 		"typescript",
@@ -38,85 +38,86 @@ export const escapeHtml = (unsafe: string): string => {
 		.replace(/>/g, "&gt;");
 };
 
-export const parseBasedOnExtension = (
+export const parseBasedOnExtension = async (
 	extension: ParseType,
 	content: string,
 ) => {
+	const _highlighter = await highlighter();
 	switch (extension) {
 		case "ts": {
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "typescript",
 				theme: "github-light",
 				structure: "inline",
 			});
 		}
 		case "html":
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "html",
 				theme: "github-light",
 				structure: "inline",
 			});
 		case "css":
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "css",
 				theme: "github-light",
 				structure: "inline",
 			});
 		case "scss":
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "scss",
 				theme: "github-light",
 				structure: "inline",
 			});
 		case "json":
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "json",
 				theme: "github-light",
 				structure: "inline",
 			});
 		case "svelte": {
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "svelte",
 				theme: "github-light",
 				structure: "inline",
 			});
 		}
 		case "js": {
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "javascript",
 				theme: "github-light",
 				structure: "inline",
 			});
 		}
 		case "nix": {
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "nix",
 				theme: "github-light",
 				structure: "inline",
 			});
 		}
 		case "yaml": {
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "yaml",
 				theme: "github-light",
 				structure: "inline",
 			});
 		}
 		case "md": {
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "markdown",
 				theme: "github-light",
 				structure: "inline",
 			});
 		}
 		case "toml":
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "markdown",
 				theme: "github-light",
 				structure: "inline",
 			});
 		default:
-			return highlighter.codeToHtml(content, {
+			return _highlighter.codeToHtml(content, {
 				lang: "plaintext",
 				theme: "github-light",
 				structure: "inline",

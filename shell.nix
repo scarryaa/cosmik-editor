@@ -24,6 +24,10 @@ let
     appimagekit
     librsvg
     webkitgtk_4_1
+    rustup
+    wget
+    libffi
+    gtk2-x11
   ];
 in
 pkgs.mkShell {

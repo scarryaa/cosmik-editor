@@ -168,6 +168,7 @@ fn toggle_fullscreen(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
+#[cfg(debug_assertions)]
 fn toggle_dev_tools(app: &AppHandle) -> std::io::Result<()> {
     let window = app.get_webview_window("main").ok_or(std::io::Error::new(
         std::io::ErrorKind::Other,
@@ -406,6 +407,7 @@ pub fn run() {
                 } else if event.id() == "toggle_fullscreen_menu_item" {
                     toggle_fullscreen(app).expect("Could not toggle fullscreen");
                 } else if event.id() == "toggle_developer_tools_menu_item" {
+                    #[cfg(debug_assertions)]
                     toggle_dev_tools(app).expect("Could not toggle developer tools");
                 } else if event.id() == "toggle_sidebar_menu_item" {
                     toggle_sidebar(app).expect("Could not toggle sidebar");
