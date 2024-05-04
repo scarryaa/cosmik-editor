@@ -1,12 +1,11 @@
 <script lang="ts">
-import {
-    lineHeight,
-} from "../../const/const";
+import { lineHeight } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
-    import { editor } from "../../stores/editor";
+import { editor } from "../../stores/editor";
 import { activeTabId, tabs } from "../../stores/tabs";
 import {
 	type ParseType,
+	escapeHtml,
 	parseBasedOnExtension,
 } from "../../syntax-parsers/common";
 import { measureTextWidth } from "../../util/text";
@@ -24,6 +23,7 @@ export let registerLineRef: (
 	element: HTMLDivElement,
 ) => void;
 
+let highlightedContent = "";
 let lineElement: HTMLDivElement;
 
 $: isSelected =
@@ -35,21 +35,32 @@ $: if (isSelected) {
 	registerLineRef(lineNumber, lineElement);
 }
 
-const applyHighlighting = (extension: ParseType, text: string) => {
-	return parseBasedOnExtension(extension, text);
+const applyHighlighting = async (extension: ParseType, text: string) => {
+	return await parseBasedOnExtension(extension, text);
 };
 
-$: highlightedContent = applyHighlighting(
-	($tabs
-		.find((tab) => tab.id === $activeTabId)
-		?.id.split("/")
-		.at(-1)
-		?.split(".")
-		.at(-1) as ParseType) ?? ".ts",
-	lineContent,
-);
+$: {
+	const extension =
+		($tabs
+			.find((tab) => tab.id === $activeTabId)
+			?.id.split("/")
+			.at(-1)
+			?.split(".")
+			.at(-1) as ParseType) ?? "ts";
+	applyHighlighting(extension, lineContent)
+		.then((result) => {
+			highlightedContent = result;
+		})
+		.catch((error) => {
+			console.error("Error applying highlighting:", error);
+			highlightedContent = escapeHtml(lineContent);
+		});
+}
 
-$: selectedText = $editor.getContent()[lineNumber - 1]?.getContent().substring(selectionStart, selectionEnd);
+$: selectedText = $editor
+	.getContent()
+	[lineNumber - 1]?.getContent()
+	.substring(selectionStart, selectionEnd);
 </script>
 
 <div class="line" bind:this={lineElement} data-line-number={lineNumber} style={`top: ${(lineNumber - 1) * lineHeight}px`}>
