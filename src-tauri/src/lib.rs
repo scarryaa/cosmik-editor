@@ -98,7 +98,14 @@ fn new_file(app: &AppHandle) -> std::io::Result<()> {
     Ok(())
 }
 
-fn open_file(app: &AppHandle) -> std::io::Result<()> {
+fn open_file(app: &AppHandle) -> Result<(), std::io::Error> {
+    let app_clone = app.clone();
+    app.dialog().file().pick_file(move |file_path| {
+        if let Some(ref path) = file_path {
+            app_clone.emit("open-file", &file_path )
+                .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "open-file failed"));
+        };
+    });
     Ok(())
 }
 
