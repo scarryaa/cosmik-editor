@@ -58,8 +58,9 @@ export const handleKeyDown = async (
 ) => {
 	event.preventDefault();
 
-    // Ignore Ctrl, Ctrl + Shift, Ctrl + Z, Ctrl + Shift + Z
+    // Ignore Ctrl, Ctrl + Shift, Ctrl + Z, Ctrl + Shift + Z, Shift
     if (event.key === "Control" || 
+		event.key === "Shift" ||
         (event.ctrlKey && event.key === "Shift") || 
         (event.ctrlKey && event.key === "z") || 
         (event.ctrlKey && event.shiftKey && event.key === "Z")) {
@@ -168,7 +169,7 @@ export const handleKeyDown = async (
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key.length === 1 && !keyHandled) {
 		captureStateForUndo();
-		
+
 		handleKey(
 			event,
 			editor,
