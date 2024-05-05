@@ -211,7 +211,7 @@ fn report_issue(app: &AppHandle) -> std::io::Result<()> {
 
 fn about(app: &AppHandle) -> std::io::Result<()> {
     app.dialog()
-        .message("Version 0.0.1")
+        .message("Version 0.0.2-alpha.1")
         .kind(MessageDialogKind::Info)
         .title("About meteor")
         .ok_button_label("OK")
