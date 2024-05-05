@@ -1,7 +1,7 @@
 {
 	"name": "meteor",
 	"private": true,
-	"version": "0.0.2-alpha.1",
+	"version": "0.0.3",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -19,7 +19,7 @@
 		"@fortawesome/free-brands-svg-icons": "^6.1.1",
 		"@fortawesome/free-solid-svg-icons": "^6.1.1",
 		"@fortawesome/svelte-fontawesome": "^0.2.0",
-		"@tauri-apps/api": "2.0.0-beta.3",
+		"@tauri-apps/api": "2.0.0-beta.11",
 		"@tauri-apps/plugin-clipboard-manager": "2.1.0-beta.1",
 		"@tauri-apps/plugin-dialog": "2.0.0-beta.3",
 		"@tauri-apps/plugin-fs": "2.0.0-beta.3",

@@ -20,7 +20,7 @@ import {
 	contentStore,
 } from "../stores/content";
 import { folder } from "../stores/folder";
-import { openTab } from "../stores/tabs";
+import { openTab, tabs } from "../stores/tabs";
 import { unlisteners } from "./listeners";
 import { pasteInternal } from "./util";
 
@@ -213,6 +213,97 @@ export const saveFile = async (
 		unlisteners.push(unlisten);
 	});
 };
+
+export const newFile = (
+	lastActiveTabs: Writable<string[]>,
+	$contentStore: ContentStore,
+	$editor: Editor,
+	editor: Writable<Editor>,
+	$tabs: () => Tab[],
+	$activeTabId: () => string,
+	$astroWrapperInner: () => HTMLDivElement,
+	$astroEditor: HTMLDivElement,
+	showEditor: Writable<boolean>,
+): void => {
+	listen("new-file", async () => {
+		let counter = 1;
+		let fullPath = `untitled-${counter}`;
+		while ($tabs().some(tab => tab.id === fullPath)) {
+			counter++;
+			fullPath = `untitled-${counter}`;
+		}
+
+		const newTab: Tab = {
+			id: fullPath,
+			name: `Untitled-${counter}`,
+			isActive: true,
+			tooltip: fullPath,
+			contentModified: false,
+			isHovered: false,
+			cursorPosition: { character: 0, characterBasis: 0, line: 0 },
+			scrollPosition: { left: 0, top: 0 },
+			redoStack: [],
+			undoStack: [],
+		};
+
+		lastActiveTabs.update((tabs) => {
+			const index = tabs.indexOf(newTab.id);
+			if (index !== -1) {
+				tabs.splice(index, 1);
+			}
+			tabs.push(newTab.id);
+			return tabs;
+		});
+
+		let contents = "";
+
+		const originalContents = "";
+		if ($contentStore.contents.get(newTab.id)) {
+			contents = $contentStore.contents.get(newTab.id) ?? "";
+		} else {
+			contents = originalContents;
+		}
+
+		$contentStore.originalContents.set(newTab.id, originalContents);
+		$contentStore.contents.set(newTab.id, contents);
+
+		editor.update((model) => {
+			model.setContent($contentStore.contents.get(newTab.id) ?? "");
+			model
+				.getCursor()
+				.setPosition(
+					model.getTotalLines(),
+					model.getContent(),
+					newTab.cursorPosition.character,
+					newTab.cursorPosition.line,
+					newTab.cursorPosition.characterBasis,
+				);
+			model.setRedoStack(newTab.redoStack);
+			model.setUndoStack(newTab.undoStack);
+			return model;
+		});
+
+		const currentTab = $tabs().find((tab) => tab.id === $activeTabId());
+		if (currentTab) {
+			// Update cursor position
+			currentTab.cursorPosition = $editor.getCursor().getPosition();
+			// Save the current scroll position
+			currentTab.scrollPosition = {
+				left: $astroWrapperInner().scrollLeft,
+				top: $astroWrapperInner().scrollTop,
+			};
+		}
+
+		updateCursorVerticalPosition(false);
+		updateCursorHorizontalPosition($editor, $astroEditor);
+
+		showEditor.set(true);
+
+		openTab(newTab);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
+	});
+}
 
 export const openFile = (
 	lastActiveTabs: Writable<string[]>,

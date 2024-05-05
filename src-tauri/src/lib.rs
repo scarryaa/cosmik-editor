@@ -93,9 +93,9 @@ fn expand_scope(app_handle: tauri::AppHandle, folder_path: std::path::PathBuf) -
 
 // Handlers
 
-fn new_file(app: &AppHandle) -> std::io::Result<()> {
-    println!("New file");
-    Ok(())
+fn new_file(app: &AppHandle) -> Result<(), std::io::Error> {
+    app.emit("new-file", {})
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "new-file failed"))
 }
 
 fn open_file(app: &AppHandle) -> Result<(), std::io::Error> {

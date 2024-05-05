@@ -1,9 +1,11 @@
 <script lang="ts">
 import { tick } from "svelte";
+    import { get } from "svelte/store";
 import { contentStore } from "../../../stores/content";
 import { editor, showEditor } from "../../../stores/editor";
-import { astroEditor, astroWrapperInner } from "../../../stores/elements";
-import { activeTabId, lastActiveTabs, tabs } from "../../../stores/tabs";
+import { astroEditor } from "../../../stores/elements";
+    import { tabsScrollStores, unregisterTabScrollStore } from "../../../stores/scroll";
+import { activeTabId, lastActiveTabs, tabs, updateCurrentTabScrollPosition } from "../../../stores/tabs";
 import {
 	updateCursorHorizontalPosition,
 	updateCursorVerticalPosition,
@@ -28,6 +30,8 @@ const closeTab = (id: string) => {
 		}
 		return tabs;
 	});
+
+	unregisterTabScrollStore(id);
 };
 
 const setActiveTab = async (id: string | null) => {
@@ -99,10 +103,7 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 		// Update cursor position
 		currentTab.cursorPosition = $editor.getCursor().getPosition();
 		// Save the current scroll position
-		currentTab.scrollPosition = {
-			left: $astroWrapperInner.scrollLeft,
-			top: $astroWrapperInner.scrollTop,
-		};
+		updateCurrentTabScrollPosition($tabs, $activeTabId ?? "");
 		// Update undo and redo stacks
 		currentTab.undoStack = $editor.getUndoStack();
 		currentTab.redoStack = $editor.getRedoStack();

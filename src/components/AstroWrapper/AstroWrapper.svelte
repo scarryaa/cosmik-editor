@@ -2,7 +2,7 @@
 import { onMount } from "svelte";
 import { scrollAction } from "../../actions/scrollAction";
 import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
-import { editor } from "../../stores/editor";
+import { editor, showEditor } from "../../stores/editor";
 import {
 	astroWrapper,
 	astroWrapperInner,
@@ -11,6 +11,7 @@ import {
 } from "../../stores/elements";
 import { startLine, totalLines } from "../../stores/lines";
 import { sideBarOpen } from "../../stores/sidebar";
+    import { activeTabId, tabs } from "../../stores/tabs";
 import AstroEditor from "../AstroEditor/AstroEditor.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
 import SidebarInner from "../Sidebar/Inner/SidebarInner.svelte";
@@ -34,6 +35,20 @@ onMount(() => {
 			isOpen ? sidebarClosedWidth + sidebarOpenWidth : sidebarClosedWidth
 		}px)`;
 	});
+
+    const unsubscribe = activeTabId.subscribe($activeTabId => {
+            const tab = $tabs.find(tab => tab.id === $activeTabId);
+            if (tab && wrapperInner) {
+                wrapperInner.scrollLeft = tab.scrollPosition.left;
+                wrapperInner.scrollTop = tab.scrollPosition.top;
+
+                console.log(tab.scrollPosition);
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
 });
 </script>
 
@@ -42,7 +57,7 @@ onMount(() => {
     <SidebarInner />
     <div id="astro-wrapper-inner" bind:this={_astroWrapperInner}>
         <TabWrapper />
-        <!-- @TODO {#if $showEditor} -->
+        <!-- {#if $showEditor} -->
             <div id="editor-wrapper-outer" bind:this={wrapperOuter}>
                 <LineNumbers lineCount={$editor.getTotalLines()}/>
                 <div id="editor-wrapper-inner" use:scrollAction={{ $lineNumbers: $lineNumbers, wrapperInner: wrapperInner, $startLine: () => $startLine, lineCount: $totalLines }} bind:this={wrapperInner}>

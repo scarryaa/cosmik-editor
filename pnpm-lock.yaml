@@ -21,8 +21,8 @@ dependencies:
     specifier: ^0.2.0
     version: 0.2.2(@fortawesome/fontawesome-svg-core@6.5.2)(svelte@5.0.0-next.115)
   '@tauri-apps/api':
-    specifier: 2.0.0-beta.3
-    version: 2.0.0-beta.3
+    specifier: 2.0.0-beta.11
+    version: 2.0.0-beta.11
   '@tauri-apps/plugin-clipboard-manager':
     specifier: 2.1.0-beta.1
     version: 2.1.0-beta.1
@@ -637,11 +637,6 @@ packages:
 
   /@tauri-apps/api@2.0.0-beta.11:
     resolution: {integrity: sha512-wJRY+fBUm3KpqZDHMIz5HRv+1vlnvRJ/dFxiyY3NlINTx2qXqDou5qWYcP1CuZXsd39InWVPV3FAZvno/kGCkA==}
-    engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
-    dev: false
-
-  /@tauri-apps/api@2.0.0-beta.3:
-    resolution: {integrity: sha512-gDSJzKpBs6efXw2ZWqjl9QVNImY5GR5qygXqB7JK4y7prcQInxnTj2ARFR0vD4wuzkrUHGrlIKraiJJPHWJ9vg==}
     engines: {node: '>= 18', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 

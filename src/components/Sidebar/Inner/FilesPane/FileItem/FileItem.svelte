@@ -10,6 +10,7 @@ import {
 	lastActiveTabs,
 	openTab,
 	tabs,
+    updateCurrentTabScrollPosition,
 } from "../../../../../stores/tabs";
 import {
 	updateCursorHorizontalPosition,
@@ -127,10 +128,7 @@ const handleFileClick = async () => {
 		// Update cursor position
 		currentTab.cursorPosition = $editor.getCursor().getPosition();
 		// Save the current scroll position
-		currentTab.scrollPosition = {
-			left: $astroWrapperInner.scrollLeft,
-			top: $astroWrapperInner.scrollTop,
-		};
+		updateCurrentTabScrollPosition($tabs, $activeTabId ?? "");
 	}
 
 	updateCursorVerticalPosition(false);
