@@ -1,15 +1,16 @@
 <script lang="ts">
-import { tick } from "svelte";
-    import { get } from "svelte/store";
 import { contentStore } from "../../../stores/content";
-import { editor, showEditor } from "../../../stores/editor";
-import { astroEditor } from "../../../stores/elements";
-    import { tabsScrollStores, unregisterTabScrollStore } from "../../../stores/scroll";
-import { activeTabId, lastActiveTabs, tabs, updateCurrentTabScrollPosition } from "../../../stores/tabs";
+import { editor } from "../../../stores/editor";
 import {
-	updateCursorHorizontalPosition,
-	updateCursorVerticalPosition,
-} from "../../AstroEditor/AstroEditor";
+	unregisterTabScrollStore,
+} from "../../../stores/scroll";
+import {
+	activeTabId,
+	lastActiveTabs,
+	setActiveTab,
+	tabs,
+	updateCurrentTabScrollPosition,
+} from "../../../stores/tabs";
 import "./Tab.scss";
 
 const closeTab = (id: string) => {
@@ -24,72 +25,14 @@ const closeTab = (id: string) => {
 
 	lastActiveTabs.update((tabs) => {
 		if (tabs.length > 0) {
-			setActiveTab(tabs[tabs.length - 1]);
+			setActiveTab(tabs[tabs.length - 1], $contentStore, $tabs);
 		} else {
-			setActiveTab(null);
+			setActiveTab(null, $contentStore, $tabs);
 		}
 		return tabs;
 	});
 
 	unregisterTabScrollStore(id);
-};
-
-const setActiveTab = async (id: string | null) => {
-	let scrollDirection = "down";
-	const currentTab = $tabs.find((tab) => tab.id === $activeTabId);
-
-	activeTabId.set(id);
-
-	if (id == null) {
-		editor.update((model) => {
-			model.setContent("");
-			showEditor.set(false);
-			return model;
-		});
-	} else {
-		lastActiveTabs.update((tabs) => {
-			const index = tabs.indexOf(id);
-			if (index !== -1) {
-				tabs.splice(index, 1);
-			}
-			tabs.push(id);
-			return tabs;
-		});
-
-		const tab = $tabs.find((tab) => tab.id === id);
-		if (!tab) return;
-		if (currentTab) {
-			scrollDirection =
-				tab.cursorPosition.line > currentTab.cursorPosition.line
-					? "down"
-					: "up";
-		}
-
-		const activeContent = $contentStore.contents.get(id);
-		editor.update((model) => {
-			model.setContent(activeContent ?? "");
-			model
-				.getCursor()
-				.setPosition(
-					model.getTotalLines(),
-					model.getContent(),
-					tab.cursorPosition.character,
-					tab.cursorPosition.line,
-					tab.cursorPosition.characterBasis,
-				);
-			model.setRedoStack(tab.redoStack);
-			model.setUndoStack(tab.undoStack);
-
-			return model;
-		});
-
-		await tick();
-
-		requestAnimationFrame(() => {
-			updateCursorHorizontalPosition($editor, $astroEditor);
-			updateCursorVerticalPosition(scrollDirection === "down");
-		});
-	}
 };
 
 const handleClick = (event: MouseEvent, tabId: string) => {
@@ -107,13 +50,13 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 		// Update undo and redo stacks
 		currentTab.undoStack = $editor.getUndoStack();
 		currentTab.redoStack = $editor.getRedoStack();
-		setActiveTab(tabId);
+		setActiveTab(tabId, $contentStore, $tabs);
 	}
 };
 </script>
   
 {#each $tabs as tab (tab.id)}
-  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { tab.isHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:keypress={() => setActiveTab(tab.id)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
+  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { tab.isHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:keypress={() => setActiveTab(tab.id, $contentStore, $tabs)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
     <span class="tab-name">{tab.name}</span>
 	{#if $contentStore.contentModified.get(tab.id) && !tab.isHovered}
 		<div role="img" class="modified-indicator-wrapper">

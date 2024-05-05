@@ -2,7 +2,7 @@
 import { onMount } from "svelte";
 import { scrollAction } from "../../actions/scrollAction";
 import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
-import { editor, showEditor } from "../../stores/editor";
+import { editor } from "../../stores/editor";
 import {
 	astroWrapper,
 	astroWrapperInner,
@@ -11,7 +11,7 @@ import {
 } from "../../stores/elements";
 import { startLine, totalLines } from "../../stores/lines";
 import { sideBarOpen } from "../../stores/sidebar";
-    import { activeTabId, tabs } from "../../stores/tabs";
+import { activeTabId, tabs } from "../../stores/tabs";
 import AstroEditor from "../AstroEditor/AstroEditor.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
 import SidebarInner from "../Sidebar/Inner/SidebarInner.svelte";
@@ -36,19 +36,17 @@ onMount(() => {
 		}px)`;
 	});
 
-    const unsubscribe = activeTabId.subscribe($activeTabId => {
-            const tab = $tabs.find(tab => tab.id === $activeTabId);
-            if (tab && wrapperInner) {
-                wrapperInner.scrollLeft = tab.scrollPosition.left;
-                wrapperInner.scrollTop = tab.scrollPosition.top;
+	const unsubscribe = activeTabId.subscribe(($activeTabId) => {
+		const tab = $tabs.find((tab) => tab.id === $activeTabId);
+		if (tab && wrapperInner) {
+			wrapperInner.scrollLeft = tab.scrollPosition.left;
+			wrapperInner.scrollTop = tab.scrollPosition.top;
+		}
+	});
 
-                console.log(tab.scrollPosition);
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
+	return () => {
+		unsubscribe();
+	};
 });
 </script>
 

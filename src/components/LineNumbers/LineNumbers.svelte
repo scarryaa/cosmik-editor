@@ -23,7 +23,6 @@ const updateVisibleLines = () => {
 	if (containerScrollTop) {
 		startLine = Math.floor(containerScrollTop / lineHeight);
 		endLine = Math.min(lineCount, startLine + linesOnScreen);
-		console.log(startLine);
 	}
 };
 

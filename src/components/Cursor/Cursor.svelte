@@ -1,16 +1,44 @@
 <script lang="ts">
-import { onMount } from "svelte";
+import { onMount, tick } from "svelte";
+import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import { cursor } from "../../stores/elements";
+import { sideBarOpen } from "../../stores/sidebar";
+import { measureTextWidth } from "../../util/text";
+import {
+	calculateCursorHorizontalPosition,
+	calculateCursorVerticalPosition,
+} from "./Cursor";
 import "./Cursor.scss";
-
-export let left = 0;
-export let top = 0;
 
 let cursorElement: HTMLDivElement;
 
-onMount(() => {
+const cursorVerticalPosition = $derived.by(() => {
+	const verticalPosition = calculateCursorVerticalPosition($editor);
+	return verticalPosition;
+});
+
+const cursorHorizontalPosition = $derived.by(() => {
+	const horizontalPosition = calculateCursorHorizontalPosition($editor);
+	return horizontalPosition;
+});
+
+$effect(() => {
+	cursorVertPos.set(cursorVerticalPosition);
+});
+
+$effect(() => {
+	cursorHorizPos.set(cursorHorizontalPosition + measureTextWidth("a"));
+});
+
+$effect(() => {
+	sideBarOpen.subscribe(async () => {
+		await tick();
+		calculateCursorHorizontalPosition($editor);
+	});
 	cursor.set(cursorElement);
 });
+
+onMount(() => {});
 </script>
 
-<div bind:this={cursorElement} class="cursor" style="left: {left}px; top: {top}px;"></div>
+<div bind:this={cursorElement} class="cursor" style="left: {$cursorHorizPos}px; top: {$cursorVertPos}px;"></div>

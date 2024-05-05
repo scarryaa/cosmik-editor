@@ -5,10 +5,6 @@ import { writeFile } from "@tauri-apps/plugin-fs";
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import {
-	updateCursorHorizontalPosition,
-	updateCursorVerticalPosition,
-} from "../components/AstroEditor/AstroEditor";
-import {
 	scrollToCurrentLine,
 	scrollToCursor,
 } from "../components/AstroEditor/AstroEditorScrolling";
@@ -57,8 +53,6 @@ export const undo = (
 
 		$contentStore.updateContent($activeTabId(), $editor.getContentString());
 
-		updateCursorVerticalPosition(true);
-		updateCursorHorizontalPosition($editor, $astroEditor);
 		scrollToCurrentLine(
 			() => currentLineElement,
 			() => $astroWrapperInner,
@@ -92,8 +86,6 @@ export const redo = (
 
 		$contentStore.updateContent($activeTabId(), $editor.getContentString());
 
-		updateCursorVerticalPosition(true);
-		updateCursorHorizontalPosition($editor, $astroEditor);
 		scrollToCurrentLine(
 			() => currentLineElement,
 			() => $astroWrapperInner,
@@ -144,8 +136,7 @@ export const cut = (
 		await writeText(cutText);
 
 		await tick();
-		updateCursorVerticalPosition(true);
-		updateCursorHorizontalPosition($editor, $astroEditor);
+
 		scrollToCurrentLine(
 			() => currentLineElement,
 			() => $astroWrapperInner,
@@ -228,7 +219,7 @@ export const newFile = (
 	listen("new-file", async () => {
 		let counter = 1;
 		let fullPath = `untitled-${counter}`;
-		while ($tabs().some(tab => tab.id === fullPath)) {
+		while ($tabs().some((tab) => tab.id === fullPath)) {
 			counter++;
 			fullPath = `untitled-${counter}`;
 		}
@@ -294,16 +285,13 @@ export const newFile = (
 			};
 		}
 
-		updateCursorVerticalPosition(false);
-		updateCursorHorizontalPosition($editor, $astroEditor);
-
 		showEditor.set(true);
 
 		openTab(newTab);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});
-}
+};
 
 export const openFile = (
 	lastActiveTabs: Writable<string[]>,
@@ -381,9 +369,6 @@ export const openFile = (
 				top: $astroWrapperInner.scrollTop,
 			};
 		}
-
-		updateCursorVerticalPosition(false);
-		updateCursorHorizontalPosition($editor, $astroEditor);
 
 		showEditor.set(true);
 

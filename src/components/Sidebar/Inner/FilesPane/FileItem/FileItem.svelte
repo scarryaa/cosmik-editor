@@ -10,12 +10,9 @@ import {
 	lastActiveTabs,
 	openTab,
 	tabs,
-    updateCurrentTabScrollPosition,
+	updateCurrentTabScrollPosition,
 } from "../../../../../stores/tabs";
-import {
-	updateCursorHorizontalPosition,
-	updateCursorVerticalPosition,
-} from "../../../../AstroEditor/AstroEditor";
+import { calculateCursorHorizontalPosition } from "../../../../Cursor/Cursor";
 import type { Tab } from "../../../../TabWrapper/Tabs/types";
 import type { FileItemType } from "../types";
 import "./FileItem.scss";
@@ -131,8 +128,7 @@ const handleFileClick = async () => {
 		updateCurrentTabScrollPosition($tabs, $activeTabId ?? "");
 	}
 
-	updateCursorVerticalPosition(false);
-	updateCursorHorizontalPosition($editor, $astroEditor);
+	// calculateCursorHorizontalPosition($editor, $astroEditor);
 
 	showEditor.set(true);
 

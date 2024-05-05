@@ -2,15 +2,13 @@ import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
-import { contentStore } from "../../stores/content";
-import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
+import { type ContentStore, contentStore } from "../../stores/content";
+import { cursorVertPos, editor } from "../../stores/editor";
 import { lastMousePosition, selecting } from "../../stores/selection";
-import {
-	getCharacterIndex,
-	getLineIndex,
-	measureTextWidth,
-} from "../../util/text";
+import { closeTab, tabs } from "../../stores/tabs";
+import { getCharacterIndex, getLineIndex } from "../../util/text";
 import { pasteInternal } from "../../util/util";
+import type { Tab } from "../TabWrapper/Tabs/types";
 import {
 	getNumberOfLinesOnScreen,
 	scrollToCurrentLine,
@@ -50,12 +48,10 @@ export const handleKeyDown = async (
 	currentLineElement: () => HTMLDivElement,
 	$astroWrapperInner: () => HTMLDivElement,
 	$activeTabId: string,
-	$contentStore: {
-		contents: Map<string, string>;
-		contentModified: Map<string, boolean>;
-	},
+	$contentStore: ContentStore,
 	$cursor: () => HTMLDivElement,
 	$totalLines: Writable<number>,
+	$tabs: Tab[]
 ) => {
 	event.preventDefault();
 
@@ -76,9 +72,6 @@ export const handleKeyDown = async (
 	if (event.key === "A" || event.key === "a") {
 		if (event.ctrlKey) {
 			keyHandled = true;
-
-			updateCursorVerticalPosition(false);
-			updateCursorHorizontalPosition($editor(), $astroEditor());
 		}
 	} else if (event.key === "V" || event.key === "v") {
 		if (event.ctrlKey && event.shiftKey) {
@@ -93,6 +86,9 @@ export const handleKeyDown = async (
 				$astroEditor(),
 			);
 		}
+	} else if (event.ctrlKey && event.key === "w") {
+		keyHandled = true;
+		handleCtrlW($activeTabId, $contentStore, $tabs);
 	}
 
 	if (event.key === "Backspace") {
@@ -107,7 +103,7 @@ export const handleKeyDown = async (
 			$contentStore,
 			$activeTabId,
 			$astroEditor(),
-			$totalLines
+			$totalLines,
 		);
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.code === "Tab") {
@@ -156,7 +152,7 @@ export const handleKeyDown = async (
 			$astroWrapperInner(),
 			currentLineElement(),
 			$cursor(),
-			$totalLines
+			$totalLines,
 		);
 
 		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
@@ -213,9 +209,6 @@ export const handleMouseDown = (
 
 	selecting.set(true);
 
-	updateCursorVerticalPosition(false);
-	updateCursorHorizontalPosition($editor, $astroEditor);
-
 	updateTextareaPosition(event, input);
 	focusEditor(input);
 };
@@ -238,26 +231,6 @@ export const handleMouseMove = (
 	}
 
 	lastMousePosition.set({ left: event.clientX, top: event.clientY });
-};
-
-export const updateCursorHorizontalPosition = (
-	$editor: Editor,
-	$astroEditor: HTMLDivElement,
-) => {
-	const cursorLeft = $astroEditor?.getBoundingClientRect().left ?? 0;
-	if (cursorLeft === 0) return;
-
-	const cursorPosition = $editor.getCursor().getPosition();
-	const lineContent =
-		$editor.getContent()[cursorPosition.line]?.getContent() ?? "";
-	const textUpToCursor = lineContent.substring(0, cursorPosition.character);
-
-	const measuredWidth = measureTextWidth(textUpToCursor);
-	cursorHorizPos.set(measuredWidth + cursorHorizOffset + cursorLeft);
-};
-
-export const updateCursorVerticalPosition = (add: boolean) => {
-	cursorVertPos.update((value) => value + (add ? lineHeight : -lineHeight));
 };
 
 // Private
@@ -285,6 +258,12 @@ const handleCtrlShiftV = async (
 	);
 };
 
+const handleCtrlW = ($activeTabId: string, $contentStore: ContentStore, $tabs: Tab[]) => {
+    if ($activeTabId) {
+        closeTab($activeTabId, $contentStore, $tabs);
+    }
+};
+
 const handleShiftTab = (
 	event: KeyboardEvent,
 	$editor: Editor,
@@ -295,8 +274,6 @@ const handleShiftTab = (
 		model.deleteTabAtStart();
 		return model;
 	});
-
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleTab = (
@@ -328,9 +305,6 @@ const handleTab = (
 			return model;
 		});
 	}
-
-	updateCursorVerticalPosition(false);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleHome = (
@@ -345,8 +319,6 @@ const handleHome = (
 		model.getSelection().clearSelection();
 		return model;
 	});
-
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleEnd = (
@@ -366,8 +338,6 @@ const handleEnd = (
 		model.getSelection().clearSelection();
 		return model;
 	});
-
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handlePageDown = (
@@ -402,9 +372,6 @@ const handlePageDown = (
 			return model;
 		});
 	}
-
-	updateCursorHorizontalPosition($editor, $astroEditor);
-	updateCursorVerticalPosition(true);
 };
 
 const handlePageUp = (
@@ -435,9 +402,6 @@ const handlePageUp = (
 			return model;
 		});
 	}
-
-	updateCursorHorizontalPosition($editor, $astroEditor);
-	updateCursorVerticalPosition(false);
 };
 
 const handleDelete = (
@@ -466,8 +430,6 @@ const handleDelete = (
 	}
 
 	$totalLines.set($editor.getTotalLines());
-	updateCursorHorizontalPosition($editor, $astroEditor);
-	updateCursorVerticalPosition(false);
 };
 
 const handleArrowLeft = (
@@ -481,7 +443,6 @@ const handleArrowLeft = (
 				model.moveCursorLeft();
 				return model;
 			});
-			updateCursorVerticalPosition(false);
 		} else {
 			editor.update((model) => {
 				model.moveCursorToPreviousWord();
@@ -515,7 +476,6 @@ const handleArrowLeft = (
 				!$editor.cursorIsAtBeginningOfDocument() &&
 				$editor.cursorIsAtBeginningOfLine()
 			) {
-				updateCursorVerticalPosition(false);
 			}
 
 			editor.update((model) => {
@@ -524,9 +484,6 @@ const handleArrowLeft = (
 			});
 		}
 	}
-
-	updateCursorVerticalPosition(false);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleArrowRight = (
@@ -540,7 +497,6 @@ const handleArrowRight = (
 				model.moveCursorRight();
 				return model;
 			});
-			updateCursorVerticalPosition(false);
 		} else {
 			editor.update((model) => {
 				model.moveCursorToNextWord();
@@ -574,7 +530,6 @@ const handleArrowRight = (
 				!$editor.cursorIsAtBeginningOfDocument() &&
 				$editor.cursorIsAtEndOfLine()
 			) {
-				updateCursorVerticalPosition(false);
 			}
 
 			editor.update((model) => {
@@ -583,9 +538,6 @@ const handleArrowRight = (
 			});
 		}
 	}
-
-	updateCursorVerticalPosition(true);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleArrowUp = (
@@ -622,9 +574,6 @@ const handleArrowUp = (
 			});
 		}
 	}
-
-	updateCursorVerticalPosition(false);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleArrowDown = (
@@ -661,9 +610,6 @@ const handleArrowDown = (
 			});
 		}
 	}
-
-	updateCursorVerticalPosition(true);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleArrowKeys = (
@@ -715,8 +661,6 @@ const handleBackspace = (
 				!$editor.cursorIsAtBeginningOfDocument() &&
 				$editor.cursorIsAtBeginningOfLine()
 			) {
-				updateCursorVerticalPosition(false);
-
 				model.deleteCharacter();
 				return model;
 			}
@@ -730,7 +674,6 @@ const handleBackspace = (
 				!$editor.cursorIsAtBeginningOfDocument() &&
 				$editor.cursorIsAtBeginningOfLine()
 			) {
-				updateCursorVerticalPosition(false);
 			}
 
 			model.deleteCharacter();
@@ -741,12 +684,9 @@ const handleBackspace = (
 	$contentStore.contents.set($activeTabId, $editor.getContentString());
 
 	if (isSelection) {
-		updateCursorVerticalPosition(false);
 	}
 
 	$totalLines.set($editor.getTotalLines());
-
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleEnter = (
@@ -765,8 +705,6 @@ const handleEnter = (
 	});
 
 	$totalLines.set($editor.getTotalLines());
-	updateCursorVerticalPosition(true);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
 const handleKey = (
@@ -791,7 +729,4 @@ const handleKey = (
 		}
 		return model;
 	});
-
-	updateCursorVerticalPosition(true);
-	updateCursorHorizontalPosition($editor, $astroEditor);
 };
