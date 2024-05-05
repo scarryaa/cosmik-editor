@@ -4,6 +4,7 @@ import {
 	type Unsubscriber,
 	writable,
 } from "svelte/store";
+import { generateHash } from "../util/util";
 
 export type ContentStore = {
 	originalContents: Map<string, string>;
@@ -22,7 +23,7 @@ export type WritableContentStore = {
 	removeContent: (id: string) => void;
 	clearAll: () => void;
 	resetModifiedFlag: (id: string) => void;
-}
+};
 
 const createContentStore = (): WritableContentStore => {
 	const { subscribe, update } = writable<ContentStore>({
@@ -40,14 +41,25 @@ const createContentStore = (): WritableContentStore => {
 			});
 		},
 		updateContent: (id: string, content: string) => {
-			update((state) => {
-				state.contents.set(id, content);
-				state.contentModified.set(
-					id,
-					content !== state.originalContents.get(id),
-				);
-				return { ...state };
-			});
+			const updateAsyncContent = async () => {
+				const contentHash = await generateHash(content);
+				update((state) => {
+					const originalContent = state.originalContents.get(id) || "";
+					generateHash(originalContent)
+						.then((originalContentHash) => {
+							state.contents.set(id, content);
+							state.contentModified.set(
+								id,
+								contentHash !== originalContentHash,
+							);
+							return { ...state };
+						})
+						.catch(console.error);
+					return { ...state };
+				});
+			};
+
+			updateAsyncContent().catch(console.error);
 		},
 		removeContent: (id: string) => {
 			update((state) => {

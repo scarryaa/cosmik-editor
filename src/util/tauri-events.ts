@@ -21,9 +21,10 @@ import {
 } from "../stores/content";
 import { folder } from "../stores/folder";
 import { openTab } from "../stores/tabs";
+import { unlisteners } from "./listeners";
 import { pasteInternal } from "./util";
 
-export const selectAll = (editor: Writable<Editor>) =>
+export const selectAll = (editor: Writable<Editor>) => {
 	listen("select-all", () => {
 		editor.update((model) => {
 			const totalLines = model.getTotalLines();
@@ -33,7 +34,10 @@ export const selectAll = (editor: Writable<Editor>) =>
 			model.getSelection().selectAll(lineLength, totalLines, content);
 			return model;
 		});
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
+};
 
 export const undo = (
 	$cursor: HTMLDivElement,
@@ -65,6 +69,8 @@ export const undo = (
 			() => $editor,
 			() => $astroWrapperInner,
 		);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 };
 
@@ -98,6 +104,8 @@ export const redo = (
 			() => $editor,
 			() => $astroWrapperInner,
 		);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 };
 
@@ -149,6 +157,8 @@ export const cut = (
 			() => $astroWrapperInner,
 		);
 		contentStore.updateContent($activeTabId(), $editor.getContentString());
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 };
 
@@ -173,11 +183,15 @@ export const paste = (
 		setTimeout(() => {
 			contentStore.updateContent($activeTabId(), $editor.getContentString());
 		}, 0);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 
 export const openFolder = () => {
 	listen("open-folder", async (event: unknown) => {
-		folder.set((event as any).payload);
+		folder.set((event as { payload: string }).payload);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 };
 
@@ -195,6 +209,8 @@ export const saveFile = async (
 			$activeTabId(),
 			$editor.getContentString(),
 		);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 };
 
@@ -207,13 +223,14 @@ export const openFile = (
 	$activeTabId: () => string,
 	$astroWrapperInner: HTMLDivElement,
 	$astroEditor: HTMLDivElement,
-	showEditor: Writable<boolean>
+	showEditor: Writable<boolean>,
 ) => {
 	listen("open-file", async (event: unknown) => {
-		const fullPath = (event as any).payload.path;
+		const _event = event as { payload: { path: string; name: string } };
+		const fullPath = _event.payload.path;
 		const newTab: Tab = {
 			id: fullPath,
-			name: (event as any).payload.name,
+			name: _event.payload.name,
 			isActive: true,
 			tooltip: fullPath,
 			contentModified: false,
@@ -235,9 +252,9 @@ export const openFile = (
 
 		let contents = "";
 
-		const originalContents = await invoke("get_file_contents", {
+		const originalContents = (await invoke("get_file_contents", {
 			path: fullPath,
-		}) as string;
+		})) as string;
 		if ($contentStore.contents.get(newTab.id)) {
 			contents = $contentStore.contents.get(newTab.id) ?? "";
 		} else {
@@ -280,5 +297,7 @@ export const openFile = (
 		showEditor.set(true);
 
 		openTab(newTab);
+	}).then((unlisten) => {
+		unlisteners.push(unlisten);
 	});
 };

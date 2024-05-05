@@ -155,18 +155,22 @@ export class Selection {
 		if (selectionEnd.character >= size) {
 			return { ...selectionEnd, character: selectionEnd.character - size };
 		}
-	
+
 		if (selectionEnd.line > 0) {
-			const previousLineLength = content[selectionEnd.line - 1].getContent().length;
+			const previousLineLength =
+				content[selectionEnd.line - 1].getContent().length;
 			// If moving more than the start of the line, move up a line and adjust character position
 			// Simulate selecting the newline character as whitespace by adjusting for it in the remainingSize calculation
 			const remainingSize = size - (selectionEnd.character + 1);
-			return { line: selectionEnd.line - 1, character: Math.max(0, previousLineLength - remainingSize) };
+			return {
+				line: selectionEnd.line - 1,
+				character: Math.max(0, previousLineLength - remainingSize),
+			};
 		}
-	
+
 		return selectionEnd;
 	};
-	
+
 	private contractSelectionRightInternal = (
 		selectionStart: SelectionProps,
 		cursor: Cursor,
@@ -177,18 +181,24 @@ export class Selection {
 		if (selectionStart.character + size < lineLength) {
 			return { ...selectionStart, character: selectionStart.character + size };
 		}
-		
+
 		if (selectionStart.character + size === lineLength) {
 			// Simulate selecting the whitespace at the end of the line
 			return { ...selectionStart, character: selectionStart.character + size };
 		}
-	
+
 		if (selectionStart.line < content.length - 1) {
 			// If moving beyond the end of the line (including the simulated whitespace), move to the start of the next line and adjust character position
 			const remainingSize = size - (lineLength - selectionStart.character + 1); // Adjust for the simulated whitespace
-			return { line: selectionStart.line + 1, character: Math.min(remainingSize, content[selectionStart.line + 1].getContent().length) };
+			return {
+				line: selectionStart.line + 1,
+				character: Math.min(
+					remainingSize,
+					content[selectionStart.line + 1].getContent().length,
+				),
+			};
 		}
-	
+
 		// If at the end of the document, just return the end of the current line
 		return { line: selectionStart.line, character: lineLength };
 	};
@@ -263,7 +273,7 @@ export class Selection {
 						this.selectionStart,
 						cursor,
 						content,
-						size
+						size,
 					);
 					break;
 				case SelectionDirection.Left:
@@ -271,7 +281,7 @@ export class Selection {
 						this.selectionEnd,
 						cursor,
 						content,
-						size
+						size,
 					);
 					break;
 				case SelectionDirection.Down:
@@ -279,7 +289,7 @@ export class Selection {
 						this.selectionEnd,
 						cursor,
 						content,
-						size
+						size,
 					);
 					break;
 				case SelectionDirection.Up:
@@ -287,7 +297,7 @@ export class Selection {
 						this.selectionStart,
 						cursor,
 						content,
-						size
+						size,
 					);
 					break;
 			}
@@ -329,29 +339,33 @@ export class Selection {
 		size = 1,
 	): SelectionProps => {
 		const { line, character } = this.selectionEnd;
-		const currentLineLength = content[this.selectionEnd.line].getContent().length;
-	
+		const currentLineLength =
+			content[this.selectionEnd.line].getContent().length;
+
 		// Check if adding size stays within the current line
 		if (character + size < currentLineLength) {
 			return { line, character: character + size };
 		}
-		
+
 		if (character + size === currentLineLength) {
 			// Simulate selecting the whitespace at the end of the line
 			// by pausing at the current line's end before moving to the next line
 			return { line, character: character + size };
 		}
-	
+
 		// If adding size exceeds the current line length, move to the next line if possible
 		if (this.selectionEnd.line < content.length - 1) {
 			const overflowSize = size - (currentLineLength - character);
 			// Adjust for the simulated whitespace selection by starting from 0 on the next line
 			return {
 				line: line + 1,
-				character: Math.min(overflowSize - 1, content[line + 1].getContent().length),
+				character: Math.min(
+					overflowSize - 1,
+					content[line + 1].getContent().length,
+				),
 			};
 		}
-	
+
 		// If at the last line or cannot move further, return the current position without change
 		return { line, character };
 	};
@@ -542,7 +556,11 @@ export class Selection {
 		}
 	};
 
-	public handleSelectionLeft = (cursor: Cursor, content: Content, size: number): void => {
+	public handleSelectionLeft = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		if (
 			this.direction === SelectionDirection.Left ||
 			this.direction === SelectionDirection.Unknown ||
@@ -558,7 +576,11 @@ export class Selection {
 		this.updateAllLnes(content);
 	};
 
-	public handleSelectionRight = (cursor: Cursor, content: Content, size: number): void => {
+	public handleSelectionRight = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		if (
 			this.direction === SelectionDirection.Right ||
 			this.direction === SelectionDirection.Unknown ||
@@ -574,7 +596,11 @@ export class Selection {
 		this.updateAllLnes(content);
 	};
 
-	public handleSelectionUp = (cursor: Cursor, content: Content, size: number): void => {
+	public handleSelectionUp = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		if (
 			this.direction === SelectionDirection.Up ||
 			this.direction === SelectionDirection.Unknown ||
@@ -602,7 +628,11 @@ export class Selection {
 		this.updateAllLnes(content);
 	};
 
-	public handleSelectionDown = (cursor: Cursor, content: Content, size: number): void => {
+	public handleSelectionDown = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		if (
 			this.direction === SelectionDirection.Down ||
 			this.direction === SelectionDirection.Unknown ||
@@ -680,7 +710,11 @@ export class Selection {
 		cursor.moveDown(content, content.length);
 	};
 
-	public expandSelectionDown = (cursor: Cursor, content: Content, size: number): void => {
+	public expandSelectionDown = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.startNewSelectionIfNeeded(cursor, SelectionDirection.Down);
 		this.adjustSelectionBoundary(
 			(selection: SelectionProps, content: Content) =>
@@ -692,7 +726,11 @@ export class Selection {
 		cursor.moveDown(content, content.length);
 	};
 
-	public expandSelectionUp = (cursor: Cursor, content: Content, size: number): void => {
+	public expandSelectionUp = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.startNewSelectionIfNeeded(cursor, SelectionDirection.Up);
 		this.adjustSelectionBoundary(
 			(selection: SelectionProps, content: Content) =>
@@ -704,7 +742,11 @@ export class Selection {
 		cursor.moveUp(content);
 	};
 
-	public expandSelectionLeft = (cursor: Cursor, content: Content, size: number): void => {
+	public expandSelectionLeft = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.startNewSelectionIfNeeded(cursor, SelectionDirection.Left);
 		this.adjustSelectionBoundary(
 			(selection: SelectionProps, content: Content) =>
@@ -721,7 +763,11 @@ export class Selection {
 		cursor.moveLeft(content);
 	};
 
-	public expandSelectionRight = (cursor: Cursor, content: Content, size: number): void => {
+	public expandSelectionRight = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.startNewSelectionIfNeeded(cursor, SelectionDirection.Right);
 		this.adjustSelectionBoundary(
 			(selection: SelectionProps, content: Content) =>
@@ -738,25 +784,41 @@ export class Selection {
 		cursor.moveRight(content);
 	};
 
-	public contractSelectionLeft = (cursor: Cursor, content: Content, size: number): void => {
+	public contractSelectionLeft = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.contractSelection(cursor, SelectionDirection.Left, content, size);
 		this.clearSelectionIfEmpty(content);
 		cursor.moveLeft(content);
 	};
 
-	public contractSelectionRight = (cursor: Cursor, content: Content, size: number): void => {
+	public contractSelectionRight = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.contractSelection(cursor, SelectionDirection.Right, content, size);
 		this.clearSelectionIfEmpty(content);
 		cursor.moveRight(content);
 	};
 
-	public contractSelectionUp = (cursor: Cursor, content: Content, size: number): void => {
+	public contractSelectionUp = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.contractSelection(cursor, SelectionDirection.Up, content, size);
 		this.clearSelectionIfEmpty(content);
 		cursor.moveDown(content, content.length);
 	};
 
-	public contractSelectionDown = (cursor: Cursor, content: Content, size: number): void => {
+	public contractSelectionDown = (
+		cursor: Cursor,
+		content: Content,
+		size: number,
+	): void => {
 		this.contractSelection(cursor, SelectionDirection.Down, content, size);
 		this.clearSelectionIfEmpty(content);
 		cursor.moveUp(content);

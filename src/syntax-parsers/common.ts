@@ -11,7 +11,9 @@ export type ParseType =
 	| "nix"
 	| "yaml"
 	| "md"
-	| "toml" | "txt" | "gitignore";
+	| "toml"
+	| "txt"
+	| "gitignore";
 
 export const escapeHtml = (unsafe: string): string => {
 	return unsafe

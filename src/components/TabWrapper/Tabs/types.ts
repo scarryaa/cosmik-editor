@@ -10,7 +10,7 @@ export interface Tab {
 	contentModified: boolean;
 	isHovered: boolean;
 	cursorPosition: CursorPosition;
-	scrollPosition: { left: number, top: number };
+	scrollPosition: { left: number; top: number };
 	undoStack: EditorState[];
 	redoStack: EditorState[];
 }

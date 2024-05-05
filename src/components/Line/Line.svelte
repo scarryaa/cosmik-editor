@@ -40,13 +40,12 @@ const applyHighlighting = async (extension: ParseType, text: string) => {
 };
 
 $: {
-	const extension =
-		($tabs
-			.find((tab) => tab.id === $activeTabId)
-			?.id.split("/")
-			.at(-1)
-			?.split(".")
-			.at(-1) as ParseType) ?? "ts";
+	const extension = $tabs
+		.find((tab) => tab.id === $activeTabId)
+		?.id.split("/")
+		.at(-1)
+		?.split(".")
+		.at(-1) as ParseType;
 	applyHighlighting(extension, lineContent)
 		.then((result) => {
 			highlightedContent = result;

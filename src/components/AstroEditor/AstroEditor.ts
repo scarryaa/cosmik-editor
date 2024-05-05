@@ -55,17 +55,20 @@ export const handleKeyDown = async (
 		contentModified: Map<string, boolean>;
 	},
 	$cursor: () => HTMLDivElement,
+	$totalLines: Writable<number>,
 ) => {
 	event.preventDefault();
 
-    // Ignore Ctrl, Ctrl + Shift, Ctrl + Z, Ctrl + Shift + Z, Shift
-    if (event.key === "Control" || 
+	// Ignore Ctrl, Ctrl + Shift, Ctrl + Z, Ctrl + Shift + Z, Shift
+	if (
+		event.key === "Control" ||
 		event.key === "Shift" ||
-        (event.ctrlKey && event.key === "Shift") || 
-        (event.ctrlKey && event.key === "z") || 
-        (event.ctrlKey && event.shiftKey && event.key === "Z")) {
-        return;
-    }
+		(event.ctrlKey && event.key === "Shift") ||
+		(event.ctrlKey && event.key === "z") ||
+		(event.ctrlKey && event.shiftKey && event.key === "Z")
+	) {
+		return;
+	}
 
 	let keyHandled = false;
 
@@ -94,7 +97,7 @@ export const handleKeyDown = async (
 
 	if (event.key === "Backspace") {
 		captureStateForUndo();
-		
+
 		handleBackspace(
 			event,
 			editor,
@@ -104,6 +107,7 @@ export const handleKeyDown = async (
 			$contentStore,
 			$activeTabId,
 			$astroEditor(),
+			$totalLines
 		);
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.code === "Tab") {
@@ -118,7 +122,7 @@ export const handleKeyDown = async (
 		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key === "Delete") {
 		captureStateForUndo();
-		handleDelete(event, $editor(), $astroEditor());
+		handleDelete(event, $editor(), $astroEditor(), $totalLines);
 	} else if (event.key === "Home") {
 		handleHome(event, $editor(), $astroEditor());
 	} else if (event.key === "End") {
@@ -143,7 +147,7 @@ export const handleKeyDown = async (
 		);
 	} else if (event.key === "Enter") {
 		captureStateForUndo();
-		
+
 		handleEnter(
 			event,
 			editor,
@@ -152,6 +156,7 @@ export const handleKeyDown = async (
 			$astroWrapperInner(),
 			currentLineElement(),
 			$cursor(),
+			$totalLines
 		);
 
 		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
@@ -262,7 +267,7 @@ const captureStateForUndo = () => {
 		model.captureStateForUndo();
 		return model;
 	});
-}
+};
 
 const handleCtrlShiftV = async (
 	$cursor: HTMLDivElement,
@@ -439,6 +444,7 @@ const handleDelete = (
 	event: KeyboardEvent,
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
+	$totalLines: Writable<number>,
 ) => {
 	if (event.ctrlKey) {
 		if ($editor.cursorIsAtEndOfLine()) {
@@ -459,6 +465,7 @@ const handleDelete = (
 		});
 	}
 
+	$totalLines.set($editor.getTotalLines());
 	updateCursorHorizontalPosition($editor, $astroEditor);
 	updateCursorVerticalPosition(false);
 };
@@ -698,6 +705,7 @@ const handleBackspace = (
 	},
 	$activeTabId: string,
 	$astroEditor: HTMLDivElement,
+	$totalLines: Writable<number>,
 ) => {
 	let isSelection = $editor.getSelection().isSelection();
 
@@ -736,6 +744,8 @@ const handleBackspace = (
 		updateCursorVerticalPosition(false);
 	}
 
+	$totalLines.set($editor.getTotalLines());
+
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };
 
@@ -747,12 +757,14 @@ const handleEnter = (
 	$astroWrapperInner: HTMLDivElement,
 	currentLineElement: HTMLDivElement,
 	$cursor: HTMLDivElement,
+	$totalLines: Writable<number>,
 ) => {
 	editor.update((model) => {
 		model.insertCharacter("\n");
 		return model;
 	});
 
+	$totalLines.set($editor.getTotalLines());
 	updateCursorVerticalPosition(true);
 	updateCursorHorizontalPosition($editor, $astroEditor);
 };

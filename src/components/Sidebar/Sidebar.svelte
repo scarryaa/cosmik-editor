@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 import { onDestroy, onMount } from "svelte";
 import { contentStore } from "../../stores/content";
 import { editor, showEditor } from "../../stores/editor";
-    import { astroEditor, astroWrapperInner } from "../../stores/elements";
+import { astroEditor, astroWrapperInner } from "../../stores/elements";
 import { sideBarOpen } from "../../stores/sidebar";
 import { activeTabId, lastActiveTabs, tabs } from "../../stores/tabs";
 import { openFile, openFolder, saveFile } from "../../util/tauri-events";
@@ -19,7 +19,17 @@ const toggleSidebar = (): void => {
 onMount(() => {
 	openFolder();
 	// @TODO move somewhere else?
-	_openFile = openFile(lastActiveTabs, $contentStore, $editor, editor, $tabs, () => $activeTabId ?? "", $astroWrapperInner, $astroEditor, showEditor)
+	_openFile = openFile(
+		lastActiveTabs,
+		$contentStore,
+		$editor,
+		editor,
+		$tabs,
+		() => $activeTabId ?? "",
+		$astroWrapperInner,
+		$astroEditor,
+		showEditor,
+	);
 	_saveFile = saveFile(
 		() => $activeTabId ?? "",
 		() => $contentStore.contents.get($activeTabId ?? "") ?? "",

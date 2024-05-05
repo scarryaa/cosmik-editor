@@ -11,13 +11,14 @@ import {
 	astroWrapperInner,
 	cursor,
 } from "../../stores/elements";
+    import { totalLines } from "../../stores/lines";
 import {
 	scrollHorizontalPosition,
 	scrollVerticalPosition,
 } from "../../stores/scroll";
-import { lastMousePosition, selecting } from "../../stores/selection";
 import { sideBarOpen } from "../../stores/sidebar";
 import { activeTabId, tabs } from "../../stores/tabs";
+import { unlisteners } from "../../util/listeners";
 import {
 	copy,
 	cut,
@@ -37,24 +38,19 @@ import {
 	focusEditor,
 	handleKeyDown,
 	handleMouseDown,
-	handleMouseMove,
 	handleMouseUp,
 	updateCursorHorizontalPosition,
 } from "./AstroEditor";
 import "./AstroEditor.scss";
 import { getNumberOfLinesOnScreen } from "./AstroEditorScrolling";
 
-let visibleStartIndex = 0;
-let visibleEndIndex = 10;
 let input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
 let linesMap = new Map<number, HTMLDivElement>();
 let wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
-let tabsHeight: number;
 let maxWidth = 0;
-const lines = $editor.getContentString().split("\n");
 
-$: {
+const calculateLongestLine = (): void => {
 	let longestLine = 0;
 	for (const line of $editor.getContent()) {
 		const lineWidth = line.getContent().length;
@@ -64,20 +60,11 @@ $: {
 	}
 
 	maxWidth = measureTextWidth("a") * longestLine + 50;
-}
+};
 
 const handleLineRef = (lineNumber: number, element: HTMLDivElement) => {
 	linesMap.set(lineNumber, element);
 };
-
-tick().then(() => {
-	// Have to add it here
-	$astroWrapperInner.addEventListener("scroll", (event) => {
-		scrollVerticalPosition.set($astroWrapperInner.scrollTop);
-		scrollHorizontalPosition.set($astroWrapperInner.scrollLeft);
-		updateLinesOnScreen();
-	});
-});
 
 const cursorVerticalPosition = derived(
 	[cursorVertPos, scrollVerticalPosition],
@@ -112,80 +99,26 @@ const cursorHorizontalPosition = derived(
 	},
 );
 
-const updateLinesOnScreen = (): void => {
-	const scrollTop = $astroWrapperInner?.scrollTop;
-	const linesOnScreen = getNumberOfLinesOnScreen();
-	visibleStartIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - 1);
-	visibleEndIndex = visibleStartIndex + linesOnScreen;
+const visibleLines = derived(
+	[scrollVerticalPosition, editor],
+	([$scrollPosition, $editor]) => {
+		const linesOnScreen = getNumberOfLinesOnScreen();
+		let visibleStartIndex = Math.max(
+			0,
+			Math.floor($scrollPosition / lineHeight) - 1,
+		);
+		let visibleEndIndex = visibleStartIndex + linesOnScreen;
 
-	// Adjust for total lines to avoid rendering non-existent lines
-	visibleEndIndex = Math.min(visibleEndIndex + 1, $editor.getTotalLines());
+		visibleEndIndex = Math.min(visibleEndIndex + 1, $editor.getTotalLines());
+		return { start: visibleStartIndex, end: visibleEndIndex };
+	},
+);
+
+const updatePresentationHeight = (): void => {
 	presentation.style.height = `${$editor.getTotalLines() * lineHeight}px`;
 };
 
-cursorVerticalPosition.subscribe(async ($cursorVerticalPosition) => {
-	const top = await $cursorVerticalPosition;
-	cursorVertPos.set(top);
-});
-
-cursorHorizontalPosition.subscribe(async ($cursorHorizontalPosition) => {
-	const left = await $cursorHorizontalPosition;
-	cursorHorizPos.set(left + measureTextWidth("a"));
-});
-
-$: tabsHeight = $astroWrapperInner?.getBoundingClientRect().top;
-
-onMount(async () => {
-	focusEditor(input);
-
-	astroEditor.set(presentation);
-	document.addEventListener("mousemove", (event: MouseEvent) =>
-		handleMouseMove(event, $editor, $selecting, $lastMousePosition),
-	);
-
-	// biome-ignore lint/style/noNonNullAssertion: Will exist at this point
-	const currentLine = linesMap.get($editor.getCursorLine() + 1)!;
-	// Event listeners
-	selectAll(editor);
-	await copy($editor);
-	await cut(
-		$cursor,
-		currentLine,
-		$astroWrapperInner,
-		editor,
-		$editor,
-		$astroEditor,
-		() => $activeTabId ?? "",
-	);
-	await paste(
-		$cursor,
-		$astroWrapperInner,
-		editor,
-		$editor,
-		() => $activeTabId ?? "",
-		$astroEditor,
-	);
-	await undo(
-		$cursor,
-		editor,
-		$editor,
-		$astroEditor,
-		currentLine,
-		$astroWrapperInner,
-		contentStore,
-		() => $activeTabId ?? "",
-	);
-	await redo(
-		$cursor,
-		editor,
-		$editor,
-		$astroEditor,
-		currentLine,
-		$astroWrapperInner,
-		contentStore,
-		() => $activeTabId ?? "",
-	);
-
+const setUpSubscriptions = (): void => {
 	sideBarOpen.subscribe(async () => {
 		await tick();
 		wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
@@ -194,12 +127,19 @@ onMount(async () => {
 
 	cursorVertPos.subscribe(async () => {
 		await tick();
-		updateLinesOnScreen();
+	});
+
+	contentStore.subscribe(() => {
+		calculateLongestLine();
 	});
 
 	activeTabId.subscribe(async () => {
 		await tick();
-		updateLinesOnScreen();
+		requestAnimationFrame(() => {
+			updatePresentationHeight();
+		});
+
+		calculateLongestLine();
 
 		const activeTab = $tabs.find((tab) => tab.id === $activeTabId);
 		requestAnimationFrame(async () => {
@@ -211,12 +151,20 @@ onMount(async () => {
 			$astroWrapperInner.scrollTop = activeTab?.scrollPosition.top ?? 0;
 		});
 	});
-});
 
-onDestroy(() => {
-	// biome-ignore lint/style/noNonNullAssertion: Will exist at this point
-	const currentLine = linesMap.get($editor.getCursorLine() + 1)!;
+	cursorVerticalPosition.subscribe(async ($cursorVerticalPosition) => {
+		const top = await $cursorVerticalPosition;
+		cursorVertPos.set(top);
+	});
 
+	cursorHorizontalPosition.subscribe(async ($cursorHorizontalPosition) => {
+		const left = await $cursorHorizontalPosition;
+		cursorHorizPos.set(left + measureTextWidth("a"));
+	});
+};
+
+const addTauriListeners = (currentLine: HTMLDivElement): void => {
+	// Event listeners
 	selectAll(editor);
 	copy($editor);
 	cut(
@@ -236,13 +184,50 @@ onDestroy(() => {
 		() => $activeTabId ?? "",
 		$astroEditor,
 	);
+	undo(
+		$cursor,
+		editor,
+		$editor,
+		$astroEditor,
+		currentLine,
+		$astroWrapperInner,
+		contentStore,
+		() => $activeTabId ?? "",
+	);
+	redo(
+		$cursor,
+		editor,
+		$editor,
+		$astroEditor,
+		currentLine,
+		$astroWrapperInner,
+		contentStore,
+		() => $activeTabId ?? "",
+	);
+};
+
+onMount(async () => {
+	focusEditor(input);
+	astroEditor.set(presentation);
+
+	setUpSubscriptions();
+
+	// biome-ignore lint/style/noNonNullAssertion: Will be defined here
+	const currentLine = linesMap.get($editor.getCursorLine() + 1)!;
+	addTauriListeners(currentLine);
+});
+
+onDestroy(() => {
+	for (const unlisten of unlisteners) {
+		unlisten();
+	}
 });
 </script>
     
 <div bind:this={presentation} class="astro-presentation" role="presentation" on:mousedown={(event: MouseEvent) => { handleMouseDown(event, input, $editor, $astroEditor) }} on:mouseup={handleMouseUp} style={`padding-right: ${maxWidth}px`}>
-    {#each $editor.getContentString().split('\n').slice(visibleStartIndex, visibleEndIndex) as line, index (index + visibleStartIndex)}
-        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getContent()[index + visibleStartIndex].getSelectionStart()} selectionEnd={$editor.getContent()[index + visibleStartIndex].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleStartIndex} registerLineRef={handleLineRef} />
+    {#each $editor.getContentString().split('\n').slice($visibleLines.start, $visibleLines.end) as line, index (index + $visibleLines.start)}
+        <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getContent()[index + $visibleLines.start].getSelectionStart()} selectionEnd={$editor.getContent()[index + $visibleLines.start].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + $visibleLines.start} registerLineRef={handleLineRef} />
     {/each}
-	<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor)}} class="astro-input"></textarea>
+	<textarea bind:this={input} on:keydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor, totalLines)}} class="astro-input"></textarea>
 </div>
 <Cursor left={(65 + ($editor.getTotalLines() > 1000 ? 10 : 0)) + $cursorHorizPos} top={$cursorVertPos}/>

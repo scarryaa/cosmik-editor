@@ -19,7 +19,8 @@ $: if (lineCount > 1000) {
 }
 
 $: if (_lineNumbers) _lineNumbers.style.height = `${lineCount * lineHeight}px`;
-$: if (_lineNumbers && lineCount > 1000) _lineNumbers.style.paddingLeft = "15px";
+$: if (_lineNumbers && lineCount > 1000)
+	_lineNumbers.style.paddingLeft = "15px";
 
 const updateVisibleLines = () => {
 	const containerScrollTop = $astroWrapperInner?.scrollTop;
@@ -45,9 +46,9 @@ onMount(() => {
 	updateVisibleLines();
 
 	activeTabId.subscribe(() => {
-        requestAnimationFrame(() => {
-            updateVisibleLines();
-        })
+		requestAnimationFrame(() => {
+			updateVisibleLines();
+		});
 	});
 
 	return () => {

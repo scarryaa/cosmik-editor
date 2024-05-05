@@ -10,7 +10,11 @@ export type CursorPosition = {
 export class Cursor {
 	private position: CursorPosition;
 
-	constructor(private line = 0, private character = 0, private characterBasis = 0) {
+	constructor(
+		private line = 0,
+		private character = 0,
+		private characterBasis = 0,
+	) {
 		this.position = { line, character, characterBasis };
 	}
 

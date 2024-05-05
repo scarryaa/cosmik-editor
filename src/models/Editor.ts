@@ -199,19 +199,19 @@ export class Editor {
 
 	setRedoStack = (stack: EditorState[]): void => {
 		this.redoStack = stack;
-	}
+	};
 
 	setUndoStack = (stack: EditorState[]): void => {
 		this.undoStack = stack;
-	}
+	};
 
 	getRedoStack = (): EditorState[] => {
 		return this.redoStack;
-	}
+	};
 
 	getUndoStack = (): EditorState[] => {
 		return this.undoStack;
-	}
+	};
 
 	clearCurrentLine = (): void => {
 		this.content[this.cursor.getPosition().line].clearLine();

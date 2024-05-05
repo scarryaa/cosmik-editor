@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { lineHeight } from "../../const/const";
+import { lineHeight } from "../../const/const";
 import { measureTextWidth } from "../../util/text";
 import "./SelectionHighlight.scss";
 
