@@ -14,13 +14,13 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin --debug'
+            args: '--target aarch64-apple-darwin'
           - platform: 'macos-latest'
-            args: '--target x86_64-apple-darwin --debug'
+            args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
-            args: '--debug'
+            args: ''
           - platform: 'windows-latest'
-            args: '--debug'
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
