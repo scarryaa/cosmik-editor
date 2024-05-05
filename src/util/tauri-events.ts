@@ -4,10 +4,7 @@ import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
-import {
-	scrollToCurrentLine,
-	scrollToCursor,
-} from "../components/AstroEditor/AstroEditorScrolling";
+import { scrollToCurrentLine } from "../components/AstroEditor/AstroEditorScrolling";
 import type { Tab } from "../components/TabWrapper/Tabs/types";
 import type { Editor } from "../models/Editor";
 import {
@@ -16,7 +13,7 @@ import {
 	contentStore,
 } from "../stores/content";
 import { folder } from "../stores/folder";
-import { openTab, tabs } from "../stores/tabs";
+import { openTab } from "../stores/tabs";
 import { unlisteners } from "./listeners";
 import { pasteInternal } from "./util";
 
@@ -52,17 +49,6 @@ export const undo = (
 		});
 
 		$contentStore.updateContent($activeTabId(), $editor.getContentString());
-
-		scrollToCurrentLine(
-			() => currentLineElement,
-			() => $astroWrapperInner,
-			"down",
-		);
-		scrollToCursor(
-			$cursor,
-			() => $editor,
-			() => $astroWrapperInner,
-		);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});
@@ -85,17 +71,6 @@ export const redo = (
 		});
 
 		$contentStore.updateContent($activeTabId(), $editor.getContentString());
-
-		scrollToCurrentLine(
-			() => currentLineElement,
-			() => $astroWrapperInner,
-			"down",
-		);
-		scrollToCursor(
-			$cursor,
-			() => $editor,
-			() => $astroWrapperInner,
-		);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});
@@ -134,19 +109,6 @@ export const cut = (
 		});
 
 		await writeText(cutText);
-
-		await tick();
-
-		scrollToCurrentLine(
-			() => currentLineElement,
-			() => $astroWrapperInner,
-			"down",
-		);
-		scrollToCursor(
-			$cursor,
-			() => $editor,
-			() => $astroWrapperInner,
-		);
 		contentStore.updateContent($activeTabId(), $editor.getContentString());
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
@@ -155,25 +117,27 @@ export const cut = (
 
 export const paste = (
 	$cursor: HTMLDivElement,
-	$astroWrapperInner: HTMLDivElement,
+	$astroWrapperInner: () => HTMLDivElement,
 	editor: Writable<Editor>,
 	$editor: Editor,
 	$activeTabId: () => string,
 	$astroEditor: HTMLDivElement,
+	$currentLineElement: () => HTMLDivElement,
 ) =>
 	listen("paste", async () => {
 		await pasteInternal(
 			$cursor,
-			$astroWrapperInner,
+			$astroWrapperInner(),
 			editor,
 			$editor,
 			$astroEditor,
 		);
 
 		await tick();
-		setTimeout(() => {
+		requestAnimationFrame(() => {
 			contentStore.updateContent($activeTabId(), $editor.getContentString());
-		}, 0);
+			scrollToCurrentLine($currentLineElement, $astroWrapperInner, "down", $editor.getCursorLine() + 1);
+		});
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});

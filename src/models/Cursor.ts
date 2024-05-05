@@ -7,8 +7,16 @@ export type CursorPosition = {
 	characterBasis: number;
 };
 
+export enum CursorDirection {
+	Left = "left",
+	Right = "right",
+	Up = "up",
+	Down = "down",
+}
+
 export class Cursor {
 	private position: CursorPosition;
+	private direction: CursorDirection;
 
 	constructor(
 		private line = 0,
@@ -16,12 +24,14 @@ export class Cursor {
 		private characterBasis = 0,
 	) {
 		this.position = { line, character, characterBasis };
+		this.direction = CursorDirection.Right;
 	}
 
 	moveUp = (content: Content): void => {
 		// If at first line, move to the start
 		if (this.isAtFirstLine()) {
 			this.moveToBeginningOfLine();
+			this.direction = CursorDirection.Up;
 		} else if (this.position.line > 0) {
 			// Try to move to character basis
 			const newLine = this.position.line - 1;
@@ -30,6 +40,7 @@ export class Cursor {
 				this.position.characterBasis,
 				content[newLine].getContent().length,
 			);
+			this.direction = CursorDirection.Up;
 		}
 	};
 
@@ -37,6 +48,7 @@ export class Cursor {
 		// If at the last line, move to the end
 		if (this.isAtLastLine(totalLines)) {
 			this.moveToEndOfLine(content[totalLines - 1].getContent().length);
+			this.direction = CursorDirection.Down;
 		} else if (this.position.line < totalLines - 1) {
 			// Try to move to character basis
 			const newLine = this.position.line + 1;
@@ -45,6 +57,7 @@ export class Cursor {
 				this.position.characterBasis,
 				content[newLine].getContent().length,
 			);
+			this.direction = CursorDirection.Down;
 		}
 	};
 
@@ -56,6 +69,7 @@ export class Cursor {
 				// Set character position to the end of the previous line
 				this.position.character =
 					content[this.position.line].getContent().length;
+				this.direction = CursorDirection.Left;
 			}
 			// If on the first line, do nothing
 		} else {
@@ -71,6 +85,7 @@ export class Cursor {
 				// Normal left movement within the line
 				this.position.character -= 1;
 			}
+			this.direction = CursorDirection.Left;
 		}
 
 		this.position.characterBasis = this.position.character;
@@ -84,6 +99,7 @@ export class Cursor {
 				this.position.line += 1;
 				this.position.character = 0; // Start at the beginning of the next line
 			}
+			this.direction = CursorDirection.Right;
 			// If it's the last line and character is at the end, do nothing
 		} else {
 			// Check for a tab (4 spaces) after the cursor and move right by 4 if found
@@ -98,6 +114,7 @@ export class Cursor {
 				// Normal right movement within the line
 				this.position.character += 1;
 			}
+			this.direction = CursorDirection.Right;
 		}
 
 		this.position.characterBasis = this.position.character;
@@ -106,11 +123,13 @@ export class Cursor {
 	moveToBeginningOfLine = (): void => {
 		this.position.character = 0;
 		this.position.characterBasis = 0;
+		this.direction = CursorDirection.Left;
 	};
 
 	moveToEndOfLine = (lineLength: number): void => {
 		this.position.character = lineLength;
 		this.position.characterBasis = lineLength;
+		this.direction = CursorDirection.Right;
 	};
 
 	moveToPreviousWord = (maxLines: number, content: Content): void => {
@@ -151,19 +170,37 @@ export class Cursor {
 		line: number,
 		basis?: number,
 	): void => {
+		// Capture the old position
+		const oldPosition = { ...this.position };
+	
+		// Update the position with the new values
 		this.position = {
 			character: Math.max(
 				0,
 				Math.min(
 					basis ?? character,
-					content[Math.max(0, Math.min(line, maxLines - 1))].getContent()
-						.length,
+					content[Math.max(0, Math.min(line, maxLines - 1))].getContent().length,
 				),
 			),
 			line: Math.max(0, Math.min(line, maxLines - 1)),
 			characterBasis: basis ?? this.position.characterBasis,
 		};
+	
+		// Determine the direction based on old and new positions
+		if (this.position.line < oldPosition.line) {
+			this.direction = CursorDirection.Up;
+		} else if (this.position.line > oldPosition.line) {
+			this.direction = CursorDirection.Down;
+		} else if (this.position.character < oldPosition.character) {
+			this.direction = CursorDirection.Left;
+		} else if (this.position.character > oldPosition.character) {
+			this.direction = CursorDirection.Right;
+		}
 	};
+
+	getDirection = (): CursorDirection => {
+		return this.direction;
+	}
 
 	getPosition = (): CursorPosition => {
 		return this.position;

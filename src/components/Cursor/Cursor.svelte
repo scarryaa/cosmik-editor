@@ -1,9 +1,11 @@
 <script lang="ts">
 import { onMount, tick } from "svelte";
+import { contentStore } from "../../stores/content";
 import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
 import { cursor } from "../../stores/elements";
 import { sideBarOpen } from "../../stores/sidebar";
 import { measureTextWidth } from "../../util/text";
+import { generateCursorPositonChangeEvent } from "../../util/util";
 import {
 	calculateCursorHorizontalPosition,
 	calculateCursorVerticalPosition,
@@ -30,15 +32,23 @@ $effect(() => {
 	cursorHorizPos.set(cursorHorizontalPosition + measureTextWidth("a"));
 });
 
-$effect(() => {
+onMount(() => {
+	cursor.set(cursorElement);
+
+	contentStore.subscribe((value) => {
+		if (value.contents) {
+			generateCursorPositonChangeEvent(
+				cursorElement,
+				$editor.getCursor().getDirection(),
+			);
+		}
+	});
+
 	sideBarOpen.subscribe(async () => {
 		await tick();
 		calculateCursorHorizontalPosition($editor);
 	});
-	cursor.set(cursorElement);
 });
-
-onMount(() => {});
 </script>
 
 <div bind:this={cursorElement} class="cursor" style="left: {$cursorHorizPos}px; top: {$cursorVertPos}px;"></div>

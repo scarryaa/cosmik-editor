@@ -1,10 +1,7 @@
 import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
-import {
-	scrollToCurrentLine,
-	scrollToCursor,
-} from "../components/AstroEditor/AstroEditorScrolling";
+import type { CursorDirection } from "../models/Cursor";
 import type { Editor } from "../models/Editor";
 
 export const pasteInternal = async (
@@ -26,16 +23,7 @@ export const pasteInternal = async (
 		`[data-line-number="${$editor.getCursor().getPosition().line - 1}"]`,
 	) as HTMLDivElement;
 
-	scrollToCursor(
-		$cursor,
-		() => $editor,
-		() => $astroWrapperInner,
-	);
-	scrollToCurrentLine(
-		() => newLine,
-		() => $astroWrapperInner,
-		"down",
-	);
+	generateCursorPositonChangeEvent($cursor, $editor.getCursor().getDirection());
 };
 
 export const generateHash = async (content: string): Promise<string> => {
@@ -48,3 +36,8 @@ export const generateHash = async (content: string): Promise<string> => {
 		.join("");
 	return hashHex;
 };
+
+export const generateCursorPositonChangeEvent = (node: HTMLElement, direction: CursorDirection): void => {
+	const cursorPositionChangeEvent = new CustomEvent("cursorPositionChange", { bubbles: true, detail: { direction } });
+	node.dispatchEvent(cursorPositionChangeEvent);
+}

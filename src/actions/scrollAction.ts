@@ -8,14 +8,16 @@ export const scrollAction = (
 	node: HTMLElement,
 	params: {
 		$lineNumbers: HTMLElement;
-		wrapperInner: HTMLElement;
+		wrapperInner: HTMLElement | undefined;
 		lineCount: number;
 		$startLine: () => number;
 	},
 ) => {
 	const handleScroll = () => {
 		updateScroll(node);
-		updateLineNumbersTransform(params.$lineNumbers, params.wrapperInner);
+		if (params.wrapperInner) {
+			updateLineNumbersTransform(params.$lineNumbers, params.wrapperInner);
+		}
 		updateVisibleLines(node, params.lineCount, params.$startLine());
 	};
 

@@ -3,7 +3,11 @@ import type { Tab } from "../components/TabWrapper/Tabs/types";
 import type { Editor } from "../models/Editor";
 import type { ContentStore } from "./content";
 import { editor, showEditor } from "./editor";
-import { registerTabScrollStore, tabsScrollStores, unregisterTabScrollStore } from "./scroll";
+import {
+	registerTabScrollStore,
+	tabsScrollStores,
+	unregisterTabScrollStore,
+} from "./scroll";
 
 export const tabs = writable<Tab[]>([]);
 export const activeTabId = writable<string | null>(null);
@@ -42,7 +46,11 @@ export const updateCurrentTabScrollPosition = (
 	}
 };
 
-export const closeTab = (id: string, $contentStore: ContentStore, $tabs: Tab[]) => {
+export const closeTab = (
+	id: string,
+	$contentStore: ContentStore,
+	$tabs: Tab[],
+) => {
 	lastActiveTabs.update((tabs) => tabs.filter((tabId) => tabId !== id));
 	tabs.update((currentTabs) => currentTabs.filter((tab) => tab.id !== id));
 
@@ -64,7 +72,11 @@ export const closeTab = (id: string, $contentStore: ContentStore, $tabs: Tab[]) 
 	unregisterTabScrollStore(id);
 };
 
-export const setActiveTab = async (id: string | null, $contentStore: ContentStore, $tabs: Tab[]) => {
+export const setActiveTab = async (
+	id: string | null,
+	$contentStore: ContentStore,
+	$tabs: Tab[],
+) => {
 	activeTabId.set(id);
 
 	if (id == null) {
@@ -106,7 +118,14 @@ export const setActiveTab = async (id: string | null, $contentStore: ContentStor
 	}
 };
 
-export const handleClick = (event: MouseEvent, tabId: string, $contentStore: ContentStore, $tabs: Tab[], $editor: Editor, $activeTabId: string) => {
+export const handleClick = (
+	event: MouseEvent,
+	tabId: string,
+	$contentStore: ContentStore,
+	$tabs: Tab[],
+	$editor: Editor,
+	$activeTabId: string,
+) => {
 	// Middle click closes the tab
 	if (event.button === 1) {
 		closeTab(tabId, $contentStore, $tabs);

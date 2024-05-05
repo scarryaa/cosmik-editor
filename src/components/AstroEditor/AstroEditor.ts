@@ -1,18 +1,15 @@
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
-import { lineHeight } from "../../const/const";
 import type { Editor } from "../../models/Editor";
 import { type ContentStore, contentStore } from "../../stores/content";
-import { cursorVertPos, editor } from "../../stores/editor";
+import { editor } from "../../stores/editor";
 import { lastMousePosition, selecting } from "../../stores/selection";
-import { closeTab, tabs } from "../../stores/tabs";
+import { closeTab } from "../../stores/tabs";
 import { getCharacterIndex, getLineIndex } from "../../util/text";
 import { pasteInternal } from "../../util/util";
 import type { Tab } from "../TabWrapper/Tabs/types";
 import {
 	getNumberOfLinesOnScreen,
-	scrollToCurrentLine,
-	scrollToCursor,
 } from "./AstroEditorScrolling";
 import {
 	handleMouseSelection,
@@ -105,7 +102,6 @@ export const handleKeyDown = async (
 			$astroEditor(),
 			$totalLines,
 		);
-		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.code === "Tab") {
 		captureStateForUndo();
 
@@ -115,7 +111,6 @@ export const handleKeyDown = async (
 		} else {
 			handleTab(event, $editor(), $astroEditor());
 		}
-		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key === "Delete") {
 		captureStateForUndo();
 		handleDelete(event, $editor(), $astroEditor(), $totalLines);
@@ -125,22 +120,8 @@ export const handleKeyDown = async (
 		handleEnd(event, $editor(), $astroEditor());
 	} else if (event.key === "PageUp") {
 		handlePageUp(event, $editor(), $astroEditor());
-		await tick();
-		scrollToCurrentLine(
-			currentLineElement,
-			$astroWrapperInner,
-			"up",
-			$editor().getCursorLine() + 1,
-		);
 	} else if (event.key === "PageDown") {
 		handlePageDown(event, $editor(), $astroEditor());
-		await tick();
-		scrollToCurrentLine(
-			currentLineElement,
-			$astroWrapperInner,
-			"down",
-			$editor().getCursorLine() + 1,
-		);
 	} else if (event.key === "Enter") {
 		captureStateForUndo();
 
@@ -154,9 +135,6 @@ export const handleKeyDown = async (
 			$cursor(),
 			$totalLines,
 		);
-
-		scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
-		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (
 		["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(event.key)
 	) {
@@ -167,7 +145,6 @@ export const handleKeyDown = async (
 			currentLineElement,
 			$astroWrapperInner,
 		);
-		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	} else if (event.key.length === 1 && !keyHandled) {
 		captureStateForUndo();
 
@@ -179,8 +156,6 @@ export const handleKeyDown = async (
 			$astroEditor(),
 			$astroWrapper(),
 		);
-
-		scrollToCursor($cursor(), $editor, $astroWrapperInner);
 	}
 
 	await tick();
@@ -622,19 +597,15 @@ const handleArrowKeys = (
 	switch (event.key) {
 		case "ArrowRight":
 			handleArrowRight(event, $editor(), $astroEditor());
-			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 			break;
 		case "ArrowLeft":
 			handleArrowLeft(event, $editor(), $astroEditor());
-			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "up");
 			break;
 		case "ArrowUp":
 			handleArrowUp(event, $editor(), $astroEditor());
-			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "up");
 			break;
 		case "ArrowDown":
 			handleArrowDown(event, $editor(), $astroEditor());
-			scrollToCurrentLine(currentLineElement, $astroWrapperInner, "down");
 			break;
 	}
 };

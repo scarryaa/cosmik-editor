@@ -9,6 +9,7 @@ import {
 	astroWrapper,
 	astroWrapperInner,
 	cursor,
+    linesMap,
 } from "../../stores/elements";
 import { totalLines } from "../../stores/lines";
 import { scrollVerticalPosition } from "../../stores/scroll";
@@ -39,7 +40,6 @@ let _input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
 
 let currentLineNumber = 1;
-let linesMap = new Map<number, HTMLDivElement>();
 let wrapperLeft = $astroWrapperInner?.getBoundingClientRect().left;
 let maxWidth = $state(0);
 
@@ -56,7 +56,7 @@ const calculateLongestLine = (): void => {
 };
 
 const handleLineRef = (lineNumber: number, element: HTMLDivElement) => {
-	linesMap.set(lineNumber, element);
+	linesMap.update((map) => map.set(lineNumber, element));
 };
 
 const visibleLines = $derived.by(() => {
@@ -108,11 +108,13 @@ const addTauriListeners = (currentLine: HTMLDivElement): void => {
 	);
 	paste(
 		$cursor,
-		$astroWrapperInner,
+		() => $astroWrapperInner,
 		editor,
 		$editor,
 		() => $activeTabId ?? "",
 		$astroEditor,
+		// biome-ignore lint/style/noNonNullAssertion: It will be created
+		() => $linesMap.get($editor.getCursorLine() + 1)!
 	);
 	undo(
 		$cursor,
@@ -137,24 +139,17 @@ const addTauriListeners = (currentLine: HTMLDivElement): void => {
 };
 
 $effect(() => {
-	astroEditor.set(presentation);
-});
-
-$effect(() => {
 	currentLineNumber = $editor.getCursorLine();
 });
 
-$effect(() => {
+onMount(() => {
+	astroEditor.set(presentation);
 	focusEditor(_input as HTMLTextAreaElement);
 
-	setUpSubscriptions();
-});
-
-// @TODO find a way to convert this to an effect without it running every keystroke
-onMount(() => {
 	// biome-ignore lint/style/noNonNullAssertion: Will be defined here
-	const currentLine = linesMap.get(currentLineNumber + 1)!;
+	const currentLine = $linesMap.get(currentLineNumber + 1)!;
 	addTauriListeners(currentLine);
+	setUpSubscriptions();
 
 	return () => {
 		for (const unlisten of unlisteners) {
@@ -168,6 +163,6 @@ onMount(() => {
     {#each $editor.getContentString().split('\n').slice(visibleLines.start, visibleLines.end) as line, index (index + visibleLines.start)}
         <Line cursorPosition={$editor.getCursor().getPosition()} selectionStart={$editor.getContent()[index + visibleLines.start].getSelectionStart()} selectionEnd={$editor.getContent()[index + visibleLines.start].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleLines.start} registerLineRef={handleLineRef} />
     {/each}
-	<textarea style={`top: ${activeTab?.scrollPosition.top ?? 0}px; left: ${activeTab?.scrollPosition.left ?? 0}px`} bind:this={_input} onkeydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor, totalLines, $tabs)}} class="astro-input"></textarea>
+	<textarea style={`top: ${activeTab?.scrollPosition.top ?? 0}px; left: ${activeTab?.scrollPosition.left ?? 0}px`} bind:this={_input} onkeydown={(event: KeyboardEvent) => { handleKeyDown(event, editor, () => $editor, () => $astroWrapper, $app, () => $astroEditor, () => $linesMap.get($editor.getCursorLine() + 1)!, () => $astroWrapperInner, $activeTabId ?? "", $contentStore, () => $cursor, totalLines, $tabs)}} class="astro-input"></textarea>
 	<Cursor />
 </div>

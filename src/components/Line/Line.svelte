@@ -2,6 +2,7 @@
 import { lineHeight } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
 import { editor } from "../../stores/editor";
+    import { linesMap } from "../../stores/elements";
 import { activeTabId, tabs } from "../../stores/tabs";
 import {
 	type ParseType,
@@ -26,12 +27,7 @@ export let registerLineRef: (
 let highlightedContent = "";
 let lineElement: HTMLDivElement;
 
-$: isSelected =
-	selectionStart <= selectionEnd ||
-	selectionStart <= lineContent.length ||
-	selectionEnd >= 0;
-
-$: if (isSelected) {
+$: if (!$linesMap.get(lineNumber)) {
 	registerLineRef(lineNumber, lineElement);
 }
 

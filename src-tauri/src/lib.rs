@@ -211,7 +211,7 @@ fn report_issue(app: &AppHandle) -> std::io::Result<()> {
 
 fn about(app: &AppHandle) -> std::io::Result<()> {
     app.dialog()
-        .message("Version 0.0.2-alpha.1")
+        .message("Version 0.0.4")
         .kind(MessageDialogKind::Info)
         .title("About meteor")
         .ok_button_label("OK")
@@ -367,14 +367,14 @@ pub fn run() {
                         "check_for_updates_menu_item",
                         "Check for Updates",
                         true,
-                        Some("CmdOrCtrl+Shift+U"),
+                        Some("")
                     )?,
                     &MenuItem::with_id(
                         handle,
                         "report_issue_menu_item",
                         "Report Issue",
                         true,
-                        Some("CmdOrCtrl+Shift+I"),
+                        Some("")
                     )?,
                 ])
                 .build()?;

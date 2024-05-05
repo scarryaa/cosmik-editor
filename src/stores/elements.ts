@@ -8,3 +8,6 @@ export const astroWrapperInner = writable<HTMLDivElement>();
 export const editorWrapperOuter = writable<HTMLDivElement>();
 export const cursor = writable<HTMLDivElement>();
 export const tabs = writable<HTMLDivElement>();
+export const linesMap = writable<Map<number, HTMLDivElement>>(new Map());
+
+export const editorWidth = writable<number>(0);

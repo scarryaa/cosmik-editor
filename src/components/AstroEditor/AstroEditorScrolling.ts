@@ -21,37 +21,27 @@ export const scrollToCurrentLine = async (
 	currentLineElement: () => HTMLDivElement | null,
 	$astroWrapperInner: () => HTMLDivElement,
 	direction: "up" | "down",
-	override?: number,
-	attempt = 1, // Add an attempt parameter to keep track of retries
-	maxAttempts = 5, // Maximum number of attempts before giving up
+	override?: number
 ): Promise<void> => {
-	await tick();
 	let adjustedCurrentLineElement: HTMLDivElement | null = currentLineElement();
-
+	
 	if (override) {
 		adjustedCurrentLineElement = document.querySelector(
 			`[data-line-number="${override}"]`,
 		);
 	}
 
-	// Retry mechanism if the element is not found and we haven't reached max attempts
-	if (!adjustedCurrentLineElement && attempt <= maxAttempts) {
-		setTimeout(() => {
-			scrollToCurrentLine(
-				currentLineElement,
-				$astroWrapperInner,
-				direction,
-				override,
-				attempt + 1,
-				maxAttempts,
-			);
-		}, 100); // Retry after 100ms
+	if (!adjustedCurrentLineElement) {
+		// Height setting fallback
+		const theoreticalHeight = lineHeight * (override ?? 0);
+		$astroWrapperInner().scrollBy({
+			top: theoreticalHeight,
+			behavior: "auto"
+		})
 		return;
 	}
 
-	if (!adjustedCurrentLineElement) return; // Give up after reaching max attempts
-
-	const elementTop = adjustedCurrentLineElement.offsetTop;
+	const elementTop = Number.parseInt(adjustedCurrentLineElement.style.top.replace("top: ", "").replace("px", ""));
 	const visibleTop = $astroWrapperInner().scrollTop;
 	const visibleBottom = visibleTop + $astroWrapperInner().clientHeight;
 	const edgeThreshold = 50;
@@ -72,43 +62,6 @@ export const scrollToCurrentLine = async (
 		// Scroll up to bring the current line fully into view
 		$astroWrapperInner().scrollBy({
 			top: -(visibleTop - elementTop + edgeThreshold),
-			behavior: "auto",
-		});
-	}
-};
-
-export const scrollToCursor = (
-	cursor: HTMLDivElement,
-	$editor: () => Editor,
-	$astroWrapperInner: () => HTMLDivElement,
-): void => {
-	const cursorPosition = $editor().getCursor().getPosition();
-	const contentUpToCursor = $editor()
-		.getContent()
-		[cursorPosition.line].getContent()
-		.substring(0, cursorPosition.character);
-	const cursorLeft = measureTextWidth(contentUpToCursor);
-
-	// Visible area calculation
-	const visibleLeft = $astroWrapperInner().scrollLeft;
-	const visibleRight = visibleLeft + $astroWrapperInner().clientWidth;
-
-	// Edge padding
-	const edgeThreshold = 50;
-
-	// Determine if cursor is near the left or right edge
-	const isNearLeftEdge = cursorLeft < visibleLeft + edgeThreshold;
-	const isNearRightEdge = cursorLeft > visibleRight - edgeThreshold;
-
-	// Adjust scroll if cursor is near either edge
-	if (isNearLeftEdge) {
-		$astroWrapperInner().scrollTo({
-			left: cursorLeft - edgeThreshold,
-			behavior: "auto",
-		});
-	} else if (isNearRightEdge) {
-		$astroWrapperInner().scrollTo({
-			left: cursorLeft - $astroWrapperInner().clientWidth + edgeThreshold,
 			behavior: "auto",
 		});
 	}
