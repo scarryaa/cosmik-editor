@@ -40,20 +40,19 @@ const applyHighlighting = async (extension: ParseType, text: string) => {
 };
 
 $: {
-	const extension = $tabs
-		.find((tab) => tab.id === $activeTabId)
-		?.id.split("/")
-		.at(-1)
-		?.split(".")
-		.at(-1) as ParseType;
-	applyHighlighting(extension, lineContent)
-		.then((result) => {
-			highlightedContent = result;
-		})
-		.catch((error) => {
-			console.error("Error applying highlighting:", error);
-			highlightedContent = escapeHtml(lineContent);
-		});
+    const activeTab = $tabs.find((tab) => tab.id === $activeTabId);
+    const extension = activeTab?.id.split("/").at(-1)?.split(".").at(-1) as ParseType;
+    
+    if (activeTab && lineContent) {
+        applyHighlighting(extension, lineContent)
+            .then((result) => {
+                highlightedContent = result;
+            })
+            .catch((error) => {
+                console.error("Error applying highlighting:", error);
+                highlightedContent = escapeHtml(lineContent);
+            });
+    }
 }
 
 $: selectedText = $editor

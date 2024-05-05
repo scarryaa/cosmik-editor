@@ -11,16 +11,10 @@ let _lineNumbers: HTMLDivElement;
 const linesOnScreen = getNumberOfLinesOnScreen();
 let startLine = 0;
 let endLine = lineCount;
+let paddingLeft = "5px";
 
-$: if (lineCount > 1000) {
-	_lineNumbers.style.paddingLeft = "10px";
-} else if (_lineNumbers) {
-	_lineNumbers.style.paddingLeft = "5px";
-}
-
-$: if (_lineNumbers) _lineNumbers.style.height = `${lineCount * lineHeight}px`;
-$: if (_lineNumbers && lineCount > 1000)
-	_lineNumbers.style.paddingLeft = "15px";
+$: paddingLeft = lineCount > 1000 ? "15px" : "5px";
+$: height = `${lineCount * lineHeight}px`;
 
 const updateVisibleLines = () => {
 	const containerScrollTop = $astroWrapperInner?.scrollTop;
@@ -57,14 +51,14 @@ onMount(() => {
 });
 </script>
   
-<div class="line-numbers" bind:this={_lineNumbers}>
+<div class="line-numbers" bind:this={_lineNumbers} style="padding-left: {paddingLeft}; height: {height};">
     <!-- Hack to fix lines 0 - X (viewport size) not showing on rapid scrolls -->
-    {#each Array.from({ length: Math.min(lineCount, endLine - startLine) }, (_, i) => i + startLine) as lineNumber}
-        {#if lineNumber >= linesOnScreen}
-            <div class="line-number" style={`top: ${(lineNumber) * lineHeight}px`}>{lineNumber + 1}</div>
-        {/if}
-    {/each}
-    {#each Array.from({ length: Math.min(linesOnScreen, lineCount) }, (_, i) => i) as lineNumber}
-        <div class="line-number" style={`top: ${(lineNumber) * lineHeight}px`}>{lineNumber + 1}</div>
-    {/each}
+	{#each Array.from({ length: Math.min(lineCount, endLine - startLine) }, (_, i) => i + startLine) as lineNumber (lineNumber)}
+		{#if lineNumber >= linesOnScreen}
+			<div class="line-number" style={`top: ${(lineNumber) * lineHeight}px`}>{lineNumber + 1}</div>
+		{/if}
+	{/each}
+	{#each Array.from({ length: Math.min(linesOnScreen, lineCount) }, (_, i) => i) as lineNumber (lineNumber)}
+		<div class="line-number" style={`top: ${(lineNumber) * lineHeight}px`}>{lineNumber + 1}</div>
+	{/each}
 </div>
