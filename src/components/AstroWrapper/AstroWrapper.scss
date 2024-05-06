@@ -1,19 +1,53 @@
 #astro-wrapper {
     display: flex;
-    height: calc(100vh - var(--status-pane-height));
+    height: calc(100% - var(--status-pane-height) + 3px);
     width: 100vw;
     overflow: hidden;
 
     #astro-wrapper-inner {
         overflow: hidden;
+        width: 100%;
 
-        #editor-wrapper-outer {
+        .editor-container {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            width: 100%;
+        }
+
+        &.right-split {
+            &::after {
+                content: "";
+                position: absolute;
+                left: calc(50% - (var(--line-numbers-width) / 2) + 4px + var(--sidebar-width) + (var(--sidebar-inner-width) / 2));
+                right: 0;
+                background-color: #0000009a;
+                bottom: 0;
+                top: 0;
+            }
+        }
+
+        &.left-split {
+            &::after {
+                content: "";
+                position: absolute;
+                width: calc(50% - (var(--line-numbers-width) / 2) - (var(--sidebar-inner-width) / 2) + 4px);
+                bottom: 0;
+                left: calc(var(--line-numbers-width) - 8px + var(--sidebar-inner-width));
+                top: var(--tabs-wrapper-outer-height);
+                z-index: 999;
+                background-color: #0000009a;
+            }
+        }
+
+        .editor-wrapper-outer {
             overflow: hidden;
             position: relative;
             display: flex;
             height: calc(100% - 34px);
+            width: 100%;
 
-            #editor-wrapper-inner {
+            .editor-wrapper-inner {
                 overflow: auto;
                 height: 100%;
                 width: 100%;

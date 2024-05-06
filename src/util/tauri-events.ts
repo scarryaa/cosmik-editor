@@ -12,14 +12,15 @@ import {
 	type WritableContentStore,
 	contentStore,
 } from "../stores/content";
+import { getCurrentEditor, updateCurrentEditor } from "../stores/editor";
 import { folder } from "../stores/folder";
 import { openTab } from "../stores/tabs";
 import { unlisteners } from "./listeners";
 import { pasteInternal } from "./util";
 
-export const selectAll = (editor: Writable<Editor>) => {
+export const selectAll = () => {
 	listen("select-all", () => {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			const totalLines = model.getTotalLines();
 			const content = model.getContent();
 			const lineLength = content[totalLines - 1].getContent().length;
@@ -34,8 +35,7 @@ export const selectAll = (editor: Writable<Editor>) => {
 
 export const undo = (
 	$cursor: HTMLDivElement,
-	editor: Writable<Editor>,
-	$editor: Editor,
+
 	$astroEditor: HTMLDivElement,
 	currentLineElement: HTMLDivElement,
 	$astroWrapperInner: HTMLDivElement,
@@ -43,12 +43,16 @@ export const undo = (
 	$activeTabId: () => string,
 ) => {
 	listen("undo", () => {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.undo();
 			return model;
 		});
 
-		$contentStore.updateContent($activeTabId(), $editor.getContentString());
+		const currentEditor = getCurrentEditor();
+		$contentStore.updateContent(
+			$activeTabId(),
+			currentEditor?.getContentString() ?? "",
+		);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});
@@ -56,8 +60,7 @@ export const undo = (
 
 export const redo = (
 	$cursor: HTMLDivElement,
-	editor: Writable<Editor>,
-	$editor: Editor,
+
 	$astroEditor: HTMLDivElement,
 	currentLineElement: HTMLDivElement,
 	$astroWrapperInner: HTMLDivElement,
@@ -65,12 +68,16 @@ export const redo = (
 	$activeTabId: () => string,
 ) => {
 	listen("redo", () => {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.redo();
 			return model;
 		});
 
-		$contentStore.updateContent($activeTabId(), $editor.getContentString());
+		const currentEditor = getCurrentEditor();
+		$contentStore.updateContent(
+			$activeTabId(),
+			currentEditor?.getContentString() ?? "",
+		);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});
@@ -86,16 +93,16 @@ export const cut = (
 	$cursor: HTMLDivElement,
 	currentLineElement: HTMLDivElement,
 	$astroWrapperInner: HTMLDivElement,
-	editor: Writable<Editor>,
-	$editor: Editor,
+
 	$astroEditor: HTMLDivElement,
 	$activeTabId: () => string,
 ) => {
 	listen("cut", async () => {
 		let cutText: string;
-		cutText = await $editor.copy();
+		const currentEditor = getCurrentEditor();
+		cutText = (await currentEditor?.copy()) ?? "";
 
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			if (model.getSelection().isSelection()) {
 				model
 					.getSelection()
@@ -109,7 +116,10 @@ export const cut = (
 		});
 
 		await writeText(cutText);
-		contentStore.updateContent($activeTabId(), $editor.getContentString());
+		contentStore.updateContent(
+			$activeTabId(),
+			currentEditor?.getContentString() ?? "",
+		);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
 	});
@@ -118,25 +128,27 @@ export const cut = (
 export const paste = (
 	$cursor: HTMLDivElement,
 	$astroWrapperInner: () => HTMLDivElement,
-	editor: Writable<Editor>,
-	$editor: Editor,
+
 	$activeTabId: () => string,
 	$astroEditor: HTMLDivElement,
 	$currentLineElement: () => HTMLDivElement,
 ) =>
 	listen("paste", async () => {
-		await pasteInternal(
-			$cursor,
-			$astroWrapperInner(),
-			editor,
-			$editor,
-			$astroEditor,
-		);
+		const currentEditor = getCurrentEditor();
+		await pasteInternal($cursor, $astroWrapperInner(), $astroEditor);
 
 		await tick();
 		requestAnimationFrame(() => {
-			contentStore.updateContent($activeTabId(), $editor.getContentString());
-			scrollToCurrentLine($currentLineElement, $astroWrapperInner, "down", $editor.getCursorLine() + 1);
+			contentStore.updateContent(
+				$activeTabId(),
+				currentEditor?.getContentString() ?? "",
+			);
+			scrollToCurrentLine(
+				$currentLineElement,
+				$astroWrapperInner,
+				"down",
+				(currentEditor?.getCursorLine() ?? 0) + 1,
+			);
 		});
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
@@ -153,16 +165,16 @@ export const openFolder = () => {
 export const saveFile = async (
 	$activeTabId: () => string,
 	content: () => string,
-	$editor: Editor,
 ): Promise<void> => {
 	listen("save-file", async () => {
 		const encoder = new TextEncoder();
+		const currentEditor = getCurrentEditor();
 		await writeFile($activeTabId(), encoder.encode(content()));
 
 		contentStore.resetModifiedFlag($activeTabId());
 		contentStore.updateOriginalContent(
 			$activeTabId(),
-			$editor.getContentString(),
+			currentEditor?.getContentString() ?? "",
 		);
 	}).then((unlisten) => {
 		unlisteners.push(unlisten);
@@ -172,8 +184,6 @@ export const saveFile = async (
 export const newFile = (
 	lastActiveTabs: Writable<string[]>,
 	$contentStore: ContentStore,
-	$editor: Editor,
-	editor: Writable<Editor>,
 	$tabs: () => Tab[],
 	$activeTabId: () => string,
 	$astroWrapperInner: () => HTMLDivElement,
@@ -199,6 +209,7 @@ export const newFile = (
 			scrollPosition: { left: 0, top: 0 },
 			redoStack: [],
 			undoStack: [],
+			paneId: null,
 		};
 
 		lastActiveTabs.update((tabs) => {
@@ -222,7 +233,7 @@ export const newFile = (
 		$contentStore.originalContents.set(newTab.id, originalContents);
 		$contentStore.contents.set(newTab.id, contents);
 
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.setContent($contentStore.contents.get(newTab.id) ?? "");
 			model
 				.getCursor()
@@ -241,7 +252,12 @@ export const newFile = (
 		const currentTab = $tabs().find((tab) => tab.id === $activeTabId());
 		if (currentTab) {
 			// Update cursor position
-			currentTab.cursorPosition = $editor.getCursor().getPosition();
+			const currentEditor = getCurrentEditor();
+			currentTab.cursorPosition = currentEditor?.getCursor().getPosition() ?? {
+				character: 0,
+				characterBasis: 0,
+				line: 0,
+			};
 			// Save the current scroll position
 			currentTab.scrollPosition = {
 				left: $astroWrapperInner().scrollLeft,
@@ -260,8 +276,7 @@ export const newFile = (
 export const openFile = (
 	lastActiveTabs: Writable<string[]>,
 	$contentStore: ContentStore,
-	$editor: Editor,
-	editor: Writable<Editor>,
+
 	$tabs: Tab[],
 	$activeTabId: () => string,
 	$astroWrapperInner: HTMLDivElement,
@@ -282,6 +297,7 @@ export const openFile = (
 			scrollPosition: { left: 0, top: 0 },
 			redoStack: [],
 			undoStack: [],
+			paneId: null,
 		};
 
 		lastActiveTabs.update((tabs) => {
@@ -307,7 +323,7 @@ export const openFile = (
 		$contentStore.originalContents.set(newTab.id, originalContents);
 		$contentStore.contents.set(newTab.id, contents);
 
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.setContent($contentStore.contents.get(newTab.id) ?? "");
 			model
 				.getCursor()
@@ -326,7 +342,12 @@ export const openFile = (
 		const currentTab = $tabs.find((tab) => tab.id === $activeTabId());
 		if (currentTab) {
 			// Update cursor position
-			currentTab.cursorPosition = $editor.getCursor().getPosition();
+			const currentEditor = getCurrentEditor();
+			currentTab.cursorPosition = currentEditor?.getCursor().getPosition() ?? {
+				character: 0,
+				characterBasis: 0,
+				line: 0,
+			};
 			// Save the current scroll position
 			currentTab.scrollPosition = {
 				left: $astroWrapperInner.scrollLeft,

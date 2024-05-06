@@ -1,9 +1,8 @@
 <script lang="ts">
+import type { Editor } from "../../../models/Editor";
 import { contentStore } from "../../../stores/content";
-import { editor } from "../../../stores/editor";
-import {
-	unregisterTabScrollStore,
-} from "../../../stores/scroll";
+import { dragContext } from "../../../stores/dragContext";
+import { unregisterTabScrollStore } from "../../../stores/scroll";
 import {
 	activeTabId,
 	lastActiveTabs,
@@ -12,6 +11,21 @@ import {
 	updateCurrentTabScrollPosition,
 } from "../../../stores/tabs";
 import "./Tab.scss";
+
+let { editorInstance }: { editorInstance: Editor } = $props();
+
+const onDragStart = (event: DragEvent, tabId: string): void => {
+	const tab = $tabs.find((tab) => tab.id === tabId);
+	if (tab) {
+		event.dataTransfer?.setData("text/plain", tab.id);
+		dragContext.set({ draggingTab: tab, originPaneId: tab.paneId });
+		if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+	}
+};
+
+const onDragEnd = (event: DragEvent): void => {
+	dragContext.set({ draggingTab: null, originPaneId: null });
+};
 
 const closeTab = (id: string) => {
 	lastActiveTabs.update((tabs) => tabs.filter((tabId) => tabId !== id));
@@ -44,19 +58,20 @@ const handleClick = (event: MouseEvent, tabId: string) => {
 		if (!currentTab) return;
 
 		// Update cursor position
-		currentTab.cursorPosition = $editor.getCursor().getPosition();
+		currentTab.cursorPosition = editorInstance.getCursor().getPosition();
 		// Save the current scroll position
 		updateCurrentTabScrollPosition($tabs, $activeTabId ?? "");
 		// Update undo and redo stacks
-		currentTab.undoStack = $editor.getUndoStack();
-		currentTab.redoStack = $editor.getRedoStack();
+		currentTab.undoStack = editorInstance.getUndoStack();
+		currentTab.redoStack = editorInstance.getRedoStack();
 		setActiveTab(tabId, $contentStore, $tabs);
 	}
 };
 </script>
   
 {#each $tabs as tab (tab.id)}
-  <div role="button" tabindex="0" class="tab" class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { tab.isHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:keypress={() => setActiveTab(tab.id, $contentStore, $tabs)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
+  <div role="button" tabindex="0" class="tab" draggable="true"
+  	on:dragstart={(event) => onDragStart(event, tab.id)} on:dragend={onDragEnd} class:active={$activeTabId === tab.id} on:mouseleave|stopPropagation|preventDefault={() => { tab.isHovered = false }} on:mouseenter|stopPropagation|preventDefault={() => { tab.isHovered = true }} on:keypress={() => setActiveTab(tab.id, $contentStore, $tabs)} on:click={(event: MouseEvent) => handleClick(event, tab.id)}>
     <span class="tab-name">{tab.name}</span>
 	{#if $contentStore.contentModified.get(tab.id) && !tab.isHovered}
 		<div role="img" class="modified-indicator-wrapper">

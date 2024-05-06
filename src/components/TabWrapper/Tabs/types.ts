@@ -13,4 +13,5 @@ export interface Tab {
 	scrollPosition: { left: number; top: number };
 	undoStack: EditorState[];
 	redoStack: EditorState[];
+	paneId: string | null;
 }

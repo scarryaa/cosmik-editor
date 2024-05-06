@@ -1,6 +1,6 @@
 import type { Editor } from "../../models/Editor";
 import type { Selection } from "../../models/Selection";
-import { editor } from "../../stores/editor";
+import { updateCurrentEditor } from "../../stores/editor";
 import { getCharacterIndex, getLineIndex } from "../../util/text";
 
 export const handleMouseSelection = (
@@ -11,7 +11,7 @@ export const handleMouseSelection = (
 	const char = getCharacterIndex(event, $editor);
 	const line = getLineIndex(event, $editor.getTotalLines());
 
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		const selectionStart = model.getSelection().getSelectionStart();
 
 		const isSelectingDownwards =
@@ -34,7 +34,7 @@ export const handleMouseSelection = (
 };
 
 export const handleSelectionLeft = (): void => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		const selection = model.getSelection();
 		const cursorPosition = model.getCursor().getPosition();
 
@@ -58,7 +58,7 @@ export const handleSelectionLeft = (): void => {
 };
 
 export const handleSelectionRight = (): void => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		const selection = model.getSelection();
 		const cursorPosition = model.getCursor().getPosition();
 
@@ -82,7 +82,7 @@ export const handleSelectionRight = (): void => {
 };
 
 export const handleSelectionUp = (): void => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		const selection = model.getSelection();
 
 		selection.handleSelectionUp(model.getCursor(), model.getContent(), 1);
@@ -94,7 +94,7 @@ export const handleSelectionUp = (): void => {
 };
 
 export const handleSelectionDown = (): void => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		const selection = model.getSelection();
 
 		selection.handleSelectionDown(model.getCursor(), model.getContent(), 1);

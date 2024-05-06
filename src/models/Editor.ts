@@ -18,11 +18,13 @@ export class Editor {
 	private selection: Selection;
 	private undoStack: EditorState[] = [];
 	private redoStack: EditorState[] = [];
+	private id: string;
 
 	constructor() {
 		this.cursor = new Cursor();
 		this.content = this.parseInitialContent(Editor.EDITOR_DEFAULT_CONTENT);
 		this.selection = new Selection();
+		this.id = "";
 	}
 
 	private parseInitialContent = (content: string): Content => {
@@ -228,6 +230,14 @@ export class Editor {
 
 	getContentString = (): string => {
 		return this.content.map((line) => line.getContent()).join("\n");
+	};
+
+	getId = (): string => {
+		return this.id;
+	};
+
+	setId = (id: string): void => {
+		this.id = id;
 	};
 
 	insertCharacter = (char: string): void => {

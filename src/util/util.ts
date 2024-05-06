@@ -1,29 +1,34 @@
 import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { tick } from "svelte";
 import type { Writable } from "svelte/store";
-import type { CursorDirection } from "../models/Cursor";
+import { CursorDirection } from "../models/Cursor";
 import type { Editor } from "../models/Editor";
+import { getCurrentEditor, updateCurrentEditor } from "../stores/editor";
 
 export const pasteInternal = async (
 	$cursor: HTMLDivElement,
 	$astroWrapperInner: HTMLDivElement,
-	editor: Writable<Editor>,
-	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ): Promise<void> => {
 	const textToPaste = await readText();
+	const currentEditor = getCurrentEditor();
 
-	editor.update((model) => {
-		$editor.paste(textToPaste);
+	updateCurrentEditor((model) => {
+		currentEditor?.paste(textToPaste);
 		return model;
 	});
 
 	await tick();
 	const newLine = document.querySelector(
-		`[data-line-number="${$editor.getCursor().getPosition().line - 1}"]`,
+		`[data-line-number="${
+			currentEditor?.getCursor().getPosition().line ?? 0 - 1
+		}"]`,
 	) as HTMLDivElement;
 
-	generateCursorPositonChangeEvent($cursor, $editor.getCursor().getDirection());
+	generateCursorPositonChangeEvent(
+		$cursor,
+		currentEditor?.getCursor().getDirection() ?? CursorDirection.Left,
+	);
 };
 
 export const generateHash = async (content: string): Promise<string> => {
@@ -37,7 +42,13 @@ export const generateHash = async (content: string): Promise<string> => {
 	return hashHex;
 };
 
-export const generateCursorPositonChangeEvent = (node: HTMLElement, direction: CursorDirection): void => {
-	const cursorPositionChangeEvent = new CustomEvent("cursorPositionChange", { bubbles: true, detail: { direction } });
+export const generateCursorPositonChangeEvent = (
+	node: HTMLElement,
+	direction: CursorDirection,
+): void => {
+	const cursorPositionChangeEvent = new CustomEvent("cursorPositionChange", {
+		bubbles: true,
+		detail: { direction },
+	});
 	node.dispatchEvent(cursorPositionChangeEvent);
-}
+};

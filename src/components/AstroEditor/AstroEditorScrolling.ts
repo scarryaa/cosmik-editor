@@ -21,10 +21,10 @@ export const scrollToCurrentLine = async (
 	currentLineElement: () => HTMLDivElement | null,
 	$astroWrapperInner: () => HTMLDivElement,
 	direction: "up" | "down",
-	override?: number
+	override?: number,
 ): Promise<void> => {
 	let adjustedCurrentLineElement: HTMLDivElement | null = currentLineElement();
-	
+
 	if (override) {
 		adjustedCurrentLineElement = document.querySelector(
 			`[data-line-number="${override}"]`,
@@ -36,12 +36,14 @@ export const scrollToCurrentLine = async (
 		const theoreticalHeight = lineHeight * (override ?? 0);
 		$astroWrapperInner().scrollBy({
 			top: theoreticalHeight,
-			behavior: "auto"
-		})
+			behavior: "auto",
+		});
 		return;
 	}
 
-	const elementTop = Number.parseInt(adjustedCurrentLineElement.style.top.replace("top: ", "").replace("px", ""));
+	const elementTop = Number.parseInt(
+		adjustedCurrentLineElement.style.top.replace("top: ", "").replace("px", ""),
+	);
 	const visibleTop = $astroWrapperInner().scrollTop;
 	const visibleBottom = visibleTop + $astroWrapperInner().clientHeight;
 	const edgeThreshold = 50;

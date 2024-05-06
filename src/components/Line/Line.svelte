@@ -1,8 +1,8 @@
 <script lang="ts">
 import { lineHeight } from "../../const/const";
 import type { CursorPosition } from "../../models/Cursor";
-import { editor } from "../../stores/editor";
-    import { linesMap } from "../../stores/elements";
+import type { Editor } from "../../models/Editor";
+import { linesMap } from "../../stores/elements";
 import { activeTabId, tabs } from "../../stores/tabs";
 import {
 	type ParseType,
@@ -18,6 +18,7 @@ export let lineNumber: number;
 export let selectionStart: number;
 export let selectionEnd: number;
 export let cursorPosition: CursorPosition;
+export let editorInstance: Editor;
 
 export let registerLineRef: (
 	lineNumber: number,
@@ -55,7 +56,7 @@ $: {
 	}
 }
 
-$: selectedText = $editor
+$: selectedText = editorInstance
 	.getContent()
 	[lineNumber - 1]?.getContent()
 	.substring(selectionStart, selectionEnd);

@@ -2,15 +2,13 @@ import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import type { Editor } from "../../models/Editor";
 import { type ContentStore, contentStore } from "../../stores/content";
-import { editor } from "../../stores/editor";
+import { updateCurrentEditor } from "../../stores/editor";
 import { lastMousePosition, selecting } from "../../stores/selection";
 import { closeTab } from "../../stores/tabs";
 import { getCharacterIndex, getLineIndex } from "../../util/text";
 import { pasteInternal } from "../../util/util";
 import type { Tab } from "../TabWrapper/Tabs/types";
-import {
-	getNumberOfLinesOnScreen,
-} from "./AstroEditorScrolling";
+import { getNumberOfLinesOnScreen } from "./AstroEditorScrolling";
 import {
 	handleMouseSelection,
 	handleSelectionDown,
@@ -37,7 +35,6 @@ export const focusEditor = (input: HTMLTextAreaElement) => {
 
 export const handleKeyDown = async (
 	event: KeyboardEvent,
-	editor: Writable<Editor>,
 	$editor: () => Editor,
 	$astroWrapper: () => HTMLDivElement,
 	$app: HTMLDivElement,
@@ -48,7 +45,7 @@ export const handleKeyDown = async (
 	$contentStore: ContentStore,
 	$cursor: () => HTMLDivElement,
 	$totalLines: Writable<number>,
-	$tabs: Tab[]
+	$tabs: Tab[],
 ) => {
 	event.preventDefault();
 
@@ -78,7 +75,6 @@ export const handleKeyDown = async (
 			await handleCtrlShiftV(
 				$cursor(),
 				$astroWrapperInner(),
-				editor,
 				$editor(),
 				$astroEditor(),
 			);
@@ -93,7 +89,6 @@ export const handleKeyDown = async (
 
 		handleBackspace(
 			event,
-			editor,
 			$editor(),
 			$astroWrapper(),
 			$app,
@@ -127,7 +122,6 @@ export const handleKeyDown = async (
 
 		handleEnter(
 			event,
-			editor,
 			$editor(),
 			$astroEditor(),
 			$astroWrapperInner(),
@@ -150,7 +144,6 @@ export const handleKeyDown = async (
 
 		handleKey(
 			event,
-			editor,
 			$editor(),
 			$astroEditor(),
 			$astroEditor(),
@@ -175,7 +168,7 @@ export const handleMouseDown = (
 	const char = getCharacterIndex(event, $editor);
 	const line = getLineIndex(event, $editor.getTotalLines());
 
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model.getCursor().setPosition(maxLines, content, char, line - 1, char);
 		model.getSelection().setSelectionEnd(model.getCursor().getPosition());
 		model.getSelection().setSelectionStart(model.getCursor().getPosition());
@@ -211,7 +204,7 @@ export const handleMouseMove = (
 // Private
 
 const captureStateForUndo = () => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model.captureStateForUndo();
 		return model;
 	});
@@ -220,23 +213,20 @@ const captureStateForUndo = () => {
 const handleCtrlShiftV = async (
 	$cursor: HTMLDivElement,
 	$astroWrapperInner: HTMLDivElement,
-	editor: Writable<Editor>,
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-	await pasteInternal(
-		$cursor,
-		$astroWrapperInner,
-		editor,
-		$editor,
-		$astroEditor,
-	);
+	await pasteInternal($cursor, $astroWrapperInner, $editor, $astroEditor);
 };
 
-const handleCtrlW = ($activeTabId: string, $contentStore: ContentStore, $tabs: Tab[]) => {
-    if ($activeTabId) {
-        closeTab($activeTabId, $contentStore, $tabs);
-    }
+const handleCtrlW = (
+	$activeTabId: string,
+	$contentStore: ContentStore,
+	$tabs: Tab[],
+) => {
+	if ($activeTabId) {
+		closeTab($activeTabId, $contentStore, $tabs);
+	}
 };
 
 const handleShiftTab = (
@@ -245,7 +235,7 @@ const handleShiftTab = (
 	$astroEditor: HTMLDivElement,
 ) => {
 	// Handle shift+tab (un-indent)
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model.deleteTabAtStart();
 		return model;
 	});
@@ -262,7 +252,7 @@ const handleTab = (
 		$editor.getSelection().isSelection() &&
 		$editor.getSelection().getSelectionStart().line !== $editor.getCursorLine()
 	) {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.insertCharacter(" ");
 			model.insertCharacter(" ");
 			model.insertCharacter(" ");
@@ -272,7 +262,7 @@ const handleTab = (
 		});
 	} else {
 		// Insert tab
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.insertCharacter(" ");
 			model.insertCharacter(" ");
 			model.insertCharacter(" ");
@@ -288,7 +278,7 @@ const handleHome = (
 	$astroEditor: HTMLDivElement,
 ) => {
 	// Move to beginning of line
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model.getCursor().moveToBeginningOfLine();
 		// Clear selection
 		model.getSelection().clearSelection();
@@ -302,7 +292,7 @@ const handleEnd = (
 	$astroEditor: HTMLDivElement,
 ) => {
 	// Move to end of line
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model
 			.getCursor()
 			.moveToEndOfLine(
@@ -320,7 +310,7 @@ const handlePageDown = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		// Clear selection
 		model.getSelection().clearSelection();
 		return model;
@@ -328,7 +318,7 @@ const handlePageDown = (
 
 	// If at last line, go to end of last line
 	if ($editor.getCursor().isAtLastLine($editor.getTotalLines())) {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model
 				.getCursor()
 				.moveToEndOfLine(
@@ -339,7 +329,7 @@ const handlePageDown = (
 	} else {
 		// Move the cursor down a "page"
 		const cursorPosition = $editor.getCursor().getPosition();
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.moveCursor(
 				cursorPosition.character,
 				cursorPosition.line + getNumberOfLinesOnScreen(),
@@ -354,7 +344,7 @@ const handlePageUp = (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		// Clear selection
 		model.getSelection().clearSelection();
 		return model;
@@ -362,14 +352,14 @@ const handlePageUp = (
 
 	// If at first line, go to end of last line
 	if ($editor.getCursor().isAtFirstLine()) {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.getCursor().moveToBeginningOfLine();
 			return model;
 		});
 	} else {
 		// Move the cursor up a "page"
 		const cursorPosition = $editor.getCursor().getPosition();
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.moveCursor(
 				cursorPosition.character,
 				cursorPosition.line - getNumberOfLinesOnScreen(),
@@ -387,18 +377,18 @@ const handleDelete = (
 ) => {
 	if (event.ctrlKey) {
 		if ($editor.cursorIsAtEndOfLine()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.forwardDelete();
 				return model;
 			});
 		} else {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.deleteNextWord();
 				return model;
 			});
 		}
 	} else {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			model.forwardDelete();
 			return model;
 		});
@@ -414,12 +404,12 @@ const handleArrowLeft = (
 ) => {
 	if (event.ctrlKey) {
 		if ($editor.cursorIsAtBeginningOfLine()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorLeft();
 				return model;
 			});
 		} else {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorToPreviousWord();
 				return model;
 			});
@@ -429,7 +419,7 @@ const handleArrowLeft = (
 	} else {
 		// If there is a selection, move cursor to start and deselect
 		if ($editor.getSelection().isSelection()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				const selectionStart = model.getSelection().getSelectionStart();
 				const maxLines = model.getTotalLines();
 				const content = model.getContent();
@@ -453,7 +443,7 @@ const handleArrowLeft = (
 			) {
 			}
 
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorLeft();
 				return model;
 			});
@@ -468,12 +458,12 @@ const handleArrowRight = (
 ) => {
 	if (event.ctrlKey) {
 		if ($editor.cursorIsAtEndOfLine()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorRight();
 				return model;
 			});
 		} else {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorToNextWord();
 				return model;
 			});
@@ -483,7 +473,7 @@ const handleArrowRight = (
 	} else {
 		// If there is a selection, move cursor to end and deselect
 		if ($editor.getSelection().isSelection()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				const selectionEnd = model.getSelection().getSelectionEnd();
 				const maxLines = model.getTotalLines();
 				const content = model.getContent();
@@ -507,7 +497,7 @@ const handleArrowRight = (
 			) {
 			}
 
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorRight();
 				return model;
 			});
@@ -525,7 +515,7 @@ const handleArrowUp = (
 	} else {
 		// If there is a selection, move cursor to one line above start and deselect
 		if ($editor.getSelection().isSelection()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				const selectionStart = model.getSelection().getSelectionStart();
 				const maxLines = model.getTotalLines();
 				const content = model.getContent();
@@ -543,7 +533,7 @@ const handleArrowUp = (
 				return model;
 			});
 		} else {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorUp();
 				return model;
 			});
@@ -561,7 +551,7 @@ const handleArrowDown = (
 	} else {
 		// If there is a selection, move cursor to one line below end and deselect
 		if ($editor.getSelection().isSelection()) {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				const selectionEnd = model.getSelection().getSelectionEnd();
 				const maxLines = model.getTotalLines();
 				const content = model.getContent();
@@ -579,7 +569,7 @@ const handleArrowDown = (
 				return model;
 			});
 		} else {
-			editor.update((model) => {
+			updateCurrentEditor((model) => {
 				model.moveCursorDown();
 				return model;
 			});
@@ -612,7 +602,6 @@ const handleArrowKeys = (
 
 const handleBackspace = (
 	event: KeyboardEvent,
-	editor: Writable<Editor>,
 	$editor: Editor,
 	$astroWrapper: HTMLDivElement,
 	$app: HTMLDivElement,
@@ -627,7 +616,7 @@ const handleBackspace = (
 	let isSelection = $editor.getSelection().isSelection();
 
 	if (event.ctrlKey) {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			if (
 				!$editor.cursorIsAtBeginningOfDocument() &&
 				$editor.cursorIsAtBeginningOfLine()
@@ -640,7 +629,7 @@ const handleBackspace = (
 			return model;
 		});
 	} else {
-		editor.update((model) => {
+		updateCurrentEditor((model) => {
 			if (
 				!$editor.cursorIsAtBeginningOfDocument() &&
 				$editor.cursorIsAtBeginningOfLine()
@@ -662,7 +651,6 @@ const handleBackspace = (
 
 const handleEnter = (
 	event: Event,
-	editor: Writable<Editor>,
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 	$astroWrapperInner: HTMLDivElement,
@@ -670,7 +658,7 @@ const handleEnter = (
 	$cursor: HTMLDivElement,
 	$totalLines: Writable<number>,
 ) => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model.insertCharacter("\n");
 		return model;
 	});
@@ -680,13 +668,12 @@ const handleEnter = (
 
 const handleKey = (
 	event: KeyboardEvent,
-	editor: Writable<Editor>,
 	$editor: Editor,
 	$app: HTMLDivElement,
 	$astroEditor: HTMLDivElement,
 	$astroWrapper: HTMLDivElement,
 ) => {
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		// Hacky fix -- if there was a selection and we are not on the same line, insert twice
 		if (
 			$editor.getSelection().isSelection() &&

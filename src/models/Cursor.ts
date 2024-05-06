@@ -172,20 +172,21 @@ export class Cursor {
 	): void => {
 		// Capture the old position
 		const oldPosition = { ...this.position };
-	
+
 		// Update the position with the new values
 		this.position = {
 			character: Math.max(
 				0,
 				Math.min(
 					basis ?? character,
-					content[Math.max(0, Math.min(line, maxLines - 1))].getContent().length,
+					content[Math.max(0, Math.min(line, maxLines - 1))].getContent()
+						.length,
 				),
 			),
 			line: Math.max(0, Math.min(line, maxLines - 1)),
 			characterBasis: basis ?? this.position.characterBasis,
 		};
-	
+
 		// Determine the direction based on old and new positions
 		if (this.position.line < oldPosition.line) {
 			this.direction = CursorDirection.Up;
@@ -200,7 +201,7 @@ export class Cursor {
 
 	getDirection = (): CursorDirection => {
 		return this.direction;
-	}
+	};
 
 	getPosition = (): CursorPosition => {
 		return this.position;

@@ -2,7 +2,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
 import { contentStore } from "../../../../../stores/content";
-import { editor, showEditor } from "../../../../../stores/editor";
+import {
+	getCurrentEditor,
+	showEditor,
+	updateCurrentEditor,
+} from "../../../../../stores/editor";
 import { astroEditor, astroWrapperInner } from "../../../../../stores/elements";
 import { folder } from "../../../../../stores/folder";
 import {
@@ -80,6 +84,7 @@ const handleFileClick = async () => {
 		scrollPosition: { left: 0, top: 0 },
 		redoStack: [],
 		undoStack: [],
+		paneId: "",
 	};
 
 	lastActiveTabs.update((tabs) => {
@@ -104,7 +109,7 @@ const handleFileClick = async () => {
 	$contentStore.originalContents.set(newTab.id, originalContents);
 	$contentStore.contents.set(newTab.id, contents);
 
-	editor.update((model) => {
+	updateCurrentEditor((model) => {
 		model.setContent($contentStore.contents.get(newTab.id) ?? "");
 		model
 			.getCursor()
@@ -123,7 +128,9 @@ const handleFileClick = async () => {
 	const currentTab = $tabs.find((tab) => tab.id === $activeTabId);
 	if (currentTab) {
 		// Update cursor position
-		currentTab.cursorPosition = $editor.getCursor().getPosition();
+		currentTab.cursorPosition = getCurrentEditor()
+			?.getCursor()
+			.getPosition() ?? { line: 0, character: 0, characterBasis: 0 };
 		// Save the current scroll position
 		updateCurrentTabScrollPosition($tabs, $activeTabId ?? "");
 	}

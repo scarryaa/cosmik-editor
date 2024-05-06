@@ -1,18 +1,10 @@
+:root {
+  --tabs-wrapper-outer-height: 34px;
+}
+
 .tabs-wrapper-outer {
   display: flex;
   flex-direction: column;
   z-index: 999;
-  
-  .tabs-wrapper {
-      height: 30px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      overflow: hidden;
-      user-select: none;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: #9c9c9c;
-      z-index: 999;
-    }
+  height: var(--tabs-wrapper-outer-height);
 }

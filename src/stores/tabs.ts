@@ -2,7 +2,7 @@ import { get, writable } from "svelte/store";
 import type { Tab } from "../components/TabWrapper/Tabs/types";
 import type { Editor } from "../models/Editor";
 import type { ContentStore } from "./content";
-import { editor, showEditor } from "./editor";
+import { showEditor, updateCurrentEditor } from "./editor";
 import {
 	registerTabScrollStore,
 	tabsScrollStores,
@@ -12,6 +12,18 @@ import {
 export const tabs = writable<Tab[]>([]);
 export const activeTabId = writable<string | null>(null);
 export const lastActiveTabs = writable<string[]>([]);
+
+export const moveTabToPane = (tabId: string, newPaneId: string) => {
+	console.log("moving tab");
+	tabs.update(($tabs) => {
+		const tab = $tabs.find((t) => t.id === tabId);
+		if (tab) {
+			tab.paneId = newPaneId;
+			// Optionally, remove the tab from its original pane and add it to the new pane
+		}
+		return $tabs;
+	});
+};
 
 export const openTab = (newTab: Tab) => {
 	tabs.update((currentTabs) => {
@@ -80,11 +92,11 @@ export const setActiveTab = async (
 	activeTabId.set(id);
 
 	if (id == null) {
-		editor.update((model) => {
-			model.setContent("");
-			showEditor.set(false);
-			return model;
+		updateCurrentEditor((editor) => {
+			editor.setContent("");
+			return editor;
 		});
+		showEditor.set(false);
 	} else {
 		lastActiveTabs.update((tabs) => {
 			const index = tabs.indexOf(id);
@@ -99,21 +111,21 @@ export const setActiveTab = async (
 		if (!tab) return;
 
 		const activeContent = $contentStore.contents.get(id);
-		editor.update((model) => {
-			model.setContent(activeContent ?? "");
-			model
+		updateCurrentEditor((editor) => {
+			editor.setContent(activeContent ?? "");
+			editor
 				.getCursor()
 				.setPosition(
-					model.getTotalLines(),
-					model.getContent(),
+					editor.getTotalLines(),
+					editor.getContent(),
 					tab.cursorPosition.character,
 					tab.cursorPosition.line,
 					tab.cursorPosition.characterBasis,
 				);
-			model.setRedoStack(tab.redoStack);
-			model.setUndoStack(tab.undoStack);
+			editor.setRedoStack(tab.redoStack);
+			editor.setUndoStack(tab.undoStack);
 
-			return model;
+			return editor;
 		});
 	}
 };

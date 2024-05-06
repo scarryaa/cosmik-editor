@@ -1,5 +1,9 @@
+:root {
+    --sidebar-width: 50px;
+}
+
 .sidebar {
-    width: 50px;
+    width: var(--sidebar-width);
     left: 0;
     top: 0;
     bottom: 0;

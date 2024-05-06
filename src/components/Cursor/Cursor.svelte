@@ -1,7 +1,8 @@
 <script lang="ts">
 import { onMount, tick } from "svelte";
+import type { Editor } from "../../models/Editor";
 import { contentStore } from "../../stores/content";
-import { cursorHorizPos, cursorVertPos, editor } from "../../stores/editor";
+import { cursorHorizPos, cursorVertPos } from "../../stores/editor";
 import { cursor } from "../../stores/elements";
 import { sideBarOpen } from "../../stores/sidebar";
 import { measureTextWidth } from "../../util/text";
@@ -12,15 +13,16 @@ import {
 } from "./Cursor";
 import "./Cursor.scss";
 
+let { editorInstance }: { editorInstance: Editor } = $props();
 let cursorElement: HTMLDivElement;
 
 const cursorVerticalPosition = $derived.by(() => {
-	const verticalPosition = calculateCursorVerticalPosition($editor);
+	const verticalPosition = calculateCursorVerticalPosition(editorInstance);
 	return verticalPosition;
 });
 
 const cursorHorizontalPosition = $derived.by(() => {
-	const horizontalPosition = calculateCursorHorizontalPosition($editor);
+	const horizontalPosition = calculateCursorHorizontalPosition(editorInstance);
 	return horizontalPosition;
 });
 
@@ -39,14 +41,14 @@ onMount(() => {
 		if (value.contents) {
 			generateCursorPositonChangeEvent(
 				cursorElement,
-				$editor.getCursor().getDirection(),
+				editorInstance.getCursor().getDirection(),
 			);
 		}
 	});
 
 	sideBarOpen.subscribe(async () => {
 		await tick();
-		calculateCursorHorizontalPosition($editor);
+		calculateCursorHorizontalPosition(editorInstance);
 	});
 });
 </script>

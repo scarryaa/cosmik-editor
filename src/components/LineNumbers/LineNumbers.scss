@@ -1,6 +1,10 @@
+:root {
+    --line-numbers-width: 60px;
+}
+
 .line-numbers {
     flex-shrink: 0;
-    width: 60px;
+    width: var(--line-numbers-width);
     padding-top: 5px;
     font-size: 14px;
     text-align: right;

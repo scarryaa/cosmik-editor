@@ -1,6 +1,5 @@
 <script lang="ts">
 import type { Selection } from "../../models/Selection";
-import { editor } from "../../stores/editor";
 import "./StatusPane.scss";
 
 export let lineNumber: number;
