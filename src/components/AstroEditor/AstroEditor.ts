@@ -2,7 +2,7 @@ import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import type { Editor } from "../../models/Editor";
 import { type ContentStore, contentStore } from "../../stores/content";
-import { updateCurrentEditor } from "../../stores/editor";
+import { focusedEditorId, updateCurrentEditor } from "../../stores/editor";
 import { lastMousePosition, selecting } from "../../stores/selection";
 import { closeTab } from "../../stores/tabs";
 import { getCharacterIndex, getLineIndex } from "../../util/text";
@@ -45,7 +45,7 @@ export const handleKeyDown = async (
 	$contentStore: ContentStore,
 	$cursor: () => HTMLDivElement,
 	$totalLines: Writable<number>,
-	$tabs: Tab[],
+	$tabs: Map<string, Tab>,
 ) => {
 	event.preventDefault();
 
@@ -156,29 +156,31 @@ export const handleKeyDown = async (
 };
 
 export const handleMouseDown = (
-	event: MouseEvent,
-	input: HTMLTextAreaElement,
-	$editor: Editor,
-	$astroEditor: HTMLDivElement,
+    event: MouseEvent,
+    input: HTMLTextAreaElement,
+    $editor: Editor,
+    $astroEditor: HTMLDivElement,
 ) => {
-	event.preventDefault();
+    event.preventDefault();
 
-	const maxLines = $editor.getTotalLines();
-	const content = $editor.getContent();
-	const char = getCharacterIndex(event, $editor);
-	const line = getLineIndex(event, $editor.getTotalLines());
+    const maxLines = $editor.getTotalLines();
+    const content = $editor.getContent();
+    const char = getCharacterIndex(event, $editor);
+    const line = getLineIndex(event, $editor.getTotalLines());
 
-	updateCurrentEditor((model) => {
-		model.getCursor().setPosition(maxLines, content, char, line - 1, char);
-		model.getSelection().setSelectionEnd(model.getCursor().getPosition());
-		model.getSelection().setSelectionStart(model.getCursor().getPosition());
-		return model;
-	});
+    updateCurrentEditor((model) => {
+        model.getCursor().setPosition(maxLines, content, char, line - 1, char);
+        model.getSelection().setSelectionEnd(model.getCursor().getPosition());
+        model.getSelection().setSelectionStart(model.getCursor().getPosition());
+        return model;
+    });
 
-	selecting.set(true);
+    selecting.set(true);
 
-	updateTextareaPosition(event, input);
-	focusEditor(input);
+    // updateTextareaPosition(event, input);
+    focusEditor(input);
+    focusedEditorId.set($editor.getId());
+
 };
 
 export const handleMouseUp = (event: MouseEvent) => {
@@ -216,13 +218,13 @@ const handleCtrlShiftV = async (
 	$editor: Editor,
 	$astroEditor: HTMLDivElement,
 ) => {
-	await pasteInternal($cursor, $astroWrapperInner, $editor, $astroEditor);
+	await pasteInternal($cursor, $astroWrapperInner, $astroEditor);
 };
 
 const handleCtrlW = (
 	$activeTabId: string,
 	$contentStore: ContentStore,
-	$tabs: Tab[],
+	$tabs: Map<string, Tab>,
 ) => {
 	if ($activeTabId) {
 		closeTab($activeTabId, $contentStore, $tabs);

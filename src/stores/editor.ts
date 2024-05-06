@@ -1,15 +1,9 @@
 import { get, writable } from "svelte/store";
-import {
-	cursorHorizOffset,
-	cursorVertOffset,
-} from "../components/AstroEditor/AstroEditor";
-import type { Editor, EditorState } from "../models/Editor";
+import type { Editor } from "../models/Editor";
 
-export const cursorVertPos = writable(cursorVertOffset);
-export const cursorHorizPos = writable(cursorHorizOffset);
 export const showEditor = writable<boolean>(false);
 
-function createEditorStore() {
+export const createEditorStore = () => {
 	const editors = writable<{ id: string; instance: Editor }[]>([]);
 	const focusedEditorId = writable<string | null>(null);
 
@@ -53,13 +47,23 @@ function createEditorStore() {
 		});
 	}
 
+	function getEditorInstanceById(editorId: string) {
+		const allEditors = get(editors);
+        const currentEditor = allEditors.find(
+            (editor) => editor.id === editorId,
+        );
+        return currentEditor? currentEditor.instance : null;
+    }
+
 	return {
 		editors,
 		addEditor,
 		removeEditor,
+		focusedEditorId,
 		setFocusedEditorId,
 		getCurrentEditor,
 		updateCurrentEditor,
+		getEditorInstanceById
 	};
 }
 
@@ -67,7 +71,9 @@ export const {
 	editors,
 	addEditor,
 	removeEditor,
+	focusedEditorId,
 	setFocusedEditorId,
 	getCurrentEditor,
 	updateCurrentEditor,
+	getEditorInstanceById
 } = createEditorStore();

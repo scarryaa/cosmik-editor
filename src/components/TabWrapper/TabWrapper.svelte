@@ -62,7 +62,7 @@ const scrollToActiveTab = (
 
 $: {
 	const isOpen = $sideBarOpen;
-	const tabsCount = $tabs.length;
+	const tabsCount = $tabs.size;
 
 	setTimeout(() => {
 		const isOverflowing =

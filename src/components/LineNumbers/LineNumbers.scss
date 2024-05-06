@@ -14,7 +14,7 @@
     -ms-user-select: none;
     -o-user-select: none;
     padding-bottom: var(--status-pane-height);
-    z-index: 205;
+    z-index: -1;
     min-height: 100vh;
     background-color: white;
     transform: translate3d(0px, 0px, 0px);

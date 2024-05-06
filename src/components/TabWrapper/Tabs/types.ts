@@ -14,4 +14,5 @@ export interface Tab {
 	undoStack: EditorState[];
 	redoStack: EditorState[];
 	paneId: string | null;
+	editorInstanceId: string;
 }

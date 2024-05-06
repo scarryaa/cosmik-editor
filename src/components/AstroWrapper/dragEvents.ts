@@ -1,3 +1,6 @@
+import { addPane } from "../../stores/pane";
+import type { Pane } from "../Pane/pane";
+
 export const ondragover = (
 	event: DragEvent,
 	dragZones: {
@@ -35,5 +38,10 @@ export const ondragend = (
 	_astroWrapperInner: HTMLDivElement | undefined,
 ): { dragOverLeft: boolean; dragOverRight: boolean } => {
 	event.preventDefault();
+
+	const pane: Pane = {
+		id: ""
+	}
+	addPane(pane);
 	return { dragOverLeft: false, dragOverRight: false };
 };

@@ -5,7 +5,7 @@ import { scrollAction } from "../../actions/scrollAction";
 import { scrollToCursorAction } from "../../actions/scrollToCursorAction";
 import { Editor } from "../../models/Editor";
 import { contentStore } from "../../stores/content";
-import { addEditor, editors, setFocusedEditorId, showEditor } from "../../stores/editor";
+import { addEditor, editors, focusedEditorId, setFocusedEditorId, showEditor } from "../../stores/editor";
 import {
 	astroEditor,
 	astroWrapper,
@@ -25,8 +25,10 @@ import { activeTabId, lastActiveTabs, tabs } from "../../stores/tabs";
 import { newFile, openFile, saveFile } from "../../util/tauri-events";
 import AstroEditor from "../AstroEditor/AstroEditor.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
+    import Pane from "../Pane/Pane.svelte";
 import SidebarInner from "../Sidebar/Inner/SidebarInner.svelte";
 import Sidebar from "../Sidebar/Sidebar.svelte";
+    import StatusPane from "../StatusPane/StatusPane.svelte";
 import TabWrapper from "../TabWrapper/TabWrapper.svelte";
 import "./AstroWrapper.scss";
 import { ondragend, ondragover } from "./dragEvents";
@@ -38,6 +40,7 @@ let dragOverLeft: boolean = $state(false);
 let dragOverRight: boolean = $state(false);
 let _astroWrapperInner: HTMLDivElement | undefined;
 
+const currentEditor = $derived($editors.find(editor => editor.id === $focusedEditorId));
 const wrapperRect = writable({ width: 0, left: 0 });
 const dragZones = $derived(
 	$wrapperRect
@@ -75,18 +78,12 @@ onMount(() => {
 	astroWrapper.set(wrapper);
 
 	const unsubscribe = activeTabId.subscribe(($activeTabId) => {
-		const tab = $tabs.find((tab) => tab.id === $activeTabId);
+		const tab = $tabs.get($activeTabId ?? "");
 		if (tab && wrapperInner) {
 			wrapperInner.scrollLeft = tab.scrollPosition.left;
 			wrapperInner.scrollTop = tab.scrollPosition.top;
 		}
 	});
-
-	const newEditorInstance = new Editor();
-	addEditor(newEditorInstance);
-
-	const newEditorInstance2 = new Editor();
-	addEditor(newEditorInstance2);
 
 	const resizeObserver = new ResizeObserver((entries) => {
 		for (let entry of entries) {
@@ -94,6 +91,13 @@ onMount(() => {
 			wrapperRect.set({ width, left });
 		}
 	});
+
+	const newEditorInstance = new Editor();
+	addEditor(newEditorInstance);
+	setFocusedEditorId(newEditorInstance.getId())
+
+	const newEditorInstance2 = new Editor();
+	addEditor(newEditorInstance2);
 
 	if (_astroWrapperInner) {
 		resizeObserver.observe(_astroWrapperInner);
@@ -135,17 +139,19 @@ onMount(() => {
     <Sidebar />
     <SidebarInner />
     <div id="astro-wrapper-inner" role="presentation" class:left-split={dragOverLeft} class:right-split={dragOverRight} bind:this={_astroWrapperInner} ondragover={(event) => { const res = ondragover(event, dragZones, _astroWrapperInner); dragOverLeft = res.dragOverLeft; dragOverRight = res.dragOverRight; }} ondragend={(event) => { const res = ondragend(event, _astroWrapperInner); dragOverLeft = res.dragOverLeft; dragOverRight = res.dragOverRight}}>
-        <TabWrapper />
 		<div class="editor-container">
-            <div class="editor-wrapper-outer" bind:this={wrapperOuter}>
-				{#each $editors as { id, instance }}
-					<LineNumbers lineCount={instance.getTotalLines()}/>
-					<div class="editor-wrapper-inner" use:scrollToCursorAction={{ $editor: instance, $scrollHorizontalPosition: () => $scrollHorizontalPosition, $editorWidth, $astroWrapperInner: () => $astroWrapperInner, $currentLineElement: () => $linesMap.get(instance.getCursorLine() + 1)! }} use:scrollAction={{ $lineNumbers: $lineNumbers, wrapperInner: wrapperInner, $startLine: () => $startLine, lineCount: $totalLines }} bind:this={wrapperInner} onscroll={() => { scrollHorizontalPosition.set(wrapperInner?.scrollLeft ?? 0); scrollVerticalPosition.set(wrapperInner?.scrollTop ?? 0)} }>
-						<AstroEditor editorInstance={instance} />
-					</div> 
+			{#each $editors as { id, instance }, index}
+			<div class="editor-wrapper-outer" style={index !== 0 ? "border-left: 1px solid #9c9c9c" : ""} bind:this={wrapperOuter}>
+					<TabWrapper />
+					<Pane paneId={index.toString()}>
+						<LineNumbers lineCount={instance.getTotalLines()}/>
+						<div class="editor-wrapper-inner" use:scrollToCursorAction={{ $editor: instance, $scrollHorizontalPosition: () => $scrollHorizontalPosition, $editorWidth, $astroWrapperInner: () => $astroWrapperInner, $currentLineElement: () => $linesMap.get(instance.getCursorLine() + 1)! }} use:scrollAction={{ $lineNumbers: $lineNumbers, wrapperInner: wrapperInner, $startLine: () => $startLine, lineCount: $totalLines }} bind:this={wrapperInner} onscroll={() => { scrollHorizontalPosition.set(wrapperInner?.scrollLeft ?? 0); scrollVerticalPosition.set(wrapperInner?.scrollTop ?? 0)} }>
+							<AstroEditor editorNumber={index} editorInstance={instance} />
+						</div> 
+					</Pane>
+				</div>
 				{/each}
-			</div>
 		</div>
     </div>
-    <!-- <StatusPane char={$editor.getCursor().getPosition().character + 1} lineNumber={$editor.getCursor().getPosition().line + 1} selection={$editor.getSelection()} selectionLength={.getSelection().calculateTotalCharactersSelected()}/> -->
+    <StatusPane />
 </div>

@@ -7,7 +7,6 @@ import {
 	showEditor,
 	updateCurrentEditor,
 } from "../../../../../stores/editor";
-import { astroEditor, astroWrapperInner } from "../../../../../stores/elements";
 import { folder } from "../../../../../stores/folder";
 import {
 	activeTabId,
@@ -16,7 +15,6 @@ import {
 	tabs,
 	updateCurrentTabScrollPosition,
 } from "../../../../../stores/tabs";
-import { calculateCursorHorizontalPosition } from "../../../../Cursor/Cursor";
 import type { Tab } from "../../../../TabWrapper/Tabs/types";
 import type { FileItemType } from "../types";
 import "./FileItem.scss";
@@ -85,6 +83,7 @@ const handleFileClick = async () => {
 		redoStack: [],
 		undoStack: [],
 		paneId: "",
+		editorInstanceId: getCurrentEditor()?.getId() ?? "",
 	};
 
 	lastActiveTabs.update((tabs) => {
@@ -125,7 +124,7 @@ const handleFileClick = async () => {
 		return model;
 	});
 
-	const currentTab = $tabs.find((tab) => tab.id === $activeTabId);
+	const currentTab = $tabs.get($activeTabId ?? "");
 	if (currentTab) {
 		// Update cursor position
 		currentTab.cursorPosition = getCurrentEditor()

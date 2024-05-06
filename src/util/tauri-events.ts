@@ -184,7 +184,7 @@ export const saveFile = async (
 export const newFile = (
 	lastActiveTabs: Writable<string[]>,
 	$contentStore: ContentStore,
-	$tabs: () => Tab[],
+	$tabs: () => Map<string, Tab>,
 	$activeTabId: () => string,
 	$astroWrapperInner: () => HTMLDivElement,
 	$astroEditor: HTMLDivElement,
@@ -193,9 +193,11 @@ export const newFile = (
 	listen("new-file", async () => {
 		let counter = 1;
 		let fullPath = `untitled-${counter}`;
-		while ($tabs().some((tab) => tab.id === fullPath)) {
+		let exists = $tabs().has(fullPath);
+		while (exists) {
 			counter++;
 			fullPath = `untitled-${counter}`;
+			exists = $tabs().has(fullPath);
 		}
 
 		const newTab: Tab = {
@@ -210,6 +212,7 @@ export const newFile = (
 			redoStack: [],
 			undoStack: [],
 			paneId: null,
+			editorInstanceId: "",
 		};
 
 		lastActiveTabs.update((tabs) => {
@@ -249,7 +252,7 @@ export const newFile = (
 			return model;
 		});
 
-		const currentTab = $tabs().find((tab) => tab.id === $activeTabId());
+		const currentTab = $tabs().get($activeTabId());
 		if (currentTab) {
 			// Update cursor position
 			const currentEditor = getCurrentEditor();
@@ -277,7 +280,7 @@ export const openFile = (
 	lastActiveTabs: Writable<string[]>,
 	$contentStore: ContentStore,
 
-	$tabs: Tab[],
+	$tabs: Map<string, Tab>,
 	$activeTabId: () => string,
 	$astroWrapperInner: HTMLDivElement,
 	$astroEditor: HTMLDivElement,
@@ -298,6 +301,7 @@ export const openFile = (
 			redoStack: [],
 			undoStack: [],
 			paneId: null,
+			editorInstanceId: "",
 		};
 
 		lastActiveTabs.update((tabs) => {
@@ -339,7 +343,7 @@ export const openFile = (
 			return model;
 		});
 
-		const currentTab = $tabs.find((tab) => tab.id === $activeTabId());
+		const currentTab = $tabs.get($activeTabId());
 		if (currentTab) {
 			// Update cursor position
 			const currentEditor = getCurrentEditor();

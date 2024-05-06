@@ -36,7 +36,7 @@ import {
 import "./AstroEditor.scss";
 import { getNumberOfLinesOnScreen } from "./AstroEditorScrolling";
 
-let { editorInstance }: { editorInstance: Editor } = $props();
+let { editorInstance, editorNumber }: { editorInstance: Editor, editorNumber: number } = $props();
 
 let _input: HTMLTextAreaElement;
 let presentation: HTMLDivElement;
@@ -77,7 +77,7 @@ const visibleLines = $derived.by(() => {
 });
 
 const activeTab = $derived.by(() =>
-	$tabs.find((tab) => tab.id === $activeTabId),
+	$tabs.get($activeTabId ?? ""),
 );
 
 $effect(() => {
@@ -156,7 +156,7 @@ onMount(() => {
 });
 </script>
 
-<div bind:this={presentation} class="astro-presentation" role="presentation" style={`height: ${editorInstance.getTotalLines() * lineHeight}px; padding-right: ${maxWidth}px`} onmousedown={(event: MouseEvent) => { handleMouseDown(event, _input as HTMLTextAreaElement, editorInstance, $astroEditor) }} onmouseup={handleMouseUp}>
+<div bind:this={presentation} class="astro-presentation" role="presentation" style={`height: ${editorInstance.getTotalLines() * lineHeight}px; padding-right: ${maxWidth}px; left: 0;`} onmousedown={(event: MouseEvent) => { handleMouseDown(event, _input as HTMLTextAreaElement, editorInstance, $astroEditor) }} onmouseup={handleMouseUp}>
     {#each editorInstance.getContentString().split('\n').slice(visibleLines.start, visibleLines.end) as line, index (index + visibleLines.start)}
         <Line {editorInstance} cursorPosition={editorInstance.getCursor().getPosition()} selectionStart={editorInstance.getContent()[index + visibleLines.start].getSelectionStart()} selectionEnd={editorInstance.getContent()[index + visibleLines.start].getSelectionEnd()} lineContent={line} lineNumber={index + 1 + visibleLines.start} registerLineRef={handleLineRef} />
     {/each}

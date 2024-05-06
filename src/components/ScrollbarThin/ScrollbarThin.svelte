@@ -4,7 +4,7 @@ import type { Writable } from "svelte/store";
 import type { Tab } from "../TabWrapper/Tabs/types";
 import "./ScrollbarThin.scss";
 
-export let tabs: Writable<Tab[]>;
+export let tabs: Writable<Map<string, Tab>>;
 export let activeTabId: Writable<string | null>;
 let scrollableContent: HTMLDivElement;
 let scrollbarThumb: HTMLDivElement;

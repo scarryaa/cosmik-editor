@@ -37,7 +37,7 @@ const applyHighlighting = async (extension: ParseType, text: string) => {
 };
 
 $: {
-	const activeTab = $tabs.find((tab) => tab.id === $activeTabId);
+	const activeTab = $tabs.get($activeTabId ?? "");
 	const extension = activeTab?.id
 		.split("/")
 		.at(-1)

@@ -1,13 +1,12 @@
 <script lang="ts">
 import { dragContext } from "../../stores/dragContext";
-import { moveTabToPane, tabs } from "../../stores/tabs";
+import { moveTabToPane } from "../../stores/tabs";
 import "./Pane.scss";
 
-let paneId = "uniquePaneId";
+const { paneId }: { paneId: string } = $props();
 
 function onDragOver(event: DragEvent) {
 	event.preventDefault();
-	console.log(event.dataTransfer);
 	if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 }
 
@@ -23,6 +22,6 @@ function onDrop(event: DragEvent) {
 }
 </script>
   
-<div class="pane" on:dragover={onDragOver} on:drop={onDrop}>
+<div role="presentation" class="pane" on:dragover={onDragOver} on:drop={onDrop}>
     <slot />
 </div>
