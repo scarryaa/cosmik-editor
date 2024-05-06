@@ -2,6 +2,7 @@
 import { onMount } from "svelte";
 import { sidebarClosedWidth, sidebarOpenWidth } from "../../const/const";
 import { tabs as tabsElement } from "../../stores/elements";
+import { focusedPaneId } from "../../stores/pane";
 import { sideBarOpen } from "../../stores/sidebar";
 import { activeTabId, tabs } from "../../stores/tabs";
 // biome-ignore lint/style/useImportType: Incorrect by biome
@@ -9,6 +10,8 @@ import ScrollbarThin from "../ScrollbarThin/ScrollbarThin.svelte";
 import "./TabWrapper.scss";
 import Tab from "./Tabs/Tab.svelte";
 
+
+export let paneId: string;
 let tabsWrapper: HTMLDivElement;
 let scrollbarThin: ScrollbarThin;
 let left = 50;
@@ -110,6 +113,10 @@ onMount(() => {
     
 <div class="tabs-wrapper-outer" bind:this={tabsWrapper}>
     <ScrollbarThin bind:this={scrollbarThin} {...reactiveProps}>
-        <Tab />
+		{#each Array.from($tabs.values()) as tab (tab.id)}
+			{#if tab.paneId === paneId}
+				<Tab tab={{...tab, paneId: $focusedPaneId }}/>
+			{/if}
+		{/each}
     </ScrollbarThin>
 </div>

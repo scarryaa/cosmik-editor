@@ -39,9 +39,10 @@ export const ondragend = (
 ): { dragOverLeft: boolean; dragOverRight: boolean } => {
 	event.preventDefault();
 
+	const paneId = crypto.randomUUID();
 	const pane: Pane = {
-		id: ""
+		id: paneId
 	}
-	addPane(pane);
+	addPane(paneId, pane);
 	return { dragOverLeft: false, dragOverRight: false };
 };

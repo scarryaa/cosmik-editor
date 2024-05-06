@@ -19,12 +19,14 @@ export class Editor {
 	private undoStack: EditorState[] = [];
 	private redoStack: EditorState[] = [];
 	private id: string;
+	private paneId: string;
 
 	constructor() {
 		this.cursor = new Cursor();
 		this.content = this.parseInitialContent(Editor.EDITOR_DEFAULT_CONTENT);
 		this.selection = new Selection();
 		this.id = "";
+		this.paneId = "";
 	}
 
 	private parseInitialContent = (content: string): Content => {
@@ -239,6 +241,14 @@ export class Editor {
 	setId = (id: string): void => {
 		this.id = id;
 	};
+
+	getPaneId = (): string => {
+		return this.paneId;
+	}
+
+	setPaneId = (id: string): void => {
+		this.paneId = id;
+	}
 
 	insertCharacter = (char: string): void => {
 		const cursorPos = this.cursor.getPosition();

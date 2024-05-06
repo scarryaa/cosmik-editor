@@ -14,7 +14,6 @@ import {
 	unregisterTabScrollStore,
 } from "./scroll";
 
-// Track each tab by pane id
 export const tabs = writable<Map<string, Tab>>(new Map());
 export const activeTabId = writable<string | null>(null);
 export const lastActiveTabs = writable<string[]>([]);

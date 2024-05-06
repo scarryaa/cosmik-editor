@@ -2,7 +2,8 @@ import { tick } from "svelte";
 import type { Writable } from "svelte/store";
 import type { Editor } from "../../models/Editor";
 import { type ContentStore, contentStore } from "../../stores/content";
-import { focusedEditorId, updateCurrentEditor } from "../../stores/editor";
+import { focusedEditorId, setFocusedEditorId, updateCurrentEditor } from "../../stores/editor";
+import { setFocusedPaneId } from "../../stores/pane";
 import { lastMousePosition, selecting } from "../../stores/selection";
 import { closeTab } from "../../stores/tabs";
 import { getCharacterIndex, getLineIndex } from "../../util/text";
@@ -179,7 +180,8 @@ export const handleMouseDown = (
 
     // updateTextareaPosition(event, input);
     focusEditor(input);
-    focusedEditorId.set($editor.getId());
+    setFocusedEditorId($editor.getId());
+	setFocusedPaneId($editor.getPaneId());
 
 };
 

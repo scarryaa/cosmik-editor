@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
 import type { Editor } from "../models/Editor";
+import { addPane, panes } from "./pane";
 
 export const showEditor = writable<boolean>(false);
 
@@ -10,6 +11,11 @@ export const createEditorStore = () => {
 	function addEditor(editorInstance: Editor) {
 		const id = crypto.randomUUID();
 		editorInstance.setId(id);
+		const paneId = crypto.randomUUID();
+		editorInstance.setPaneId(paneId);
+
+		addPane(paneId, { id: paneId });
+
 		editors.update((currentEditors) => [
 			...currentEditors,
 			{ id, instance: editorInstance },
@@ -49,11 +55,9 @@ export const createEditorStore = () => {
 
 	function getEditorInstanceById(editorId: string) {
 		const allEditors = get(editors);
-        const currentEditor = allEditors.find(
-            (editor) => editor.id === editorId,
-        );
-        return currentEditor? currentEditor.instance : null;
-    }
+		const currentEditor = allEditors.find((editor) => editor.id === editorId);
+		return currentEditor ? currentEditor.instance : null;
+	}
 
 	return {
 		editors,
@@ -63,9 +67,9 @@ export const createEditorStore = () => {
 		setFocusedEditorId,
 		getCurrentEditor,
 		updateCurrentEditor,
-		getEditorInstanceById
+		getEditorInstanceById,
 	};
-}
+};
 
 export const {
 	editors,
@@ -75,5 +79,5 @@ export const {
 	setFocusedEditorId,
 	getCurrentEditor,
 	updateCurrentEditor,
-	getEditorInstanceById
+	getEditorInstanceById,
 } = createEditorStore();

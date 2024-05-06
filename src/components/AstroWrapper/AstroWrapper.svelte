@@ -16,6 +16,7 @@ import {
 	linesMap,
 } from "../../stores/elements";
 import { startLine, totalLines } from "../../stores/lines";
+    import { focusedPaneId, panes, setFocusedPaneId } from "../../stores/pane";
 import {
 	scrollHorizontalPosition,
 	scrollVerticalPosition,
@@ -94,8 +95,9 @@ onMount(() => {
 
 	const newEditorInstance = new Editor();
 	addEditor(newEditorInstance);
-	setFocusedEditorId(newEditorInstance.getId())
-
+	setFocusedEditorId(newEditorInstance.getId());
+	setFocusedPaneId(newEditorInstance.getPaneId());
+	
 	const newEditorInstance2 = new Editor();
 	addEditor(newEditorInstance2);
 
@@ -111,6 +113,8 @@ onMount(() => {
 		$astroWrapperInner,
 		$astroEditor,
 		showEditor,
+		$focusedEditorId ?? "",
+		$focusedPaneId ?? "",
 	);
 	saveFile(
 		() => $activeTabId ?? "",
@@ -124,6 +128,8 @@ onMount(() => {
 		() => $astroWrapperInner,
 		$astroEditor,
 		showEditor,
+		{ get $focusedPaneId() { return $focusedPaneId ?? "" } },
+		{ get $focusedEditorId() { return $focusedEditorId ?? "" }},
 	);
 
 	return () => {
@@ -142,15 +148,15 @@ onMount(() => {
 		<div class="editor-container">
 			{#each $editors as { id, instance }, index}
 			<div class="editor-wrapper-outer" style={index !== 0 ? "border-left: 1px solid #9c9c9c" : ""} bind:this={wrapperOuter}>
-					<TabWrapper />
-					<Pane paneId={index.toString()}>
+					<TabWrapper paneId={instance.getPaneId()} />
+					<Pane paneId={instance.getPaneId()}>
 						<LineNumbers lineCount={instance.getTotalLines()}/>
 						<div class="editor-wrapper-inner" use:scrollToCursorAction={{ $editor: instance, $scrollHorizontalPosition: () => $scrollHorizontalPosition, $editorWidth, $astroWrapperInner: () => $astroWrapperInner, $currentLineElement: () => $linesMap.get(instance.getCursorLine() + 1)! }} use:scrollAction={{ $lineNumbers: $lineNumbers, wrapperInner: wrapperInner, $startLine: () => $startLine, lineCount: $totalLines }} bind:this={wrapperInner} onscroll={() => { scrollHorizontalPosition.set(wrapperInner?.scrollLeft ?? 0); scrollVerticalPosition.set(wrapperInner?.scrollTop ?? 0)} }>
 							<AstroEditor editorNumber={index} editorInstance={instance} />
 						</div> 
 					</Pane>
 				</div>
-				{/each}
+			{/each}
 		</div>
     </div>
     <StatusPane />

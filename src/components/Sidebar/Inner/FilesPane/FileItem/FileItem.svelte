@@ -8,6 +8,7 @@ import {
 	updateCurrentEditor,
 } from "../../../../../stores/editor";
 import { folder } from "../../../../../stores/folder";
+    import { focusedPaneId } from "../../../../../stores/pane";
 import {
 	activeTabId,
 	lastActiveTabs,
@@ -82,7 +83,7 @@ const handleFileClick = async () => {
 		scrollPosition: { left: 0, top: 0 },
 		redoStack: [],
 		undoStack: [],
-		paneId: "",
+		paneId: $focusedPaneId,
 		editorInstanceId: getCurrentEditor()?.getId() ?? "",
 	};
 

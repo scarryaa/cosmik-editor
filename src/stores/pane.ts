@@ -5,9 +5,7 @@ export const createPaneStore = () => {
 	const panes = writable<{ id: string; instance: Pane }[]>([]);
 	const focusedPaneId = writable<string | null>(null);
 
-	const addPane = (paneInstance: Pane): void => {
-		const id = crypto.randomUUID();
-
+	const addPane = (id: string, paneInstance: Pane): void => {
 		panes.update((currentPanes) => [
 			...currentPanes,
 			{ id, instance: paneInstance },

@@ -12,7 +12,7 @@ import {
 	type WritableContentStore,
 	contentStore,
 } from "../stores/content";
-import { getCurrentEditor, updateCurrentEditor } from "../stores/editor";
+import { focusedEditorId, getCurrentEditor, updateCurrentEditor } from "../stores/editor";
 import { folder } from "../stores/folder";
 import { openTab } from "../stores/tabs";
 import { unlisteners } from "./listeners";
@@ -189,6 +189,8 @@ export const newFile = (
 	$astroWrapperInner: () => HTMLDivElement,
 	$astroEditor: HTMLDivElement,
 	showEditor: Writable<boolean>,
+	$focusedPaneId: { readonly $focusedPaneId: string; },
+	$focusedEditorId: { readonly $focusedEditorId: string; }
 ): void => {
 	listen("new-file", async () => {
 		let counter = 1;
@@ -211,8 +213,8 @@ export const newFile = (
 			scrollPosition: { left: 0, top: 0 },
 			redoStack: [],
 			undoStack: [],
-			paneId: null,
-			editorInstanceId: "",
+			paneId: $focusedPaneId.$focusedPaneId,
+			editorInstanceId: $focusedEditorId.$focusedEditorId,
 		};
 
 		lastActiveTabs.update((tabs) => {
@@ -279,12 +281,13 @@ export const newFile = (
 export const openFile = (
 	lastActiveTabs: Writable<string[]>,
 	$contentStore: ContentStore,
-
 	$tabs: Map<string, Tab>,
 	$activeTabId: () => string,
 	$astroWrapperInner: HTMLDivElement,
 	$astroEditor: HTMLDivElement,
 	showEditor: Writable<boolean>,
+	$focusedEditorId: string,
+	$focusedPaneId: string,
 ) => {
 	listen("open-file", async (event: unknown) => {
 		const _event = event as { payload: { path: string; name: string } };
@@ -300,8 +303,8 @@ export const openFile = (
 			scrollPosition: { left: 0, top: 0 },
 			redoStack: [],
 			undoStack: [],
-			paneId: null,
-			editorInstanceId: "",
+			paneId: $focusedPaneId,
+			editorInstanceId: $focusedEditorId,
 		};
 
 		lastActiveTabs.update((tabs) => {
