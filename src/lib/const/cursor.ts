@@ -1,2 +1,2 @@
-export const cursorHorizontalOffset = 0;
-export const cursorVerticalOffset = -1;
+export const cursorHorizontalOffset = 5;
+export const cursorVerticalOffset = 2;

@@ -5,16 +5,16 @@
         selectionLength,
         isMultiCursor,
         cursorCount,
-    }: { currentLine: number; currentCharacter: number; selectionLength: number; isMultiCursor: boolean; cursorCount: number } = $props();
+    }: { currentLine: number; currentCharacter: number | null; selectionLength: number | null; isMultiCursor: boolean; cursorCount: number } = $props();
     </script>
     
     <div class="status-pane no-user-select">
         {#if isMultiCursor}
             <span>({cursorCount} selections)</span>
         {:else}
-            <span>Ln {currentLine + 1}, Col {currentCharacter + 1}</span>
+            <span>Ln {currentLine + 1}, Col {(currentCharacter ?? 0)  + 1}</span>
         {/if}
-        {#if selectionLength > 0}
+        {#if (selectionLength ?? 0) > 0}
             <span>({selectionLength} selected)</span>
         {/if}
     </div>

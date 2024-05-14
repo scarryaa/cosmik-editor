@@ -1,20 +1,23 @@
+import type { IEditor } from "../types/IEditor";
 import { Cursor } from "./Cursor.svelte";
 import { PieceTable } from "./PieceTable.svelte";
 
-export class Editor {
+export class Editor implements IEditor {
 	content: PieceTable = $state(new PieceTable(""));
 	cursors: Cursor[] = $state([]);
 	lineBreakIndices: number[] = $state([]);
+	id: string;
 
-	constructor(text: string) {
+	constructor(text: string, id: string) {
 		this.content = new PieceTable(text);
 		this.cursors.push(new Cursor(0, 0));
 		this.lineBreakIndices = this.calculateLineBreaks();
+		this.id = "";
 
 		console.log(this.cursors);
 	}
 
-	private calculateLineBreaks = (): number[] => {
+	calculateLineBreaks = (): number[] => {
 		let indices = [];
 		let text = this.content.getText();
 		let position = text.indexOf("\n");
@@ -37,7 +40,10 @@ export class Editor {
 		return indices;
 	};
 	
-	
+	setContent = (text: string): void => {
+		this.content = new PieceTable(text);
+		this.lineBreakIndices = this.calculateLineBreaks();
+	}
 
 	getLineContent = (lineNumber: number): string => {
 		if (
@@ -98,8 +104,6 @@ export class Editor {
 	
 		if (currentTextLength > 0) {
 			if (cursor.column === 0 && cursor.line > 0) {
-				// Move cursor to the end of the previous line
-				
 				// Delete the newline character between the current line and the previous line
 				this.content.delete(this.calculateGlobalIndex(cursor.line, cursor.column) - 1, 1);
 				cursor.moveTo(cursor.line - 1, this.getLineContent(cursor.line - 1).length);
@@ -153,4 +157,8 @@ export class Editor {
 			this.cursors.splice(cursorIndex, 1);
 		}
 	};
+
+	getLineLength = (lineNumber: number): number => {
+		return this.getLineContent(lineNumber).length;
+	}
 }

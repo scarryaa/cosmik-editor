@@ -1,14 +1,18 @@
+import type { IApp } from "../types/IApp";
+import type { IEditor } from "../types/IEditor";
+import type { ITab } from "../types/ITab";
+import { generateGUID } from "../util/util";
 import { Editor } from "./Editor.svelte";
 
-export class App {
+export class App implements IApp {
 	editors: Map<string, Editor> = $state(new Map());
 	currentEditorId: string | null = $state(null);
 
 	constructor() {
-		this.addEditor(new Editor(""));
+		this.addEditor(new Editor("", generateGUID()));
 	}
 
-	addEditor = (editor: Editor): string => {
+	addEditor = (editor: IEditor): string => {
 		const guid = generateGUID();
 		this.editors.set(guid, editor);
 		if (!this.currentEditorId) {
@@ -46,4 +50,15 @@ export class App {
 		}
 		return null;
 	}
+
+	setEditorFromTab = (tab: ITab): void => {
+        if (!tab.editor) return;
+        this.currentEditorId = tab.editor.id;
+        const currentEditor = this.editors.get(this.currentEditorId);
+        if (currentEditor) {
+            currentEditor.setContent(tab.content);
+			// @TODO fix as cast
+            this.editors.set(this.currentEditorId, tab.editor as Editor);
+        }
+    }
 }
