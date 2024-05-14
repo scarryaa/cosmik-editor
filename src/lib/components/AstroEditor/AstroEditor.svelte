@@ -8,20 +8,20 @@ let textareaElement: HTMLTextAreaElement | null = $state(null);
 
 const handleInput = (event: KeyboardEvent) => {
 	if (event.key.length === 1) {
-		editor.add(event.key);
+		editor.add(event.key, 0);
 	} else if (event.key === "Backspace") {
-		editor.backspace();
+		editor.backspace(0);
 	} else if (event.key === "Delete") {
 	} else if (event.key === "Enter") {
-		editor.addLine();
+		editor.addLine(0);
 	} else if (event.key === "ArrowUp") {
-        editor.moveUp();
+        editor.moveUp(0);
     } else if (event.key === "ArrowDown") {
-        editor.moveDown();
+        editor.moveDown(0);
     } else if (event.key === "ArrowLeft") {
-        editor.moveLeft();
+        editor.moveLeft(0);
     } else if (event.key === "ArrowRight") {
-        editor.moveRight();
+        editor.moveRight(0);
     } else if (event.key === "Tab") {
         // editor.tab();
     }

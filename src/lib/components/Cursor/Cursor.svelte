@@ -4,14 +4,15 @@ import {
 	cursorHorizontalOffset,
 	cursorVerticalOffset,
 } from "../../const/cursor";
+    import type { Cursor } from "../../models/Cursor.svelte";
 import type { Editor } from "../../models/Editor.svelte";
 
-const { editor }: { editor: Editor } = $props();
+const { cursor }: { cursor: Cursor } = $props();
 
 let cursorElement: HTMLDivElement | null = $state(null);
 
-const left = $derived(8 * editor.cursor.column + cursorHorizontalOffset);
-const top = $derived(editor.cursor.line * lineHeight + cursorVerticalOffset);
+const left = $derived(8 * cursor.column + cursorHorizontalOffset);
+const top = $derived(cursor.line * lineHeight + cursorVerticalOffset);
 </script>
 
 <div

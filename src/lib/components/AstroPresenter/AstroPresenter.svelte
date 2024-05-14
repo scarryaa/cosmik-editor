@@ -6,11 +6,6 @@ import EditorLine from "../EditorLine/EditorLine.svelte";
 const { editor, handleClick }: { editor: Editor; handleClick: () => void } =
 	$props();
 
-    $effect(() => {
-        console.log(editor.content.getText()); // Check if `\n` is visible in the output
-    console.log(JSON.stringify(editor.content.getText())); // To see hidden characters
-    })
-
 </script>
 
 <div class="astro-presenter" role="presentation" onclick={handleClick}>
@@ -20,7 +15,9 @@ const { editor, handleClick }: { editor: Editor; handleClick: () => void } =
                 {#each editor.content.getText().split('\n') as line, index }
                     <EditorLine content={line} number={index} />
                 {/each}
-                <Cursor {editor} />
+            {#each editor.cursors as cursor}
+                <Cursor {cursor} />
+            {/each}
             </div>
         </div>
     </div>

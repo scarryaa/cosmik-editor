@@ -290,7 +290,6 @@ fn about(app: &AppHandle) -> std::io::Result<()> {
 pub fn run() {
     std::env::set_var("GTK_OVERLAY_SCROLLING", "0");
     std::env::set_var("GTK_SLIDER_WIDTH", "0");
-    std::env::set_var("GTK_THEME", "Adwaita");
     std::env::set_var("GTK_SCROLLBAR_SPACING", "0");
     tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
