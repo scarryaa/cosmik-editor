@@ -17,7 +17,7 @@ let thumbLeft = $state(0);
 let lastScrollLeft = 0;
 
 $effect(() => {
-	if ($scrollHorizontalWidth) {
+	if ($scrollHorizontalWidth || elementRef) {
 		thumbWidth = Math.max(
 			(viewportWidth / elementRef?.scrollWidth) * viewportWidth,
 			20,

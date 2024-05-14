@@ -13,7 +13,7 @@ let thumbHeight = $state(0);
 let thumbTop = $state(0);
 
 $effect(() => {
-	if ($scrollVerticalHeight) {
+	if ($scrollVerticalHeight || elementRef) {
 		thumbHeight = Math.max(
 			(viewportHeight / elementRef?.scrollHeight) * viewportHeight,
 			20,

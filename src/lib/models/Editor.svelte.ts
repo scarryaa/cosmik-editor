@@ -13,8 +13,6 @@ export class Editor implements IEditor {
 		this.cursors.push(new Cursor(0, 0));
 		this.lineBreakIndices = this.calculateLineBreaks();
 		this.id = "";
-
-		console.log(this.cursors);
 	}
 
 	calculateLineBreaks = (): number[] => {

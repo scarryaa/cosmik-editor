@@ -1,18 +1,28 @@
 <script lang="ts">
 import type { Editor } from "../../models/Editor.svelte";
-    import Cursor from "../Cursor/Cursor.svelte";
+import Cursor from "../Cursor/Cursor.svelte";
 import EditorLine from "../EditorLine/EditorLine.svelte";
-    import LineNumbers from "../LineNumbers/LineNumbers.svelte";
+import HorizontalScrollbar from "../HorizontalScrollbar/HorizontalScrollbar.svelte";
+import LineNumbers from "../LineNumbers/LineNumbers.svelte";
+import VerticalScrollbar from "../VerticalScrollbar/VerticalScrollbar.svelte";
 
-const { editor, handleClick }: { editor: Editor; handleClick: () => void } =
+let { editor, handleClick, editorContentElement = $bindable(), }: { editor: Editor; handleClick: () => void; editorContentElement: HTMLDivElement | null; } =
 	$props();
 
+let editorContentHeight = $state(0);
+let editorContentWidth = $state(0);
+
+$effect(() => {
+    console.log(editorContentElement);
+})
 </script>
 
 <div class="astro-presenter" role="presentation" onclick={handleClick}>
     <div class="overflow-guard">
         <div class="inner-container">
-            <div role="code" class="editor-content">
+            <VerticalScrollbar width={12} elementRef={editorContentElement!} viewportHeight={editorContentHeight} />
+            <HorizontalScrollbar style={`bottom: 0px;`} height={12} elementRef={editorContentElement!} viewportWidth={editorContentWidth} />
+            <div role="code" class="editor-content" bind:clientWidth={editorContentWidth} bind:clientHeight={editorContentHeight} bind:this={editorContentElement}>
                 <LineNumbers {editor} />
                 {#each editor.content.getText().split('\n') as line, index }
                     <EditorLine content={line} number={index} />

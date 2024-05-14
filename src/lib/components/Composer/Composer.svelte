@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { app } from "../../reactives/app.svelte";
 import {
 	fileCreationEvent,
@@ -24,6 +24,9 @@ import Sidebar from "../Sidebar/Sidebar.svelte";
 import StatusPane from "../StatusPane/StatusPane.svelte";
 
 let shouldFocus = $state(false);
+let sidebarWidth = $state(0);
+let selectedPane = $state("explorer");
+let editorContentElement = $state<HTMLDivElement | null>(null);
 
 const currentEditor = $derived.by(() => {
     const editor = app.getCurrentEditor();
@@ -50,9 +53,6 @@ const cursorCount = $derived.by(() => {
 
     return 0;
 });
-
-let sidebarWidth = $state(0);
-let selectedPane = $state("explorer");
 
 const handleClick = () => {
 	shouldFocus = true;
@@ -118,7 +118,7 @@ const handleCreateNewFolder = () => {
     <Sidebar {headerItems} bind:sidebarWidth={sidebarWidth} body={sidebarBody} />
     {#if currentEditor}
         <AstroEditor {shouldFocus} editor={currentEditor} />
-        <AstroPresenter {handleClick} editor={currentEditor} />
+        <AstroPresenter {editorContentElement} {handleClick} editor={currentEditor} />
         <StatusPane {cursorCount} {isMultiCursor} currentCharacter={currentEditor.cursors[0].column} currentLine={currentEditor.cursors[0].line} selectionLength={0}/>
     {/if}
 </div>
