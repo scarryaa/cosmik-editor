@@ -1,35 +1,54 @@
 <script lang="ts">
 import type { Editor } from "../../models/Editor.svelte";
+import {
+	scrollHorizontalPosition,
+	scrollHorizontalWidth,
+	scrollVerticalHeight,
+	scrollVerticalPosition,
+} from "../../reactives/scroll.svelte";
 import Cursor from "../Cursor/Cursor.svelte";
 import EditorLine from "../EditorLine/EditorLine.svelte";
 import HorizontalScrollbar from "../HorizontalScrollbar/HorizontalScrollbar.svelte";
 import LineNumbers from "../LineNumbers/LineNumbers.svelte";
+import TabWrapper from "../TabWrapper/TabWrapper.svelte";
 import VerticalScrollbar from "../VerticalScrollbar/VerticalScrollbar.svelte";
 
-let { editor, handleClick, editorContentElement = $bindable(), }: { editor: Editor; handleClick: () => void; editorContentElement: HTMLDivElement | null; } =
-	$props();
+let {
+	editor,
+	handleClick,
+	innerContainerElement = $bindable(),
+	editorContentElement = $bindable(),
+}: {
+	editor: Editor;
+	handleClick: () => void;
+	innerContainerElement: HTMLDivElement | null;
+	editorContentElement: HTMLDivElement | null;
+} = $props();
 
 let editorContentHeight = $state(0);
 let editorContentWidth = $state(0);
-
-$effect(() => {
-    console.log(editorContentElement);
-})
+let innerContainerElementHeight = $state(0);
 </script>
 
 <div class="astro-presenter" role="presentation" onclick={handleClick}>
+    <TabWrapper />
     <div class="overflow-guard">
-        <div class="inner-container">
+        <div class="inner-container" bind:this={innerContainerElement} bind:clientHeight={innerContainerElementHeight}>
             <VerticalScrollbar width={12} elementRef={editorContentElement!} viewportHeight={editorContentHeight} />
             <HorizontalScrollbar style={`bottom: 0px;`} height={12} elementRef={editorContentElement!} viewportWidth={editorContentWidth} />
-            <div role="code" class="editor-content" bind:clientWidth={editorContentWidth} bind:clientHeight={editorContentHeight} bind:this={editorContentElement}>
-                <LineNumbers {editor} />
-                {#each editor.content.getText().split('\n') as line, index }
-                    <EditorLine content={line} number={index} />
-                {/each}
-                {#each editor.cursors as cursor}
-                    <Cursor {cursor} />
-                {/each}
+            <LineNumbers scrollVerticalPosition={$scrollVerticalPosition} {editor} />
+            <div role="code" class="editor-content" bind:clientWidth={editorContentWidth} bind:clientHeight={editorContentHeight} bind:this={editorContentElement}
+            onscroll={(event) => { scrollVerticalPosition.set((event.target as HTMLElement).scrollTop); scrollHorizontalPosition.set((event.target as HTMLElement).scrollLeft)
+                scrollHorizontalWidth.set((event.target as HTMLElement).scrollWidth); scrollVerticalHeight.set((event.target as HTMLElement).scrollHeight); }}
+                style={`max-height: calc(${innerContainerElementHeight}px - var(--status-bar-height) * 1.8625);`}>
+                <div class="editor-content-inner">
+                    {#each editor.content.getText().split('\n') as line, index }
+                        <EditorLine content={line} number={index} />
+                    {/each}
+                    {#each editor.cursors as cursor}
+                        <Cursor {cursor} />
+                    {/each}
+                </div>
             </div>
         </div>
     </div>
@@ -72,6 +91,7 @@ $effect(() => {
 
         .inner-container {
             padding-top: 5px;
+            margin-top: var(--tabs-wrapper-outer-height);
             max-width: calc(100% + var(--minimap-width));
             left: 0;
             right: 0;
@@ -79,7 +99,7 @@ $effect(() => {
             overflow-y: hidden;
             overflow-x: hidden;
             min-height: 100%;
-            max-height: 100%;
+            max-height: var(--tabs-wrapper-outer-height);
             top: var(--tabs-wrapper-outer-height);
         }
 
@@ -93,6 +113,10 @@ $effect(() => {
             overflow-y: auto;
             overflow-x: auto;
             max-height: 100%;
+
+            .editor-content-inner {
+                position: absolute;
+            }
         }
     }
 

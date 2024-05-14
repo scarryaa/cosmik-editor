@@ -1,12 +1,22 @@
 <script lang="ts">
+    import { lineHeight } from "../../const/const";
 import type { IEditor } from "../../types/IEditor";
 
-const { editor }: { editor: IEditor } = $props();
+const { editor, scrollVerticalPosition }: { editor: IEditor; scrollVerticalPosition: number } = $props();
+
+$effect(() => {
+    // @TODO revisit this
+    if (scrollVerticalPosition) {
+        setTimeout(() => {
+            document.body.style.setProperty("--scroll-y", `-${scrollVerticalPosition}px`);
+        }, 20)
+    }
+});
 </script>
 
-<div class="line-numbers">
+<div class="line-numbers" style={`transform: translateY(var(--scroll-y)); height: ${editor.getTotalLines() * lineHeight}px;`}>
     {#each editor.getText().split('\n') as line, index}
-        <div class="line-number" style="top: ">{index + 1}</div>
+        <div class="line-number">{index + 1}</div>
     {/each}
 </div>
 
@@ -27,8 +37,14 @@ const { editor }: { editor: IEditor } = $props();
         -o-user-select: none;
         z-index: 205;
         min-height: 100vh;
+        contain: strict;
         background-color: white;
         padding-top: 5px;
+        position: absolute;
+        transition: transform 0.01s ease-out;
+        will-change: transform;
+        top: 0;
+        left: 0;
         transform: translate3d(0px, 0px, 0px);
 
         &.shift-right {

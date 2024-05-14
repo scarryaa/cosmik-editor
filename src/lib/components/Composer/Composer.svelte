@@ -27,6 +27,7 @@ let shouldFocus = $state(false);
 let sidebarWidth = $state(0);
 let selectedPane = $state("explorer");
 let editorContentElement = $state<HTMLDivElement | null>(null);
+let innerContainerElement = $state<HTMLDivElement | null>(null);
 
 const currentEditor = $derived.by(() => {
     const editor = app.getCurrentEditor();
@@ -118,7 +119,7 @@ const handleCreateNewFolder = () => {
     <Sidebar {headerItems} bind:sidebarWidth={sidebarWidth} body={sidebarBody} />
     {#if currentEditor}
         <AstroEditor {shouldFocus} editor={currentEditor} />
-        <AstroPresenter {editorContentElement} {handleClick} editor={currentEditor} />
+        <AstroPresenter {editorContentElement} bind:innerContainerElement={innerContainerElement} {handleClick} editor={currentEditor} />
         <StatusPane {cursorCount} {isMultiCursor} currentCharacter={currentEditor.cursors[0].column} currentLine={currentEditor.cursors[0].line} selectionLength={0}/>
     {/if}
 </div>

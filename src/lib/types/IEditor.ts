@@ -21,4 +21,5 @@ export interface IEditor {
     getLineContent(line: number): string;
     getLineLength(line: number): number;
     getText(): string;
+    getTotalLines(): number;
 }
