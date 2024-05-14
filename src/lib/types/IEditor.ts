@@ -20,4 +20,5 @@ export interface IEditor {
     calculateLineBreaks(): number[];
     getLineContent(line: number): string;
     getLineLength(line: number): number;
+    getText(): string;
 }

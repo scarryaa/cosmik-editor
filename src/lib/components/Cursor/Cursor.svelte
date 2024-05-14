@@ -4,8 +4,7 @@ import {
 	cursorHorizontalOffset,
 	cursorVerticalOffset,
 } from "../../const/cursor";
-    import type { Cursor } from "../../models/Cursor.svelte";
-import type { Editor } from "../../models/Editor.svelte";
+import type { Cursor } from "../../models/Cursor.svelte";
 
 const { cursor }: { cursor: Cursor } = $props();
 

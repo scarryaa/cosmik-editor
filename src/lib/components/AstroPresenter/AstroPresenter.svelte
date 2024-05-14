@@ -2,6 +2,7 @@
 import type { Editor } from "../../models/Editor.svelte";
     import Cursor from "../Cursor/Cursor.svelte";
 import EditorLine from "../EditorLine/EditorLine.svelte";
+    import LineNumbers from "../LineNumbers/LineNumbers.svelte";
 
 const { editor, handleClick }: { editor: Editor; handleClick: () => void } =
 	$props();
@@ -12,12 +13,13 @@ const { editor, handleClick }: { editor: Editor; handleClick: () => void } =
     <div class="overflow-guard">
         <div class="inner-container">
             <div role="code" class="editor-content">
+                <LineNumbers {editor} />
                 {#each editor.content.getText().split('\n') as line, index }
                     <EditorLine content={line} number={index} />
                 {/each}
-            {#each editor.cursors as cursor}
-                <Cursor {cursor} />
-            {/each}
+                {#each editor.cursors as cursor}
+                    <Cursor {cursor} />
+                {/each}
             </div>
         </div>
     </div>

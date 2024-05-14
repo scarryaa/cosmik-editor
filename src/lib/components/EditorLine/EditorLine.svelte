@@ -1,5 +1,6 @@
 <script lang="ts">
     import { lineHeight } from "../../const/const";
+    import { cursorHorizontalOffset } from "../../const/cursor";
 
     const { number, content }: { number: number; content: string } = $props();
 </script>
@@ -7,7 +8,7 @@
 <div
     class="line"
     data-line-number={number}
-    style={`top: ${number * lineHeight}px;`}
+    style={`top: ${number * lineHeight}px; left: ${cursorHorizontalOffset - 5}px;`}
 >
     {#if content === ""}
         <div class="empty-line-placeholder"><br /></div>

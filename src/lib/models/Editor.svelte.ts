@@ -161,4 +161,8 @@ export class Editor implements IEditor {
 	getLineLength = (lineNumber: number): number => {
 		return this.getLineContent(lineNumber).length;
 	}
+
+	getText = (): string => {
+        return this.content.getText();
+    };
 }
