@@ -20,6 +20,17 @@ export class Editor {
 		this.cursorsSignal[1]([new Cursor()]);
 	}
 
+	setContent = (text: string): void => {
+		const newText = this.convertTabsToSpaces(text);
+		this.content.restoreText(newText);
+		this.contentSignal[1](this.content.getText());
+		this.lineBreakIndices = this.calculateLineBreaks();
+	};
+
+	convertTabsToSpaces = (text: string): string => {
+        return text.replace(/\t/g, "    ");
+    };
+
 	calculateLineBreaks = (): number[] => {
 		let indices: number[] = [];
 		let text = this.content.getText();

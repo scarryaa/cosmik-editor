@@ -1,5 +1,6 @@
 import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
+import { useFileStore } from "@renderer/stores/files";
 import { For, createEffect, createSignal, onCleanup } from "solid-js";
 import type { Accessor, Component } from "solid-js";
 import Cursor from "../Cursor/Cursor";
@@ -16,6 +17,7 @@ interface EditorViewProps {
 const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollTop, setViewScrollTop] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
+	const fileStore = useFileStore();
 
 	let contentContainerRef: HTMLDivElement | undefined;
 	let lineRefs: HTMLDivElement[] = [];
@@ -51,6 +53,12 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				editorRect.left - targetRect.left + scrollThreshold;
 		}
 	};
+
+	createEffect(() => {
+		if (fileStore.fileContent) {
+			props.editor().setContent(fileStore.fileContent);
+		}
+	});
 
 	createEffect(() => {
 		setCursorRefs(

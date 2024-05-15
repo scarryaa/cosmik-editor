@@ -1,11 +1,30 @@
+import fs from "node:fs";
 import { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, app, ipcMain, shell } from "electron";
+import { BrowserWindow, Menu, app, dialog, ipcMain, shell } from "electron";
 import icon from "../../resources/icon.png?asset";
+
+let mainWindow: BrowserWindow | null = null; 
+
+function listFiles(dirPath) {
+	return new Promise((resolve, reject) => {
+		fs.readdir(dirPath, { withFileTypes: true }, (err, files) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			// Filter directories and map files to their names
+			const fileList = files
+				.filter((file) => file.isFile())
+				.map((file) => file.name);
+			resolve(fileList);
+		});
+	});
+}
 
 function createWindow(): void {
 	// Create the browser window.
-	const mainWindow = new BrowserWindow({
+	mainWindow = new BrowserWindow({
 		width: 900,
 		height: 670,
 		show: false,
@@ -18,7 +37,7 @@ function createWindow(): void {
 	});
 
 	mainWindow.on("ready-to-show", () => {
-		mainWindow.show();
+		mainWindow?.show();
 	});
 
 	mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -51,13 +70,37 @@ app.whenReady().then(() => {
 
 	// IPC test
 	ipcMain.on("ping", () => console.log("pong"));
+	ipcMain.on("list-files", async (event, dirPath) => {
+		try {
+			const files = await listFiles(dirPath);
+			event.reply("list-files-reply", files);
+		} catch (error) {
+			console.error("Failed to list files:", error);
+			event.reply("list-files-reply", { error: error.message });
+		}
+	});
 
+	createMenu();
 	createWindow();
+
+	ipcMain.handle('open-file', async (event) => {
+		const result = await dialog.showOpenDialog(mainWindow!, {
+		  properties: ['openFile'] 
+		});
+		if (!result.canceled) {
+		  const filePath = result.filePaths[0];
+		  return fs.readFileSync(filePath, 'utf-8');
+		}
+		return null;
+	  });
 
 	app.on("activate", () => {
 		// On macOS it's common to re-create a window in the app when the
 		// dock icon is clicked and there are no other windows open.
 		if (BrowserWindow.getAllWindows().length === 0) createWindow();
+		if (Menu.getApplicationMenu() === null) {
+			createMenu();
+		}
 	});
 });
 
@@ -70,5 +113,88 @@ app.on("window-all-closed", () => {
 	}
 });
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+const openFile = () => {
+	dialog.showOpenDialog({
+	  properties: ['openFile'],
+	  filters: [
+		{ name: 'All Files', extensions: ['*'] }
+	  ]
+	}).then(result => {
+	  if (!result.canceled) {
+		readFile(result.filePaths[0]);
+	  }
+	}).catch(err => {
+	  console.error('Failed to open file:', err);
+	});
+  };
+  
+  const readFile = (filePath) => {
+	fs.readFile(filePath, 'utf-8', (err, data) => {
+	  if (err) {
+		console.error('Failed to read file:', err);
+		return;
+	  }
+
+	  mainWindow?.webContents.send('file-opened', data);
+	});
+  };
+  
+
+const createMenu = () => {
+	const template: Menu = [
+		{
+			label: "File",
+			submenu: [
+				{ label: "New", accelerator: "CmdOrCtrl+N" },
+				{
+					label: "Open File",
+					accelerator: "CmdOrCtrl+O",
+					click: () => {
+						openFile();
+					},
+				},
+				{ label: "Open Folder", accelerator: "CmdOrCtrl+Shift+O" },
+				{ type: "separator" },
+				{ label: "Save", accelerator: "CmdOrCtrl+S" },
+				{ label: "Save As", accelerator: "CmdOrCtrl+Shift+S" },
+				{ type: "separator" },
+				{ label: "Quit", role: "quit", accelerator: "CmdOrCtrl+Q" },
+			],
+		},
+		{
+			label: "Edit",
+			submenu: [
+				{ label: "Undo", role: "undo" },
+				{ label: "Redo", role: "redo" },
+				{ type: "separator" },
+				{ label: "Cut", role: "cut" },
+				{ label: "Copy", role: "copy" },
+				{ label: "Paste", role: "paste" },
+				{ type: "separator" },
+				{ label: "Select All", role: "selectAll" },
+			],
+		},
+		{
+			label: "View",
+			submenu: [
+				{ label: "Reload", role: "reload" },
+				{ type: "separator" },
+				{ label: "Toggle Fullscreen", role: "togglefullscreen" },
+				{ label: "Toggle Developer Tools", role: "toggleDevTools" },
+				{ label: "Toggle Sidebar" },
+			],
+		},
+		{
+			label: "Help",
+			submenu: [
+				{ label: "About" },
+				{ type: "separator" },
+				{ label: "Check For Updates" },
+				{ label: "Report An Issue" },
+			],
+		},
+	];
+
+	const menu = Menu.buildFromTemplate(template);
+	Menu.setApplicationMenu(menu);
+};
