@@ -96,12 +96,12 @@ export class PieceTable {
 	}
 
 	restoreText(newText: string): void {
-        // Clear current table and buffers, resetting to the new text
-        this.originalBuffer = newText;
-        this.addBuffer = "";
-        this.table = [{ buffer: "original", start: 0, length: newText.length }];
-        this.updateCachedLength();
-    }
+		// Clear current table and buffers, resetting to the new text
+		this.originalBuffer = newText;
+		this.addBuffer = "";
+		this.table = [{ buffer: "original", start: 0, length: newText.length }];
+		this.updateCachedLength();
+	}
 
 	delete(startIndex: number, length: number) {
 		let offset = 0;

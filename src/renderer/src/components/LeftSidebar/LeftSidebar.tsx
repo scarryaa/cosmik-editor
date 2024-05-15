@@ -31,16 +31,16 @@ const LeftSidebar = () => {
 			<For each={paneItems}>
 				{(item) => (
 					<PaneButton
-                        style={{
-                            "padding-top": "8px",
-                            "padding-bottom": "2px",
-                            "border-bottom":
-                                selectedPane() === item.key
-                                   ? "2px solid var(--meteor-focus-bar)"
-                                    : "2px solid transparent",
-                        }}
+						style={{
+							"padding-top": "8px",
+							"padding-bottom": "2px",
+							"border-bottom":
+								selectedPane() === item.key
+									? "2px solid var(--meteor-focus-bar)"
+									: "2px solid transparent",
+						}}
 						icon={item.icon}
-                        active={selectedPane() === item.key}
+						active={selectedPane() === item.key}
 						onclick={() => setSelectedPane(item.key)}
 					/>
 				)}
@@ -50,7 +50,11 @@ const LeftSidebar = () => {
 
 	return (
 		<Pane
-			style={{ width: "165px", height: "100%", "background-color": "var(--meteor-pane-background" }}
+			style={{
+				width: "165px",
+				height: "100%",
+				"background-color": "var(--meteor-pane-background",
+			}}
 		>
 			{renderTabs()}
 			<Switch>

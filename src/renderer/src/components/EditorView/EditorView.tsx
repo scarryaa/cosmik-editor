@@ -16,7 +16,7 @@ interface EditorViewProps {
 const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollTop, setViewScrollTop] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
-    
+
 	let contentContainerRef: HTMLDivElement | undefined;
 	let lineRefs: HTMLDivElement[] = [];
 

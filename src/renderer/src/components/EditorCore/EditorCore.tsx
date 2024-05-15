@@ -23,7 +23,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			"ArrowUp",
 			"ArrowDown",
 		];
-		
+
 		e.preventDefault();
 
 		switch (e.key) {

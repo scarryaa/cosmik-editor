@@ -13,7 +13,7 @@ import styles from "./Cursor.module.scss";
 interface CursorProps {
 	editor: Accessor<Editor>;
 	cursor: Accessor<CursorModel>;
-	ref?;
+	ref?: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
 }
 
 const Cursor: Component<CursorProps> = (props: CursorProps) => {

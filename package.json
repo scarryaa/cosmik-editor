@@ -1,40 +1,44 @@
 {
-  "name": "meteor",
-  "version": "0.0.0",
-  "description": "A simple multi-platform code editor.",
-  "main": "./out/main/index.js",
-  "author": "scarryaa",
-  "homepage": "https://github.com/scarryaa/meteor",
-  "scripts": {
-    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
-    "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web",
-    "start": "stream-run electron-vite preview",
-    "dev": "steam-run electron-vite dev",
-    "build": "npm run typecheck && electron-vite build",
-    "postinstall": "electron-builder install-app-deps",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
-  },
-  "dependencies": {
-    "@electron-toolkit/preload": "^3.0.0",
-    "@electron-toolkit/utils": "^3.0.0",
-    "electron-updater": "^6.1.7",
-    "solid-icons": "^1.1.0"
-  },
-  "devDependencies": {
-    "@electron-toolkit/eslint-config-ts": "^1.0.1",
-    "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^18.19.9",
-    "electron": "^28.2.0",
-    "electron-builder": "^24.9.1",
-    "electron-vite": "^2.0.0",
-    "sass": "^1.77.1",
-    "solid-js": "^1.8.12",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12",
-    "vite-plugin-solid": "^2.9.1"
-  }
+	"name": "meteor",
+	"version": "0.0.2",
+	"description": "A simple multi-platform code editor.",
+	"main": "./out/main/index.js",
+	"author": "scarryaa",
+	"homepage": "https://github.com/scarryaa/meteor",
+	"scripts": {
+		"biome:format:fix": "pnpm biome format --write ./",
+		"biome:lint:fix": "pnpm biome lint --apply ./",
+		"biome:fix-all": "pnpm biome:lint:fix; pnpm biome:format:fix",
+		"typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+		"typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+		"typecheck": "npm run typecheck:node && npm run typecheck:web",
+		"start": "stream-run electron-vite preview",
+		"dev": "steam-run electron-vite dev",
+		"build": "npm run typecheck && electron-vite build",
+		"postinstall": "electron-builder install-app-deps",
+		"build:unpack": "npm run build && electron-builder --dir",
+		"build:win": "npm run build && electron-builder --win",
+		"build:mac": "electron-vite build && electron-builder --mac",
+		"build:linux": "electron-vite build && electron-builder --linux"
+	},
+	"dependencies": {
+		"@electron-toolkit/preload": "^3.0.0",
+		"@electron-toolkit/utils": "^3.0.0",
+		"electron-updater": "^6.1.7",
+		"solid-icons": "^1.1.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.7.3",
+		"@electron-toolkit/eslint-config-ts": "^1.0.1",
+		"@electron-toolkit/tsconfig": "^1.0.1",
+		"@types/node": "^18.19.9",
+		"electron": "^28.2.0",
+		"electron-builder": "^24.9.1",
+		"electron-vite": "^2.0.0",
+		"sass": "^1.77.1",
+		"solid-js": "^1.8.12",
+		"typescript": "^5.3.3",
+		"vite": "^5.0.12",
+		"vite-plugin-solid": "^2.9.1"
+	}
 }

@@ -1,6 +1,6 @@
-import './assets/main.scss'
+import "./assets/main.scss";
 
-import { render } from 'solid-js/web'
-import App from './App'
+import { render } from "solid-js/web";
+import App from "./App";
 
-render(() => <App />, document.getElementById('root') as HTMLElement)
+render(() => <App />, document.getElementById("root") as HTMLElement);

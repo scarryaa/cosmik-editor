@@ -9,7 +9,7 @@ export class Editor {
 
 	private contentSignal;
 	private cursorsSignal = createSignal<Cursor[]>([]);
-    private lineNumbersSignal = createSignal<number>(1);
+	private lineNumbersSignal = createSignal<number>(1);
 
 	constructor(text: string, id: string) {
 		this.content = new PieceTable(text);
@@ -46,20 +46,20 @@ export class Editor {
 	getText(): string {
 		return this.contentSignal[0]();
 	}
-    
-    tab = (cursorIndex: number): void => {
-        const cursor = this.cursors[cursorIndex];
-        const globalIndex = this.calculateGlobalIndex(
-            cursor.line,
-            this.cursorAt(0).character,
-        );
 
-        this.content.insert("    ", globalIndex);
-        this.contentSignal[1](this.content.getText());
-        this.lineBreakIndices = this.calculateLineBreaks();
+	tab = (cursorIndex: number): void => {
+		const cursor = this.cursors[cursorIndex];
+		const globalIndex = this.calculateGlobalIndex(
+			cursor.line,
+			this.cursorAt(0).character,
+		);
 
-        cursor.moveTo(cursor.character + 4, cursor.line);
-    }
+		this.content.insert("    ", globalIndex);
+		this.contentSignal[1](this.content.getText());
+		this.lineBreakIndices = this.calculateLineBreaks();
+
+		cursor.moveTo(cursor.character + 4, cursor.line);
+	};
 
 	insert = (text: string, cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
@@ -91,7 +91,7 @@ export class Editor {
 				this.content.delete(indexToDelete, 1);
 				this.lineBreakIndices = this.calculateLineBreaks();
 				this.contentSignal[1](this.content.getText());
-                this.lineNumbersSignal[1](this.lineBreakIndices.length + 1);
+				this.lineNumbersSignal[1](this.lineBreakIndices.length + 1);
 
 				cursor.moveTo(
 					this.lineContent(cursor.line - 1).length,
@@ -121,9 +121,9 @@ export class Editor {
 		return this.content.getText();
 	}
 
-    totalLines = (): number => {
-        return this.lineNumbersSignal[0]();
-    }
+	totalLines = (): number => {
+		return this.lineNumbersSignal[0]();
+	};
 
 	lineLength = (lineNumber: number): number => {
 		return this.lineContent(lineNumber).length;
@@ -132,9 +132,7 @@ export class Editor {
 	lineContent = (lineNumber: number): string => {
 		// Return an empty string if the line number is out of valid range
 		if (lineNumber < 0 || lineNumber >= this.numberOfLines()) {
-			console.warn(
-				`Line number ${lineNumber} out of bounds.`,
-			);
+			console.warn(`Line number ${lineNumber} out of bounds.`);
 			return "";
 		}
 
@@ -161,7 +159,7 @@ export class Editor {
 		const nextLineLength = this.lineContent(cursor.line + 1).length;
 
 		const totalLines = this.lineBreakIndices.length;
-        this.lineNumbersSignal[1](totalLines + 1);
+		this.lineNumbersSignal[1](totalLines + 1);
 
 		cursor.moveDown(totalLines, nextLineLength);
 	};
