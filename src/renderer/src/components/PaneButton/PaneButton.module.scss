@@ -1,0 +1,47 @@
+:root {
+    --action-bar-item-hover-color: #000;
+    --action-bar-item-color: #464646;
+}
+
+.pane-button {
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+
+    .active-item-indicator {
+        &::before {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #509abd;
+            transition: all 0.1s ease-in-out;
+        }
+    }
+
+    &:hover .pane-button-icon {
+        color: var(--action-bar-item-hover-color);
+    }
+
+    &.active {
+        svg {
+            fill: var(--action-bar-item-hover-color);
+        }
+    }
+
+    .pane-button-icon {
+        color: var(--action-bar-item-color);
+        user-select: none;
+        -webkit-user-select: none;
+        padding: 0;
+        margin: 0;
+        transition: all 0.1s ease-in-out;
+
+        > * {
+            padding: 0px 0px;
+        }
+    }
+}

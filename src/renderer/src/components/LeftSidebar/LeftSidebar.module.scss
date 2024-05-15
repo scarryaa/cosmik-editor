@@ -1,0 +1,12 @@
+:root {
+    --meteor-border: #fff;
+    --meteor-focus-bar: #007acc;
+    --meteor-pane-background: #e4e4e4;
+}
+
+.tabs-container {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid var(--meteor-border);
+    padding-inline: 5px;
+}

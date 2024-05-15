@@ -21,7 +21,8 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
-    "electron-updater": "^6.1.7"
+    "electron-updater": "^6.1.7",
+    "solid-icons": "^1.1.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-ts": "^1.0.1",

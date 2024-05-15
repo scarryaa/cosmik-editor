@@ -12,6 +12,8 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 	const editor = props.editor();
 
 	const onKeydown = (e: KeyboardEvent) => {
+		e.preventDefault();
+		
 		switch (e.key) {
 			case "Enter":
 				editor.addLine(0);

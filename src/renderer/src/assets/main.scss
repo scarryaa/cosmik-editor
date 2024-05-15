@@ -1,4 +1,4 @@
-html, body, #root {
+html, body, #root, .app-container {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -6,6 +6,11 @@ html, body, #root {
   font-family: "Inter" !important;
   font-variant-numeric: tabular-nums;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
 }
 
 @font-face {
@@ -21,4 +26,17 @@ html, body, #root {
 @font-face {
   font-family: "Ubuntu Mono";
   src: url("../assets/fonts/UbuntuMono-Regular.ttf");
+}
+
+.app-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.no-button-style {
+  border: none;
+  background-color: inherit;
+  color: inherit;
+  appearance: none;
+  cursor: pointer;
 }
