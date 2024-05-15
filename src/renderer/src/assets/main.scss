@@ -1,0 +1,18 @@
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Inter" !important;
+  overflow: hidden;
+}
+
+@font-face {
+  font-family: "Hack";
+  src: url("../assets/fonts/Hack-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/InterDisplay-Regular.ttf");
+}

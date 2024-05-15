@@ -1,0 +1,28 @@
+.editor-view {
+    width: 100%;
+    z-index: 200;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    white-space: pre;
+    outline: none;
+    height: 100%;
+    min-height: calc(100% - 19px);
+    max-height: calc(100% - 19px);
+    caret-color: transparent;
+    font-family: "Hack" !important;
+    font-weight: normal;
+    font-size: 14px;
+    overflow-y: auto;
+    font-feature-settings:
+        "liga" 0,
+        "calt" 0;
+    font-variation-settings: normal;
+    line-height: 19px;
+    letter-spacing: 0px;
+    cursor: text;
+    position: relative;
+}

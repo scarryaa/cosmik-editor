@@ -1,0 +1,17 @@
+:root {
+    --status-pane-height: 19px;
+}
+
+.status-pane {
+    height: var(--status-pane-height);
+    background-color: #d4d4d4;
+    line-height: 19px;
+    padding: 0 5px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 13px;
+    border-top: 1px solid #fff;
+    width: 100%;
+}
