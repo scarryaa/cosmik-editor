@@ -23,7 +23,19 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				editor.delete(0);
 				break;
 			case "Tab":
-				editor.insert("\t", 0);
+				editor.tab(0);
+				break;
+			case "ArrowLeft":
+				editor.moveLeft(0);
+				break;
+			case "ArrowRight":
+				editor.moveRight(0);
+				break;
+			case "ArrowUp":
+				editor.moveUp(0);
+				break;
+			case "ArrowDown":
+				editor.moveDown(0);
 				break;
 			default: {
 				if (e.key.length === 1) {

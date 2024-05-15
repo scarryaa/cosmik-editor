@@ -18,7 +18,7 @@ const App: Component = () => {
 		<>
 			<EditorView click={click} editor={editor} />
 			<EditorCore ref={textAreaRef} editor={editor} language="javascript" />
-      <StatusPane editor={editor} />
+			<StatusPane editor={editor} />
 		</>
 	);
 };

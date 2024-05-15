@@ -1,4 +1,8 @@
-import { lineHeight } from "@renderer/const/const";
+import {
+	cursorHorizontalOffset,
+	cursorVerticalOffset,
+	lineHeight,
+} from "@renderer/const/const";
 import type { Cursor as CursorModel } from "@renderer/models/Cursor";
 import type { Editor } from "@renderer/models/Editor";
 import { textService } from "@renderer/services/textService";
@@ -17,15 +21,20 @@ const Cursor: Component<CursorProps> = (props: CursorProps) => {
 
 	const calculateHorizontalPosition = (_: number) => {
 		const lineIndex = Math.min(line(), props.editor().numberOfLines() - 1);
-		return textService.measureTextWidth(
-			props.editor().lineContent(lineIndex),
-			"Hack",
-			14,
+		return (
+			textService.measureTextWidth(
+				props.editor().lineContent(lineIndex).substring(0, character()),
+				"Hack",
+				14,
+			) + cursorHorizontalOffset 
 		);
 	};
 
 	const calculateVerticalPosition = (line: number) => {
-		return Math.min(line, props.editor().numberOfLines() - 1) * lineHeight;
+		return (
+			Math.min(line, props.editor().numberOfLines() - 1) * lineHeight +
+			cursorVerticalOffset
+		);
 	};
 
 	return (
