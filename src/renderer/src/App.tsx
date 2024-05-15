@@ -7,6 +7,7 @@ import { Editor } from "./models/Editor";
 
 const App: Component = () => {
 	const [editor] = createSignal(new Editor("", "editor-1"));
+	const [scrollSignal, setScrollSignal] = createSignal<boolean>(false);
 
 	let textAreaRef!: HTMLTextAreaElement;
 	const click = () => {
@@ -15,11 +16,23 @@ const App: Component = () => {
 		}
 	};
 
+	const handleEnter = () => {
+		setScrollSignal(true);
+		setTimeout(() => {
+			setScrollSignal(false);
+		}, 0);
+	};
+
 	return (
 		<div class="app-container">
-      <LeftSidebar />
-			<EditorView click={click} editor={editor} />
-			<EditorCore ref={textAreaRef} editor={editor} language="javascript" />
+			<LeftSidebar />
+			<EditorView scrollSignal={scrollSignal} click={click} editor={editor} />
+			<EditorCore
+				ensureCursorVisible={handleEnter}
+				ref={textAreaRef}
+				editor={editor}
+				language="javascript"
+			/>
 			<StatusPane editor={editor} />
 		</div>
 	);

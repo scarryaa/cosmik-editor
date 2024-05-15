@@ -6,14 +6,26 @@ interface EditorCoreProps {
 	editor: Accessor<Editor>;
 	language: string;
 	ref?: Ref<HTMLTextAreaElement>;
+	ensureCursorVisible: () => void;
 }
 
 const EditorCore: Component<EditorCoreProps> = (props) => {
 	const editor = props.editor();
 
 	const onKeydown = (e: KeyboardEvent) => {
-		e.preventDefault();
+		const scrollActions = [
+			"Enter",
+			"Backspace",
+			"Delete",
+			"Tab",
+			"ArrowLeft",
+			"ArrowRight",
+			"ArrowUp",
+			"ArrowDown",
+		];
 		
+		e.preventDefault();
+
 		switch (e.key) {
 			case "Enter":
 				editor.addLine(0);
@@ -39,11 +51,15 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			case "ArrowDown":
 				editor.moveDown(0);
 				break;
-			default: {
+			default:
 				if (e.key.length === 1) {
 					editor.insert(e.key, 0);
+					break;
 				}
-			}
+		}
+
+		if (scrollActions.includes(e.key) || e.key.length === 1) {
+			props.ensureCursorVisible();
 		}
 	};
 

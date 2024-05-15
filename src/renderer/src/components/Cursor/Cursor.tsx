@@ -13,6 +13,7 @@ import styles from "./Cursor.module.scss";
 interface CursorProps {
 	editor: Accessor<Editor>;
 	cursor: Accessor<CursorModel>;
+	ref?;
 }
 
 const Cursor: Component<CursorProps> = (props: CursorProps) => {
@@ -26,19 +27,20 @@ const Cursor: Component<CursorProps> = (props: CursorProps) => {
 				props.editor().lineContent(lineIndex).substring(0, character()),
 				"Hack",
 				14,
-			) + cursorHorizontalOffset 
+			) + cursorHorizontalOffset
 		);
 	};
 
 	const calculateVerticalPosition = (line: number) => {
 		return (
-			Math.min(line, props.editor().numberOfLines() - 1) * lineHeight +
+			Math.min(line, props.editor().numberOfLines()) * lineHeight +
 			cursorVerticalOffset
 		);
 	};
 
 	return (
 		<div
+			ref={props.ref}
 			class={styles.cursor}
 			style={`left: ${calculateHorizontalPosition(
 				character(),
