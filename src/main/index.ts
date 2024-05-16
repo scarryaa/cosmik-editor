@@ -1,29 +1,43 @@
-import fs from "node:fs";
+import fs from "node:fs/promises"; // Use fs/promises for promise-based APIs
 import { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, app, dialog, ipcMain, shell } from "electron";
 import icon from "../../resources/icon.png?asset";
 
-let mainWindow: BrowserWindow | null = null; 
+let mainWindow: BrowserWindow | null = null;
 
-function listFiles(dirPath) {
-	return new Promise((resolve, reject) => {
-		fs.readdir(dirPath, { withFileTypes: true }, (err, files) => {
-			if (err) {
-				reject(err);
-				return;
-			}
-			// Filter directories and map files to their names
-			const fileList = files
-				.filter((file) => file.isFile())
-				.map((file) => file.name);
-			resolve(fileList);
-		});
-	});
+async function listFiles(dirPath: string): Promise<string[]> {
+	try {
+		console.log(`Listing files in directory: ${dirPath}`);
+		const files = await fs.readdir(dirPath, { withFileTypes: true });
+		if (!files) {
+			throw new Error("No files found or failed to read directory");
+		}
+		return files.filter((file) => file.isFile()).map((file) => file.name);
+	} catch (error) {
+		console.error(`Failed to list files in directory ${dirPath}:`, error);
+		throw new Error(`Failed to list files: ${error.message}`);
+	}
+}
+
+async function readFile(filePath: string): Promise<string> {
+	try {
+		return await fs.readFile(filePath, "utf-8");
+	} catch (error) {
+		throw new Error(`Failed to read file: ${error.message}`);
+	}
+}
+
+async function readFolder(folderPath: string): Promise<any> {
+	try {
+		const files = await fs.readdir(folderPath);
+		return { path: folderPath, files };
+	} catch (error) {
+		throw new Error(`Failed to read folder: ${error.message}`);
+	}
 }
 
 function createWindow(): void {
-	// Create the browser window.
 	mainWindow = new BrowserWindow({
 		width: 900,
 		height: 670,
@@ -45,8 +59,6 @@ function createWindow(): void {
 		return { action: "deny" };
 	});
 
-	// HMR for renderer base on electron-vite cli.
-	// Load the remote URL for development or the local html file for production.
 	if (is.dev && process.env.ELECTRON_RENDERER_URL) {
 		mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
 	} else {
@@ -54,93 +66,7 @@ function createWindow(): void {
 	}
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-	// Set app user model id for windows
-	electronApp.setAppUserModelId("com.electron");
-
-	// Default open or close DevTools by F12 in development
-	// and ignore CommandOrControl + R in production.
-	// see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-	app.on("browser-window-created", (_, window) => {
-		optimizer.watchWindowShortcuts(window);
-	});
-
-	// IPC test
-	ipcMain.on("ping", () => console.log("pong"));
-	ipcMain.on("list-files", async (event, dirPath) => {
-		try {
-			const files = await listFiles(dirPath);
-			event.reply("list-files-reply", files);
-		} catch (error) {
-			console.error("Failed to list files:", error);
-			event.reply("list-files-reply", { error: error.message });
-		}
-	});
-
-	createMenu();
-	createWindow();
-
-	ipcMain.handle('open-file', async (event) => {
-		const result = await dialog.showOpenDialog(mainWindow!, {
-		  properties: ['openFile'] 
-		});
-		if (!result.canceled) {
-		  const filePath = result.filePaths[0];
-		  return fs.readFileSync(filePath, 'utf-8');
-		}
-		return null;
-	  });
-
-	app.on("activate", () => {
-		// On macOS it's common to re-create a window in the app when the
-		// dock icon is clicked and there are no other windows open.
-		if (BrowserWindow.getAllWindows().length === 0) createWindow();
-		if (Menu.getApplicationMenu() === null) {
-			createMenu();
-		}
-	});
-});
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-	if (process.platform !== "darwin") {
-		app.quit();
-	}
-});
-
-const openFile = () => {
-	dialog.showOpenDialog({
-	  properties: ['openFile'],
-	  filters: [
-		{ name: 'All Files', extensions: ['*'] }
-	  ]
-	}).then(result => {
-	  if (!result.canceled) {
-		readFile(result.filePaths[0]);
-	  }
-	}).catch(err => {
-	  console.error('Failed to open file:', err);
-	});
-  };
-  
-  const readFile = (filePath) => {
-	fs.readFile(filePath, 'utf-8', (err, data) => {
-	  if (err) {
-		console.error('Failed to read file:', err);
-		return;
-	  }
-
-	  mainWindow?.webContents.send('file-opened', data);
-	});
-  };
-  
-
-const createMenu = () => {
+function createMenu(): void {
 	const template: Menu = [
 		{
 			label: "File",
@@ -149,11 +75,13 @@ const createMenu = () => {
 				{
 					label: "Open File",
 					accelerator: "CmdOrCtrl+O",
-					click: () => {
-						openFile();
-					},
+					click: openFile,
 				},
-				{ label: "Open Folder", accelerator: "CmdOrCtrl+Shift+O" },
+				{
+					label: "Open Folder",
+					accelerator: "CmdOrCtrl+Shift+O",
+					click: openFolder,
+				},
 				{ type: "separator" },
 				{ label: "Save", accelerator: "CmdOrCtrl+S" },
 				{ label: "Save As", accelerator: "CmdOrCtrl+Shift+S" },
@@ -197,4 +125,128 @@ const createMenu = () => {
 
 	const menu = Menu.buildFromTemplate(template);
 	Menu.setApplicationMenu(menu);
-};
+}
+
+async function openFile(): Promise<void> {
+	try {
+		const result = await dialog.showOpenDialog({
+			properties: ["openFile"],
+			filters: [{ name: "All Files", extensions: ["*"] }],
+		});
+		if (!result.canceled && result.filePaths.length > 0) {
+			const data = await readFile(result.filePaths[0]);
+			mainWindow?.webContents.send("file-opened", data);
+		}
+	} catch (error) {
+		console.error("Failed to open file:", error);
+	}
+}
+
+async function openFolder(): Promise<void> {
+	try {
+		const result = await dialog.showOpenDialog({
+			properties: ["openDirectory"],
+			filters: [{ name: "All Files", extensions: ["*"] }],
+		});
+		if (!result.canceled && result.filePaths.length > 0) {
+			const folderContents = await readFolder(result.filePaths[0]);
+			console.log(folderContents);
+			mainWindow?.webContents.send("folder-opened", folderContents);
+		}
+	} catch (error) {
+		console.error("Failed to open folder:", error);
+	}
+}
+
+app.whenReady().then(() => {
+	electronApp.setAppUserModelId("com.meteor");
+
+	app.on("browser-window-created", (_, window) => {
+		optimizer.watchWindowShortcuts(window);
+	});
+
+	createWindow();
+	createMenu();
+
+	ipcMain.handle("open-file", async () => {
+		try {
+			const result = await dialog.showOpenDialog(mainWindow!, {
+				properties: ["openFile"],
+			});
+			if (!result.canceled) {
+				const filePath = result.filePaths[0];
+				return await fs.readFile(filePath, "utf-8");
+			}
+			return null;
+		} catch (error) {
+			console.error("Failed to open file:", error);
+			return { error: error.message };
+		}
+	});
+
+	ipcMain.handle("open-folder", async () => {
+		try {
+			const result = await dialog.showOpenDialog(mainWindow!, {
+				properties: ["openDirectory"],
+			});
+			if (!result.canceled) {
+				const folderPath = result.filePaths[0];
+				const folderContents = await readFolder(folderPath);
+				return folderContents;
+			}
+			return null;
+		} catch (error) {
+			console.error("Failed to open folder:", error);
+			return { error: error.message };
+		}
+	});
+
+	ipcMain.handle("check-if-directory", async (event, fullPath) => {
+		try {
+			const stats = await fs.stat(fullPath);
+			return stats.isDirectory();
+		} catch (error) {
+			console.error(
+				`Failed to check if path is a directory: ${fullPath}`,
+				error,
+			);
+			return false;
+		}
+	});
+
+	ipcMain.handle("get-folder-contents", async (event, folderPath) => {
+		try {
+		  const files = await fs.readdir(folderPath);
+		  const fullPaths = await Promise.all(
+			files.map(async file => {
+			  const fullPath = join(folderPath, file);
+			  const isDirectory = (await fs.stat(fullPath)).isDirectory();
+			  return { name: file, isDirectory };
+			})
+		  );
+		  const folders = fullPaths.filter(f => f.isDirectory).map(f => f.name);
+		  const filesOnly = fullPaths.filter(f => !f.isDirectory).map(f => f.name);
+		  return { folders, files: filesOnly };
+		} catch (error) {
+		  console.error(`Failed to read folder contents: ${error.message}`);
+		  return { folders: [], files: [] };
+		}
+	  });
+	  
+});
+
+ipcMain.handle("is-directory", async (event, fullPath) => {
+	try {
+		const stats = await fs.stat(fullPath);
+		return stats.isDirectory();
+	} catch (error) {
+		console.error(`Failed to check if path is a directory: ${fullPath}`, error);
+		return false;
+	}
+});
+
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") {
+		app.quit();
+	}
+});

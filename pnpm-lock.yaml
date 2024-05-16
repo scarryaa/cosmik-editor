@@ -14,6 +14,9 @@ dependencies:
   electron-updater:
     specifier: ^6.1.7
     version: 6.1.8
+  path-browserify:
+    specifier: ^1.0.1
+    version: 1.0.1
   solid-icons:
     specifier: ^1.1.0
     version: 1.1.0(solid-js@1.8.17)
@@ -52,6 +55,9 @@ devDependencies:
   vite:
     specifier: ^5.0.12
     version: 5.2.11(@types/node@18.19.33)(sass@1.77.1)
+  vite-plugin-electron-renderer:
+    specifier: ^0.14.5
+    version: 0.14.5
   vite-plugin-solid:
     specifier: ^2.9.1
     version: 2.10.2(solid-js@1.8.17)(vite@5.2.11)
@@ -3319,6 +3325,10 @@ packages:
       callsites: 3.1.0
     dev: true
 
+  /path-browserify@1.0.1:
+    resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
+    dev: false
+
   /path-exists@4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
@@ -3929,6 +3939,10 @@ packages:
       extsprintf: 1.4.1
     dev: true
     optional: true
+
+  /vite-plugin-electron-renderer@0.14.5:
+    resolution: {integrity: sha512-EQ7ORuPp8vFPCqfuGnVo7d36fXS0IFH4/RUlKb1drseix3TQEPcgwEuFADdXBxRgqMp70njz/1m0kdf5lEsm8w==}
+    dev: true
 
   /vite-plugin-solid@2.10.2(solid-js@1.8.17)(vite@5.2.11):
     resolution: {integrity: sha512-AOEtwMe2baBSXMXdo+BUwECC8IFHcKS6WQV/1NEd+Q7vHPap5fmIhLcAzr+DUJ04/KHx/1UBU0l1/GWP+rMAPQ==}

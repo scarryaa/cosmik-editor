@@ -1,19 +1,22 @@
+import path from "node:path";
 import { electronAPI } from "@electron-toolkit/preload";
 import { contextBridge, ipcRenderer } from "electron";
 
-// Custom APIs for renderer
 const api = {
-	openFile: () => ipcRenderer.invoke("open-file"),
 	onFileOpened: (callback) => ipcRenderer.on("file-opened", callback),
+	onFolderOpened: (callback) => ipcRenderer.on("folder-opened", callback),
+	joinPath: (...args) => path.join(...args),
+	isDirectory: (fullPath) => ipcRenderer.invoke("check-if-directory", fullPath),
+	getFolderContents: (folderPath) => ipcRenderer.invoke("get-folder-contents", folderPath),
 };
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
 	try {
 		contextBridge.exposeInMainWorld("electron", electronAPI);
 		contextBridge.exposeInMainWorld("api", api);
+		contextBridge.exposeInMainWorld("path", {
+			join: (...args) => path.join(...args),
+		});
 	} catch (error) {
 		console.error(error);
 	}

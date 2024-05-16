@@ -1,4 +1,6 @@
+import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
+import { getNumberOfLinesOnScreen } from "@renderer/util/util";
 import type { Accessor, Component, Ref } from "solid-js";
 import styles from "./EditorCore.module.scss";
 
@@ -22,6 +24,10 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			"ArrowRight",
 			"ArrowUp",
 			"ArrowDown",
+			"Home",
+			"End",
+			"PageUp",
+			"PageDown",
 		];
 
 		e.preventDefault();
@@ -50,6 +56,26 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				break;
 			case "ArrowDown":
 				editor.moveDown(0);
+				break;
+			case "Home":
+				editor.moveToLineStart(0);
+				break;
+			case "End":
+				editor.moveToLineEnd(0);
+				break;
+			case "PageUp":
+				editor.moveTo(
+					0,
+					editor.cursorAt(0).character,
+					editor.cursorAt(0).line - getNumberOfLinesOnScreen(lineHeight),
+				);
+				break;
+			case "PageDown":
+				editor.moveTo(
+					0,
+					editor.cursorAt(0).character,
+					editor.cursorAt(0).line + getNumberOfLinesOnScreen(lineHeight),
+				);
 				break;
 			default:
 				if (e.key.length === 1) {

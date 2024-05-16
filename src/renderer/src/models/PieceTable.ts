@@ -100,6 +100,7 @@ export class PieceTable {
 		this.originalBuffer = newText;
 		this.addBuffer = "";
 		this.table = [{ buffer: "original", start: 0, length: newText.length }];
+
 		this.updateCachedLength();
 	}
 

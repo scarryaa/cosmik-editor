@@ -24,12 +24,13 @@ export class Editor {
 		const newText = this.convertTabsToSpaces(text);
 		this.content.restoreText(newText);
 		this.contentSignal[1](this.content.getText());
+		this.lineNumbersSignal[1](this.calculateLineBreaks().length);
 		this.lineBreakIndices = this.calculateLineBreaks();
 	};
 
 	convertTabsToSpaces = (text: string): string => {
-        return text.replace(/\t/g, "    ");
-    };
+		return text.replace(/\t/g, "    ");
+	};
 
 	calculateLineBreaks = (): number[] => {
 		let indices: number[] = [];
@@ -69,7 +70,12 @@ export class Editor {
 		this.contentSignal[1](this.content.getText());
 		this.lineBreakIndices = this.calculateLineBreaks();
 
-		cursor.moveTo(cursor.character + 4, cursor.line);
+		cursor.moveTo(
+			cursor.character + 4,
+			cursor.line,
+			this.lineContent(cursor.line).length,
+			this.lineBreakIndices.length - 1,
+		);
 	};
 
 	insert = (text: string, cursorIndex: number): void => {
@@ -107,6 +113,9 @@ export class Editor {
 				cursor.moveTo(
 					this.lineContent(cursor.line - 1).length,
 					cursor.line - 1,
+					this.lineContent(cursor.line - 1).length,
+					this.lineBreakIndices.length - 1,
+					// TODO make sure this is correct
 				);
 			} else if (cursor.character > 0) {
 				// Delete character before cursor in the middle of a line
@@ -196,6 +205,45 @@ export class Editor {
 	set cursors(newCursors: Cursor[]) {
 		this.cursorsSignal[1](newCursors);
 	}
+
+	moveTo = (cursorIndex: number, character: number, line: number): void => {
+		const cursor = this.cursors[cursorIndex];
+		const totalLines = this.lineBreakIndices.length;
+		cursor.moveTo(
+			character,
+			line,
+			this.lineContent(cursor.line).length,
+			totalLines - 1,
+		);
+
+		if (cursor.line === 0) {
+			this.moveToLineStart(cursorIndex);
+		} else if (cursor.line === totalLines - 1) {
+			this.moveToLineEnd(cursorIndex);
+		}
+	};
+
+	moveToLineStart = (cursorIndex: number): void => {
+		const cursor = this.cursors[cursorIndex];
+		cursor.moveTo(
+			0,
+			cursor.line,
+			this.lineContent(cursor.line).length,
+			this.lineBreakIndices.length - 1,
+		);
+	};
+
+	moveToLineEnd = (cursorIndex: number): void => {
+		const cursor = this.cursors[cursorIndex];
+		const lineLength = this.lineContent(cursor.line).length;
+
+		cursor.moveTo(
+			lineLength,
+			cursor.line,
+			lineLength,
+			this.lineBreakIndices.length - 1,
+		);
+	};
 
 	moveRight = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];

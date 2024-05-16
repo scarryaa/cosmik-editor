@@ -52,6 +52,7 @@ const LeftSidebar = () => {
 		<Pane
 			style={{
 				width: "165px",
+				"min-width": "165px",
 				height: "100%",
 				"background-color": "var(--meteor-pane-background",
 			}}

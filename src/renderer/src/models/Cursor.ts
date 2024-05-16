@@ -17,9 +17,30 @@ export class Cursor {
 		return this._line[0]();
 	}
 
-	moveTo(character: number, line: number) {
-		this._character[1](character);
-		this._line[1](line);
+	moveTo(
+		character: number,
+		line: number,
+		lineLength: number,
+		totalLines: number,
+	) {
+		let adjustedCharacter = character;
+		let adjustedLine = line;
+
+		// Bounds checking
+		if (character < 0) {
+			adjustedCharacter = 0;
+		} else if (character > lineLength) {
+			adjustedCharacter = lineLength;
+		}
+
+		if (line < 0) {
+			adjustedLine = 0;
+		} else if (line > totalLines) {
+			adjustedLine = totalLines;
+		}
+
+		this._character[1](adjustedCharacter);
+		this._line[1](adjustedLine);
 	}
 
 	moveRight(lineLength: number, totalLines: number) {
