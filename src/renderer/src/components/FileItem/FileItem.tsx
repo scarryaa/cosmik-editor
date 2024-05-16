@@ -5,6 +5,7 @@ import styles from "./FileItem.module.scss";
 interface FileItemProps {
 	file: string;
 	indentLevel: number;
+	classList?: { [k: string]: boolean | undefined; };
 }
 
 const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
@@ -12,7 +13,7 @@ const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
 	const currentIndent = props.indentLevel * indentSize;
 
 	return (
-		<div class={styles["file-container"]}>
+		<div class={styles["file-container"]} classList={props.classList}>
 			<div class={styles.file} style={{ "padding-left": `${currentIndent}px` }}>
 			<VsFile />
 				<span
