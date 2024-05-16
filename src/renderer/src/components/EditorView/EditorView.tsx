@@ -26,7 +26,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	let lineRefs: HTMLDivElement[] = [];
 
 	const ensureCursorVisible = (): void => {
-		const cursorElement = cursorRefs()[0];
+		const cursorElement = cursorRefs[0];
 		if (cursorElement) {
 			scrollIfNeeded(cursorElement);
 		}
