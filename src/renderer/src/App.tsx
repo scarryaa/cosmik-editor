@@ -4,6 +4,7 @@ import EditorView from "./components/EditorView/EditorView";
 import LeftSidebar from "./components/LeftSidebar/LeftSidebar";
 import StatusPane from "./components/StatusPane/StatusPane";
 import { Editor } from "./models/Editor";
+import TabStore from "./stores/tabs";
 
 const App: Component = () => {
 	const [editor] = createSignal(new Editor("", "editor-1"));
@@ -26,7 +27,9 @@ const App: Component = () => {
 	return (
 		<div class="app-container">
 			<LeftSidebar />
-			<EditorView scrollSignal={scrollSignal} click={click} editor={editor} />
+			{TabStore.tabs.length > 0 && (
+				<EditorView scrollSignal={scrollSignal} click={click} editor={editor} />
+			)}
 			<EditorCore
 				ensureCursorVisible={handleEnter}
 				ref={textAreaRef}

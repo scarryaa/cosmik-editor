@@ -1,4 +1,4 @@
-import fs from "node:fs/promises"; // Use fs/promises for promise-based APIs
+import fs from "node:fs/promises";
 import { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, app, dialog, ipcMain, shell } from "electron";
@@ -30,6 +30,7 @@ async function readFile(filePath: string): Promise<string> {
 
 async function readFolder(folderPath: string): Promise<any> {
 	try {
+		console.log(folderPath);
 		const files = await fs.readdir(folderPath);
 		return { path: folderPath, files };
 	} catch (error) {
@@ -150,7 +151,6 @@ async function openFolder(): Promise<void> {
 		});
 		if (!result.canceled && result.filePaths.length > 0) {
 			const folderContents = await readFolder(result.filePaths[0]);
-			console.log(folderContents);
 			mainWindow?.webContents.send("folder-opened", folderContents);
 		}
 	} catch (error) {
@@ -214,25 +214,48 @@ app.whenReady().then(() => {
 		}
 	});
 
+	ipcMain.handle("create-folder", async (event, folderPath) => {
+		try {
+            await fs.mkdir(folderPath);
+            return true;
+        } catch (error) {
+            console.error(`Failed to create folder: ${folderPath}`, error);
+            return false;
+        }
+    });
+
+	ipcMain.handle("create-file", async (event, filePath) => {
+		try {
+            await fs.writeFile(filePath, "");
+            return true;
+        } catch (error) {
+            console.error(`Failed to create file: ${filePath}`, error);
+            return false;
+        }
+    });
+
 	ipcMain.handle("get-folder-contents", async (event, folderPath) => {
 		try {
-		  const files = await fs.readdir(folderPath);
-		  const fullPaths = await Promise.all(
-			files.map(async file => {
-			  const fullPath = join(folderPath, file);
-			  const isDirectory = (await fs.stat(fullPath)).isDirectory();
-			  return { name: file, isDirectory };
-			})
-		  );
-		  const folders = fullPaths.filter(f => f.isDirectory).map(f => f.name);
-		  const filesOnly = fullPaths.filter(f => !f.isDirectory).map(f => f.name);
-		  return { folders, files: filesOnly };
+			console.log(folderPath);
+			const files = await fs.readdir(folderPath);
+			const fullPaths = await Promise.all(
+				files.map(async (file) => {
+					const fullPath = join(folderPath, file);
+					const isDirectory = (await fs.stat(fullPath)).isDirectory();
+					return { name: file, isDirectory, path: fullPath };
+				}),
+			);
+			const folders = fullPaths.filter((f) => f.isDirectory).map((f) => f.name);
+			const filesOnly = fullPaths
+				.filter((f) => !f.isDirectory)
+				.map((f) => f.path);
+				console.log(filesOnly);
+			return { folders, files: filesOnly };
 		} catch (error) {
-		  console.error(`Failed to read folder contents: ${error.message}`);
-		  return { folders: [], files: [] };
+			console.error(`Failed to read folder contents: ${error.message}`);
+			return { folders: [], files: [] };
 		}
-	  });
-	  
+	});
 });
 
 ipcMain.handle("is-directory", async (event, fullPath) => {

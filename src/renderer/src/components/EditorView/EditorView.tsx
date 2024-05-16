@@ -6,6 +6,7 @@ import type { Accessor, Component } from "solid-js";
 import Cursor from "../Cursor/Cursor";
 import EditorLine from "../EditorLine/EditorLine";
 import LineNumbers from "../LineNumbers/LineNumbers";
+import TabsWrapper from "../TabsWrapper/TabsWrapper";
 import styles from "./EditorView.module.scss";
 
 interface EditorViewProps {
@@ -78,6 +79,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 
 	return (
 		<div onclick={props.click} class={styles["editor-view"]}>
+			<TabsWrapper />
 			<div class={styles["editor-view-inner"]}>
 				<div class={styles["editor-line-numbers"]}>
 					<LineNumbers top={viewScrollTop} editor={props.editor} />

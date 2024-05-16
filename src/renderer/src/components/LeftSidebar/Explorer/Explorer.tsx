@@ -8,6 +8,7 @@ import {
 	VsRefresh,
 } from "solid-icons/vs";
 import { For, createEffect, createSignal, onMount } from "solid-js";
+import { onCleanup } from "solid-js";
 import {
 	setFileContent,
 	setFolderContent,
@@ -21,8 +22,6 @@ interface FolderResponse {
 	files?: string[];
 	folders?: string[];
 }
-
-import { onCleanup } from "solid-js";
 
 const Explorer = () => {
 	const [rootOpen, setRootOpen] = createSignal(true);
@@ -46,34 +45,145 @@ const Explorer = () => {
 				return;
 			}
 
-			let files: string[] = [];
-			let folders: string[] = [];
-
-			const fullPaths = await Promise.all(
-				response.files.map(async (file) => {
-					const fullPath = api.joinPath(response.path, file);
-					const isDirectory = await api.isDirectory(fullPath);
-					return { name: file, isDirectory };
-				}),
-			);
-
-			for (const result of fullPaths) {
-				if (result.isDirectory) {
-					folders.push(result.name);
-				} else {
-					files.push(result.name);
-				}
-			}
-
-			setFolderContent({ root: response.path, folders, files });
+			fetchAndSetFolderContents(response);
 			updateExplorerHeight();
 		});
 	});
+
+	const fetchAndSetFolderContents = async (response: FolderResponse) => {
+		let files: string[] = [];
+		let folders: string[] = [];
+
+		if (!response.files) return;
+
+		const fullPaths = await Promise.all(
+			response.files.map(async (file) => {
+				const fullPath = api.joinPath(response.path, file);
+				const isDirectory = await api.isDirectory(fullPath);
+				return { name: file, path: fullPath, isDirectory };
+			}),
+		);
+
+		for (const result of fullPaths) {
+			if (result.isDirectory) {
+				folders.push(result.name);
+			} else {
+				files.push(result.path);
+			}
+		}
+
+		setFolderContent({ root: response.path, folders, files });
+	};
+
+	const handleNewFolderClick = (e: MouseEvent) => {
+		// Filter to get the last selected folder
+		const lastSelectedFolder = fileStore.selectedItems
+			.filter((item) => item.endsWith("/"))
+			.slice(-1)[0];
+
+		if (lastSelectedFolder) {
+			const folderPath = lastSelectedFolder;
+			const newFolderName = "newfolder/";
+			const newFolderPath = `${folderPath}${newFolderName}`;
+
+			api
+				.createFolder(newFolderPath)
+				.then(() => {
+					console.log(`Folder created successfully at ${newFolderPath}`);
+				})
+				.catch((error) => {
+					console.error(`Failed to create folder: ${newFolderPath}`, error);
+				});
+		} else {
+			// No folder selected, try to find the parent folder of the last selected file
+			const lastSelectedFile = fileStore.selectedItems
+				.filter((item) => !item.endsWith("/"))
+				.slice(-1)[0];
+
+			if (lastSelectedFile) {
+				const parentFolderPath = lastSelectedFile.substring(
+					0,
+					lastSelectedFile.lastIndexOf("/") + 1,
+				);
+				const newFolderName = "newfolder/";
+				const newFolderPath = `${parentFolderPath}${newFolderName}`;
+
+				api
+					.createFolder(newFolderPath)
+					.then(() => {
+						console.log(`Folder created successfully at ${newFolderPath}`);
+					})
+					.catch((error) => {
+						console.error(`Failed to create folder: ${newFolderPath}`, error);
+					});
+			} else {
+				console.error("No folder or file selected");
+			}
+		}
+	};
+
+	const handleNewFileClick = (e: MouseEvent) => {
+		// Filter to get the last selected folder
+		const lastSelectedFolder = fileStore.selectedItems
+			.filter((item) => item.endsWith("/"))
+			.slice(-1)[0];
+
+		if (lastSelectedFolder) {
+			const folderPath = lastSelectedFolder;
+			const newFileName = "newfile";
+			const newFilePath = `${folderPath}${newFileName}`;
+
+			api
+				.createFile(newFilePath)
+				.then(() => {
+					console.log(`File created successfully at ${newFilePath}`);
+				})
+				.catch((error) => {
+					console.error(`Failed to create file: ${newFilePath}`, error);
+				});
+		} else {
+			// No folder selected, try to find the parent folder of the last selected file
+			const lastSelectedFile = fileStore.selectedItems
+				.filter((item) => !item.endsWith("/"))
+				.slice(-1)[0];
+
+			if (lastSelectedFile) {
+				const parentFolderPath = lastSelectedFile.substring(
+					0,
+					lastSelectedFile.lastIndexOf("/") + 1,
+				);
+				const newFileName = "newfile";
+				const newFilePath = `${parentFolderPath}${newFileName}`;
+
+				api
+					.createFile(newFilePath)
+					.then(() => {
+						console.log(`File created successfully at ${newFilePath}`);
+					})
+					.catch((error) => {
+						console.error(`Failed to create file: ${newFilePath}`, error);
+					});
+			} else {
+				console.error("No folder or file selected");
+			}
+		}
+	};
 
 	const clearOpenFolders = (e: MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
 		setOpenFolders([]);
+	};
+
+	const refreshFolders = async () => {
+		fetchAndSetFolderContents({
+			path: fileStore.folderContent.root,
+			files: [
+				...fileStore.folderContent.folders,
+				...fileStore.folderContent.files,
+			],
+		});
+		toggleRootOpen();
 	};
 
 	const toggleRootOpen = () => {
@@ -83,7 +193,7 @@ const Explorer = () => {
 
 	const updateExplorerHeight = () => {
 		if (explorerRef && headerRef) {
-			const availableHeight = window.innerHeight - headerRef.clientHeight - 80; // Manual height for now
+			const availableHeight = window.innerHeight - headerRef.clientHeight - 85; // Manual height for now
 			setExplorerHeight(availableHeight);
 		}
 	};
@@ -117,21 +227,21 @@ const Explorer = () => {
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={() => api.openFile()}
+								onclick={(e) => handleNewFileClick(e)}
 							>
 								<VsNewFile font-size="16" />
 							</button>
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={() => api.openFolder()}
+								onclick={(e) => handleNewFolderClick(e)}
 							>
 								<VsNewFolder font-size="16" />
 							</button>
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={() => api.openFolder()}
+								onclick={() => refreshFolders()}
 							>
 								<VsRefresh font-size="16" />
 							</button>
@@ -159,7 +269,7 @@ const Explorer = () => {
 							{(folder) => (
 								<FolderItem
 									folder={folder}
-									path={`${fileStore.folderContent.root}/${folder}`}
+									path={`${fileStore.folderContent.root}/${folder}/`}
 									indentLevel={1}
 								/>
 							)}

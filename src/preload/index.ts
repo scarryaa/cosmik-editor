@@ -8,6 +8,8 @@ const api = {
 	joinPath: (...args) => path.join(...args),
 	isDirectory: (fullPath) => ipcRenderer.invoke("check-if-directory", fullPath),
 	getFolderContents: (folderPath) => ipcRenderer.invoke("get-folder-contents", folderPath),
+	createFolder: (folderPath) => ipcRenderer.invoke("create-folder", folderPath),
+	createFile: (filePath) => ipcRenderer.invoke("create-file", filePath),
 };
 
 if (process.contextIsolated) {

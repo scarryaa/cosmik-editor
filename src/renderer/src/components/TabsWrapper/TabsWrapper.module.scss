@@ -1,0 +1,10 @@
+:root {
+    --tabs-wrapper-background-color: #bebebe;
+}
+
+.tabs-wrapper {
+    display: flex;
+    flex-direction: row;
+    background-color: var(--tabs-wrapper-background-color);
+    cursor: pointer;
+}

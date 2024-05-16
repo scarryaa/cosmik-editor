@@ -9,4 +9,6 @@
     flex-direction: row;
     border-bottom: 1px solid var(--meteor-border);
     padding-inline: 5px;
+    border-right: 1px solid var(--meteor-border);
+    min-width: 165px;
 }

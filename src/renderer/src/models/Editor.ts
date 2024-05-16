@@ -2,7 +2,13 @@ import { createSignal } from "solid-js";
 import { Cursor } from "./Cursor";
 import { PieceTable } from "./PieceTable";
 
-export class Editor {
+export interface IEditor {
+	content: PieceTable;
+	lineBreakIndices: number[];
+	id: string;
+}
+
+export class Editor implements IEditor {
 	content: PieceTable;
 	lineBreakIndices: number[];
 	id: string;

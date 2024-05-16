@@ -1,5 +1,6 @@
 .folder-container {
     position: relative;
+    align-items: center;
 
     .indent {
         height: 100%;
@@ -13,7 +14,7 @@
     .folder {
         position: relative;
         cursor: pointer;
-        align-items: center;
+        align-items: flex-end;
         display: flex;
         flex: 1;
         flex-shrink: 1;

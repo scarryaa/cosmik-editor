@@ -1,5 +1,6 @@
 .file-container {
     position: relative;
+    align-items: center;
 
     .indent {
         height: 100%;
@@ -37,13 +38,13 @@
             min-width: 0;
             font-size: 12px;
         }
+    }
 
-        &:hover {
-            background-color: #fafafa !important;
-        }
+    &:hover {
+        background-color: #fafafa !important;
+    }
 
-        &.selected {
-            background-color: #509abd80 !important;
-        }
+    &.selected {
+        background-color: #509abd80 !important;
     }
 }
