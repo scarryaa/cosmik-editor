@@ -1,6 +1,7 @@
 import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
 import { useFileStore } from "@renderer/stores/files";
+import TabStore from "@renderer/stores/tabs";
 import { For, createEffect, createSignal, onCleanup } from "solid-js";
 import type { Accessor, Component } from "solid-js";
 import Cursor from "../Cursor/Cursor";
@@ -17,6 +18,7 @@ interface EditorViewProps {
 
 const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollTop, setViewScrollTop] = createSignal(0);
+	const [viewScrollLeft, setViewScrollLeft] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
 	const fileStore = useFileStore();
 
@@ -24,7 +26,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	let lineRefs: HTMLDivElement[] = [];
 
 	const ensureCursorVisible = (): void => {
-		const cursorElement = cursorRefs[0];
+		const cursorElement = cursorRefs()[0];
 		if (cursorElement) {
 			scrollIfNeeded(cursorElement);
 		}
@@ -78,7 +80,11 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	});
 
 	return (
-		<div onclick={props.click} class={styles["editor-view"]}>
+		<div
+			onClick={props.click}
+			onKeyPress={props.click}
+			class={styles["editor-view"]}
+		>
 			<TabsWrapper />
 			<div class={styles["editor-view-inner"]}>
 				<div class={styles["editor-line-numbers"]}>
@@ -87,7 +93,13 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				<div
 					ref={contentContainerRef}
 					class={styles["editor-content-container"]}
-					onscroll={(e) => setViewScrollTop(e.target.scrollTop)}
+					onScroll={(e) => {
+						setViewScrollTop(e.target.scrollTop);
+						setViewScrollLeft(e.target.scrollLeft);
+						const scrollX = contentContainerRef?.scrollLeft ?? 0;
+						const scrollY = contentContainerRef?.scrollTop ?? 0;
+						TabStore.updateTab(TabStore.activeTab!.id, { scrollX, scrollY });
+					}}
 				>
 					<div class={styles["editor-lines-padding"]}>
 						<div class={styles["editor-lines"]}>

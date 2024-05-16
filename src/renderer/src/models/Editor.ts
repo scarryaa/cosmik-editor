@@ -12,6 +12,7 @@ export class Editor implements IEditor {
 	content: PieceTable;
 	lineBreakIndices: number[];
 	id: string;
+	tabId: string | null = null;
 
 	private contentSignal;
 	private cursorsSignal = createSignal<Cursor[]>([]);

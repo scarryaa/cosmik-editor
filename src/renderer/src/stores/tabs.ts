@@ -5,132 +5,134 @@ import EditorStore from "./editors";
 import PieceTableStore from "./piece-tables";
 
 export enum TabState {
-	Modified = 0,
-	Untracked = 1,
-	Deleted = 2,
+  Modified = 0,
+  Untracked = 1,
+  Deleted = 2,
 }
 
 const [state, setState] = createStore({
-	tabs: [] as Tab[],
-	activeTabId: null as string | null,
-	lastActiveTabs: [] as string[],
+  tabs: [] as Tab[],
+  activeTabId: null as string | null,
+  lastActiveTabs: [] as string[],
 });
 
 const TabStore = {
-	get tabs() {
-		return state.tabs;
-	},
-	get activeTab() {
-		return state.tabs.find((tab) => tab.id === state.activeTabId) || null;
-	},
-	get lastActiveTab() {
-		const lastActiveTabId =
-			state.lastActiveTabs[state.lastActiveTabs.length - 1];
-		return state.tabs.find((tab) => tab.id === lastActiveTabId) || null;
-	},
+  get tabs() {
+    return state.tabs;
+  },
+  get activeTab() {
+    return state.tabs.find((tab) => tab.id === state.activeTabId) || null;
+  },
+  get lastActiveTab() {
+    const lastActiveTabId = state.lastActiveTabs[state.lastActiveTabs.length - 1];
+    return state.tabs.find((tab) => tab.id === lastActiveTabId) || null;
+  },
 
-	getTabState(tabId: string): TabState | undefined {
-		const tab = state.tabs.find((t) => t.id === tabId);
-		return tab ? tab.state : undefined;
-	},
+  getTabState(tabId: string): TabState | undefined {
+    return state.tabs.find((t) => t.id === tabId)?.state;
+  },
 
-	openTab(tab: Omit<Tab, "active" | "modified" | "saved" | "content">) {
-		setState("tabs", (tabs) => {
-			const tabExists = tabs.some((t) => t.id === tab.id);
+  openTab(tab: Omit<Tab, "active" | "modified" | "saved" | "content" | "cursor" | "scrollX" | "scrollY">) {
+    setState("tabs", (tabs) => {
+      const tabExists = tabs.some((t) => t.id === tab.id);
 
-			if (!tabExists) {
-				return [
-					...tabs.map((t) => ({ ...t, active: false })),
-					{ ...tab, active: true, modified: false, saved: true, content: "" },
-				];
-			}
+      if (!tabExists) {
+        return [
+          ...tabs.map((t) => ({ ...t, active: false })),
+          { ...tab, active: true, modified: false, saved: true, content: "", cursor: { line: 0, character: 0 }, scrollX: 0, scrollY: 0 },
+        ];
+      }
 
-			// Add the tab to active tabs
-			setState("lastActiveTabs", (lastActiveTabs) => [
-				...lastActiveTabs,
-				tab.id,
-			]);
+      // Add the tab to active tabs
+      this.addToLastActiveTabs(tab.id);
 
-			// If the tab already exists, activate it and deactivate others
-			return tabs.map((t) => ({
-				...t,
-				active: t.id === tab.id,
-			}));
-		});
-		this.setActiveTab(tab.id);
-	},
+      // If the tab already exists, activate it and deactivate others
+      return tabs.map((t) => ({ ...t, active: t.id === tab.id }));
+    });
 
-	closeTab(tabId: string) {
-		setState("tabs", (tabs) => tabs.filter((tab) => tab.id !== tabId));
+    this.setActiveTab(tab.id);
+  },
 
-		if (state.activeTabId === tabId) {
-			setState("lastActiveTabs", (lastActiveTabs) =>
-				lastActiveTabs.filter((id) => id !== tabId),
-			);
+  closeTab(tabId: string) {
+    setState("tabs", (tabs) => tabs.filter((tab) => tab.id !== tabId));
 
-			const lastActiveTabId =
-				state.lastActiveTabs[state.lastActiveTabs.length - 1] || null;
-			this.setActiveTab(lastActiveTabId);
+    if (state.activeTabId === tabId) {
+      this.removeFromLastActiveTabs(tabId);
 
-			// Close the relevant piece table
-			PieceTableStore.removePieceTable(tabId);
-		}
-	},
+      const lastActiveTabId = state.lastActiveTabs[state.lastActiveTabs.length - 1] || null;
+      this.setActiveTab(lastActiveTabId);
 
-	activateTab(tabId: string) {
-		setState("tabs", (tabs) =>
-			tabs.map((tab) => ({
-				...tab,
-				active: tab.id === tabId,
-			})),
-		);
-		this.setActiveTab(tabId);
-	},
+      // Close the relevant piece table
+      PieceTableStore.removePieceTable(tabId);
+    }
+  },
 
-	async setActiveTab(tabId: string | null) {
-		if (state.activeTabId !== tabId) {
-			setState("activeTabId", tabId);
-			if (tabId) {
-				setState("lastActiveTabs", (lastActiveTabs) => {
-					const newLastActiveTabs = [...lastActiveTabs, tabId].filter(
-						(id, index, self) => self.indexOf(id) === index,
-					);
-					return newLastActiveTabs;
-				});
+  activateTab(tabId: string) {
+    const currentTab = this.activeTab;
+    if (currentTab) {
+      // Save the current tab's state
+      const editor = EditorStore.getActiveEditor();
+      if (editor) {
+        const cursor = editor.cursorAt(0);
+        this.updateTab(currentTab.id, { cursor });
+      }
+    }
 
-				const editor = EditorStore.getActiveEditor();
-				if (editor) {
-					// Check for a piece table
-					if (!PieceTableStore.getPieceTable(tabId)) {
-						// Create a new piece table
-                        PieceTableStore.addPieceTable(tabId, new PieceTable(editor.text()));
-                        editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
-                    } else {
-						editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
-					}
-				}
-			}
-		}
-	},
+    setState("tabs", (tabs) => tabs.map((tab) => ({ ...tab, active: tab.id === tabId })));
+    this.setActiveTab(tabId);
+  },
 
-	getTabContent(tabId: string) {
-		const tab = state.tabs.find((t) => t.id === tabId);
-		return tab ? tab.content : "";
-	},
+  async setActiveTab(tabId: string | null) {
+    if (state.activeTabId !== tabId) {
+      setState("activeTabId", tabId);
+      if (tabId) {
+        this.addToLastActiveTabs(tabId);
 
-	updateTab(tabId: string, updates: Partial<Omit<Tab, "id">>) {
-		setState("tabs", (tabs) =>
-			tabs.map((tab) => (tab.id === tabId ? { ...tab, ...updates } : tab)),
-		);
-	},
+        const editor = EditorStore.getActiveEditor();
+        if (editor) {
+          // Check for a piece table
+          if (!PieceTableStore.getPieceTable(tabId)) {
+            // Create a new piece table
+            PieceTableStore.addPieceTable(tabId, new PieceTable(editor.text()));
+          }
+          editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
 
-	setTabState(tabId: string, state: TabState) {
-		this.updateTab(tabId, { state });
-	},
+          // Restore the tab's cursor and scroll positions
+          const activeTab = this.activeTab;
+          if (activeTab) {
+            editor.cursorAt(0).moveTo(activeTab.cursor.character, activeTab.cursor.line, editor.lineLength(0), editor.totalLines());
+          }
+        }
+      }
+    }
+  },
 
-	setTabSaved(tabId: string, saved: boolean) {
-		this.updateTab(tabId, { saved });
-	},
+  getTabContent(tabId: string) {
+    return state.tabs.find((t) => t.id === tabId)?.content || "";
+  },
+
+  updateTab(tabId: string, updates: Partial<Omit<Tab, "id">>) {
+    setState("tabs", (tabs) => tabs.map((tab) => (tab.id === tabId ? { ...tab, ...updates } : tab)));
+  },
+
+  setTabState(tabId: string, tabState: TabState) {
+    this.updateTab(tabId, { state: tabState });
+  },
+
+  setTabSaved(tabId: string, saved: boolean) {
+    this.updateTab(tabId, { saved });
+  },
+
+  addToLastActiveTabs(tabId: string) {
+    setState("lastActiveTabs", (lastActiveTabs) => {
+      const newLastActiveTabs = [...lastActiveTabs, tabId].filter((id, index, self) => self.indexOf(id) === index);
+      return newLastActiveTabs;
+    });
+  },
+
+  removeFromLastActiveTabs(tabId: string) {
+    setState("lastActiveTabs", (lastActiveTabs) => lastActiveTabs.filter((id) => id !== tabId));
+  },
 };
 
 export default TabStore;

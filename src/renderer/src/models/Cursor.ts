@@ -1,5 +1,10 @@
 import { createSignal } from "solid-js";
 
+export interface ICursor {
+	character: number;
+	line: number;
+}
+
 export class Cursor {
 	private _character: [() => number, (v: number) => void];
 	private _line: [() => number, (v: number) => void];
