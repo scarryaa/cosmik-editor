@@ -1,3 +1,4 @@
+import EditorStore from "@renderer/stores/editors";
 import { setSelectedItems, useFileStore } from "@renderer/stores/files";
 import TabStore, { TabState } from "@renderer/stores/tabs";
 import { VsFile } from "solid-icons/vs";
@@ -25,7 +26,11 @@ const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
 		} else {
 			deselectAllAndSelectItem(props.file);
 		}
-		TabStore.openTab({  id: props.file, name: props.file.split('/').pop()!, state: TabState.Untracked,  });
+		TabStore.openTab({  id: props.file, name: props.file.split('/').pop()!, state: TabState.Untracked, editorId: EditorStore.getActiveEditorId()! });
+		// biome-ignore lint/suspicious/noExplicitAny: Needed here
+		const contents = await (window.api as any).getFileContents(props.file);
+		EditorStore.setEditorContent("editor1", contents);
+		TabStore.updateTab(props.file, { content: contents });
 	};
 	
 	const deselectAllAndSelectItem = (file: string) => {

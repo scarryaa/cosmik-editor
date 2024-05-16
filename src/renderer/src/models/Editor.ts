@@ -26,6 +26,14 @@ export class Editor implements IEditor {
 		this.cursorsSignal[1]([new Cursor()]);
 	}
 
+	setPieceTable = (pieceTable: PieceTable): void => {
+		this.content = pieceTable;
+        this.contentSignal[1](this.content.getText());
+        this.lineNumbersSignal[1](this.calculateLineBreaks().length);
+        this.lineBreakIndices = this.calculateLineBreaks();
+		this.cursorAt(0).moveTo(0, 0, this.lineLength(0), this.totalLines());
+    };
+
 	setContent = (text: string): void => {
 		const newText = this.convertTabsToSpaces(text);
 		this.content.restoreText(newText);

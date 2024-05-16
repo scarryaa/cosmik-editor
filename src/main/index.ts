@@ -234,9 +234,18 @@ app.whenReady().then(() => {
         }
     });
 
+	ipcMain.handle("get-file-contents", async (event, filePath) => {
+		try {
+			const data = await fs.readFile(filePath, "utf-8");
+            return data;
+		} catch (error) {
+			console.error(`Failed to read file contents: ${error.message}`);
+            return "";
+        }
+	});
+
 	ipcMain.handle("get-folder-contents", async (event, folderPath) => {
 		try {
-			console.log(folderPath);
 			const files = await fs.readdir(folderPath);
 			const fullPaths = await Promise.all(
 				files.map(async (file) => {

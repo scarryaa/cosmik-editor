@@ -4,12 +4,13 @@ import EditorView from "./components/EditorView/EditorView";
 import LeftSidebar from "./components/LeftSidebar/LeftSidebar";
 import StatusPane from "./components/StatusPane/StatusPane";
 import { Editor } from "./models/Editor";
+import EditorStore from "./stores/editors";
 import TabStore from "./stores/tabs";
 
 const App: Component = () => {
-	const [editor] = createSignal(new Editor("", "editor-1"));
 	const [scrollSignal, setScrollSignal] = createSignal<boolean>(false);
-
+	EditorStore.addEditor(new Editor("", "editor1"));
+	EditorStore.setActiveEditor("editor1");
 	let textAreaRef!: HTMLTextAreaElement;
 	const click = () => {
 		if (textAreaRef) {
@@ -28,15 +29,15 @@ const App: Component = () => {
 		<div class="app-container">
 			<LeftSidebar />
 			{TabStore.tabs.length > 0 && (
-				<EditorView scrollSignal={scrollSignal} click={click} editor={editor} />
+				<EditorView scrollSignal={scrollSignal} click={click} editor={() => EditorStore.getEditor("editor1")!} />
 			)}
 			<EditorCore
 				ensureCursorVisible={handleEnter}
 				ref={textAreaRef}
-				editor={editor}
+				editor={() => EditorStore.getEditor("editor1")!}
 				language="javascript"
 			/>
-			<StatusPane editor={editor} />
+			<StatusPane editor={() => EditorStore.getEditor("editor1")!} />
 		</div>
 	);
 };

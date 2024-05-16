@@ -94,6 +94,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 							<For each={props.editor().getText().split("\n")}>
 								{(text, index) => (
 									<EditorLine
+										// @ts-ignore
 										ref={(el) => {
 											lineRefs[index()] = el;
 											return el;

@@ -75,7 +75,7 @@ const Explorer = () => {
 		setFolderContent({ root: response.path, folders, files });
 	};
 
-	const handleNewFolderClick = (e: MouseEvent) => {
+	const handleNewFolderClick = () => {
 		// Filter to get the last selected folder
 		const lastSelectedFolder = fileStore.selectedItems
 			.filter((item) => item.endsWith("/"))
@@ -234,7 +234,7 @@ const Explorer = () => {
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={(e) => handleNewFolderClick(e)}
+								onclick={(e) => handleNewFolderClick()}
 							>
 								<VsNewFolder font-size="16" />
 							</button>

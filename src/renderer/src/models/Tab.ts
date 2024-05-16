@@ -2,6 +2,7 @@ import type { TabState } from "@renderer/stores/tabs";
 
 export interface Tab {
     id: string;
+    editorId: string;
     name: string;
     icon?: string;
     active: boolean;

@@ -10,6 +10,7 @@ const api = {
 	getFolderContents: (folderPath) => ipcRenderer.invoke("get-folder-contents", folderPath),
 	createFolder: (folderPath) => ipcRenderer.invoke("create-folder", folderPath),
 	createFile: (filePath) => ipcRenderer.invoke("create-file", filePath),
+	getFileContents: (filePath) => ipcRenderer.invoke("get-file-contents", filePath),
 };
 
 if (process.contextIsolated) {

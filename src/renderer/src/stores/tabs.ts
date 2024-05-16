@@ -1,7 +1,8 @@
+import { PieceTable } from "@renderer/models/PieceTable";
 import type { Tab } from "@renderer/models/Tab";
 import { createStore } from "solid-js/store";
 import EditorStore from "./editors";
-import { getFileContent } from "./files";
+import PieceTableStore from "./piece-tables";
 
 export enum TabState {
 	Modified = 0,
@@ -28,10 +29,10 @@ const TabStore = {
 		return state.tabs.find((tab) => tab.id === lastActiveTabId) || null;
 	},
 
-  getTabState(tabId: string): TabState | undefined {
-    const tab = state.tabs.find(t => t.id === tabId);
-    return tab ? tab.state : undefined;
-  },
+	getTabState(tabId: string): TabState | undefined {
+		const tab = state.tabs.find((t) => t.id === tabId);
+		return tab ? tab.state : undefined;
+	},
 
 	openTab(tab: Omit<Tab, "active" | "modified" | "saved" | "content">) {
 		setState("tabs", (tabs) => {
@@ -70,6 +71,9 @@ const TabStore = {
 			const lastActiveTabId =
 				state.lastActiveTabs[state.lastActiveTabs.length - 1] || null;
 			this.setActiveTab(lastActiveTabId);
+
+			// Close the relevant piece table
+			PieceTableStore.removePieceTable(tabId);
 		}
 	},
 
@@ -81,12 +85,9 @@ const TabStore = {
 			})),
 		);
 		this.setActiveTab(tabId);
-
-    console.log(getFileContent());
-    EditorStore.updateTabContent(tabId, getFileContent());
 	},
 
-	setActiveTab(tabId: string | null) {
+	async setActiveTab(tabId: string | null) {
 		if (state.activeTabId !== tabId) {
 			setState("activeTabId", tabId);
 			if (tabId) {
@@ -96,8 +97,25 @@ const TabStore = {
 					);
 					return newLastActiveTabs;
 				});
+
+				const editor = EditorStore.getActiveEditor();
+				if (editor) {
+					// Check for a piece table
+					if (!PieceTableStore.getPieceTable(tabId)) {
+						// Create a new piece table
+                        PieceTableStore.addPieceTable(tabId, new PieceTable(editor.text()));
+                        editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
+                    } else {
+						editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
+					}
+				}
 			}
 		}
+	},
+
+	getTabContent(tabId: string) {
+		const tab = state.tabs.find((t) => t.id === tabId);
+		return tab ? tab.content : "";
 	},
 
 	updateTab(tabId: string, updates: Partial<Omit<Tab, "id">>) {
@@ -106,7 +124,7 @@ const TabStore = {
 		);
 	},
 
-  setTabState(tabId: string, state: TabState) {
+	setTabState(tabId: string, state: TabState) {
 		this.updateTab(tabId, { state });
 	},
 
