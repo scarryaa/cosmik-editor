@@ -35,16 +35,16 @@ jobs:
           echo "tag=$(git describe --tags --always HEAD)" >> $GITHUB_OUTPUT
       
       - name: Install WiX Toolset (Windows only)
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         uses: crazy-max/ghaction-chocolatey@v1
         with:
           args: install wixtoolset
 
       - name: Build App
         run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+          if ${{ runner.os == 'Linux' }}; then
             pnpm run build:linux
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          elif ${{ runner.os == 'macOS' }}; then
             pnpm run build:mac
           else
             pnpm run build:win
