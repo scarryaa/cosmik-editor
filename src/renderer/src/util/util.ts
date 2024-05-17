@@ -27,3 +27,13 @@ export const debounceImmediate = <T extends (...args: any[]) => void>(
 		if (callNow) func.apply(this, args);
 	} as T;
 };
+
+export const throttle = (func, wait) => {
+	let timeout: any;
+	return function (...args) {
+		if (!timeout) {
+			func.apply(this, args);
+			timeout = setTimeout(() => (timeout = null), wait);
+		}
+	};
+};

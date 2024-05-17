@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { batch, createSignal } from "solid-js";
 import { Cursor } from "./Cursor";
 import { PieceTable } from "./PieceTable";
 
@@ -20,7 +20,7 @@ export class Editor implements IEditor {
 
 	constructor(text: string, id: string) {
 		this.content = new PieceTable(text);
-		this.lineBreakIndices = [];
+		this.lineBreakIndices = [0];
 		this.id = id;
 
 		this.contentSignal = createSignal(this.content.getText());
@@ -29,11 +29,12 @@ export class Editor implements IEditor {
 
 	setPieceTable = (pieceTable: PieceTable): void => {
 		this.content = pieceTable;
-        this.contentSignal[1](this.content.getText());
-        this.lineNumbersSignal[1](this.calculateLineBreaks().length);
-        this.lineBreakIndices = this.calculateLineBreaks();
+		this.contentSignal[1](this.content.getText());
+
+		this.lineBreakIndices = this.calculateLineBreaks();
+		this.lineNumbersSignal[1](this.lineBreakIndices.length);
 		this.cursorAt(0).moveTo(0, 0, this.lineLength(0), this.totalLines());
-    };
+	};
 
 	setContent = (text: string): void => {
 		const newText = this.convertTabsToSpaces(text);
@@ -100,12 +101,15 @@ export class Editor implements IEditor {
 			this.cursorAt(0).character,
 		);
 
-		this.content.insert(text, globalIndex);
-		this.contentSignal[1](this.content.getText());
-		this.lineBreakIndices = this.calculateLineBreaks();
-		const lineLength = this.lineContent(cursor.line).length;
-
-		cursor.moveRight(lineLength, this.lineBreakIndices.length);
+		batch(() => {
+			this.content.insert(text, globalIndex);
+			this.contentSignal[1](this.content.getText());
+			this.lineBreakIndices = this.calculateLineBreaks();
+			const lineLength = this.lineContent(cursor.line).length;
+			this.lineNumbersSignal[1](this.lineBreakIndices.length); 
+	
+			cursor.moveRight(lineLength, this.lineBreakIndices.length);
+		});
 	};
 
 	delete = (cursorIndex: number): void => {
@@ -167,17 +171,17 @@ export class Editor implements IEditor {
 	lineContent = (lineNumber: number): string => {
 		// Return an empty string if the line number is out of valid range
 		if (lineNumber < 0 || lineNumber >= this.numberOfLines()) {
-			console.warn(`Line number ${lineNumber} out of bounds.`);
 			return "";
 		}
-
+		
+		// Start at the previous index if lineNumber is not 0.
 		const startIndex =
 			lineNumber === 0 ? 0 : this.lineBreakIndices[lineNumber - 1] + 1;
 		const endIndex =
 			lineNumber < this.lineBreakIndices.length
 				? this.lineBreakIndices[lineNumber]
 				: this.content.getText().length;
-
+	
 		return this.content.extractText(startIndex, endIndex);
 	};
 

@@ -8,6 +8,8 @@
     font-size: 14px;
     white-space: pre;
     cursor: text;
+    contain: strict;
+    transform: translate3d(0, 0, 0);
 
     .editor-view-inner {
         flex-grow: 1;
@@ -22,7 +24,9 @@
 
         .editor-content-container {
             flex-grow: 1;
+            contain: strict;
             overflow: auto;
+            transform: translate3d(0, 0, 0);
             height: calc(100% - var(--status-pane-height));
 
             .editor-lines-padding {

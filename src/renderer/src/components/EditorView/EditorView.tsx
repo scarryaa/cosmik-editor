@@ -2,7 +2,14 @@ import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
 import { useFileStore } from "@renderer/stores/files";
 import TabStore from "@renderer/stores/tabs";
-import { For, createEffect, createSignal, onCleanup } from "solid-js";
+import { debounce, getNumberOfLinesOnScreen, throttle } from "@renderer/util/util";
+import {
+	For,
+	createEffect,
+	createMemo,
+	createSignal,
+	on,
+} from "solid-js";
 import type { Accessor, Component } from "solid-js";
 import Cursor from "../Cursor/Cursor";
 import EditorLine from "../EditorLine/EditorLine";
@@ -20,14 +27,15 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollTop, setViewScrollTop] = createSignal(0);
 	const [viewScrollLeft, setViewScrollLeft] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
+	const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
+	const [visibleLinesEnd, setVisibleLinesEnd] = createSignal(0);
 	const fileStore = useFileStore();
 
 	let contentContainerRef: HTMLDivElement | undefined;
-	let lineRefs: HTMLDivElement[] = [];
 
-	const ensureCursorVisible = (): void => {
-		const cursorElement = cursorRefs[0];
-		if (cursorElement) {
+	const ensureCursorVisible = () => {
+		const cursorElement = cursorRefs()[0];
+		if (cursorElement && contentContainerRef) {
 			scrollIfNeeded(cursorElement);
 		}
 	};
@@ -35,27 +43,84 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const scrollIfNeeded = (targetElement: HTMLElement): void => {
 		const scrollThreshold = 50;
 		if (!contentContainerRef) return;
-
-		const editorRect = contentContainerRef.getBoundingClientRect();
-		const targetRect = targetElement.getBoundingClientRect();
-
-		if (targetRect.bottom + scrollThreshold > editorRect.bottom) {
-			const scrollAdjustment =
-				targetRect.bottom - editorRect.bottom + lineHeight * 2;
-			contentContainerRef.scrollTop += scrollAdjustment;
-		} else if (targetRect.top - scrollThreshold < editorRect.top) {
-			const scrollAdjustment = editorRect.top - targetRect.top + lineHeight * 2;
-			contentContainerRef.scrollTop -= scrollAdjustment;
-		}
-
-		if (targetRect.right + scrollThreshold > editorRect.right) {
-			contentContainerRef.scrollLeft +=
-				targetRect.right - editorRect.right + scrollThreshold;
-		} else if (targetRect.left - scrollThreshold < editorRect.left) {
-			contentContainerRef.scrollLeft -=
-				editorRect.left - targetRect.left + scrollThreshold;
-		}
+	
+		requestAnimationFrame(() => {
+			const editorRect = contentContainerRef!.getBoundingClientRect();
+			const targetRect = targetElement.getBoundingClientRect();
+	
+			let scrollTopAdjustment = 0;
+			let scrollLeftAdjustment = 0;
+	
+			if (targetRect.bottom + scrollThreshold > editorRect.bottom) {
+				scrollTopAdjustment = targetRect.bottom - editorRect.bottom + lineHeight * 2;
+			} else if (targetRect.top - scrollThreshold < editorRect.top) {
+				scrollTopAdjustment = -(editorRect.top - targetRect.top + lineHeight * 2);
+			}
+	
+			if (targetRect.right + scrollThreshold > editorRect.right) {
+				scrollLeftAdjustment = targetRect.right - editorRect.right + scrollThreshold;
+			} else if (targetRect.left - scrollThreshold < editorRect.left) {
+				scrollLeftAdjustment = -(editorRect.left - targetRect.left + scrollThreshold);
+			}
+	
+			if (scrollTopAdjustment !== 0 || scrollLeftAdjustment !== 0) {
+				requestAnimationFrame(() => {
+					contentContainerRef!.scrollTo({
+						top: contentContainerRef!.scrollTop + scrollTopAdjustment,
+						left: contentContainerRef!.scrollLeft + scrollLeftAdjustment,
+						behavior: 'auto',
+					});
+				});
+			}
+		});
 	};
+	
+	const handleScroll = (e: Event) => {
+		const container = e.currentTarget as HTMLDivElement;
+		const scrollTop = container.scrollTop;
+
+		setViewScrollTop(scrollTop);
+		setViewScrollLeft(container.scrollLeft);
+
+		const visibleLinesStart = Math.max(Math.floor(scrollTop / lineHeight) - 5, 0);
+		const visibleLinesEnd =
+			visibleLinesStart + getNumberOfLinesOnScreen(lineHeight) + 5;
+		setVisibleLinesStart(visibleLinesStart);
+		setVisibleLinesEnd(visibleLinesEnd);
+
+		TabStore.updateTab(TabStore.activeTab!.id, {
+			scrollX: container.scrollLeft,
+			scrollY: container.scrollTop,
+		});
+	};
+
+	createEffect(
+        on(
+            () => TabStore.activeTab?.id, // Track the active tab ID
+            () => {
+                if (TabStore.activeTab) {
+                    const scrollX = TabStore.activeTab.scrollX;
+                    const scrollY = TabStore.activeTab.scrollY;
+                    setViewScrollTop(scrollY);
+                    setViewScrollLeft(scrollX);
+
+                    // Update visible lines based on the saved scroll position
+                    const visibleLinesStart = Math.max(Math.floor(scrollY / lineHeight) - 5, 0);
+                    const visibleLinesEnd =
+                        visibleLinesStart + getNumberOfLinesOnScreen(lineHeight) + 5;
+                    setVisibleLinesStart(visibleLinesStart);
+                    setVisibleLinesEnd(visibleLinesEnd);
+
+                    if (contentContainerRef) {
+                        contentContainerRef.scrollTo({
+                            top: scrollY,
+                            left: scrollX,
+                        });
+                    }
+                }
+            },
+        ),
+    );
 
 	createEffect(() => {
 		if (fileStore.fileContent) {
@@ -63,21 +128,29 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		}
 	});
 
-	createEffect(() => {
-		setCursorRefs(
-			props.editor().cursors.map(() => document.createElement("div")),
-		);
+	createEffect(
+		on(
+			() => props.editor().cursors.length,
+			() => {
+				setCursorRefs(
+					props.editor().cursors.map(() => document.createElement("div")),
+				);
+			},
+			{ defer: true },
+		),
+	);
 
-		onCleanup(() => {
-			setCursorRefs([]);
-		});
-	});
+	createEffect(
+		on(
+			() => props.scrollSignal() && props.editor().cursors[0],
+			() => ensureCursorVisible(),
+			{ defer: true },
+		),
+	);
 
-	createEffect(() => {
-		if (props.scrollSignal()) {
-			ensureCursorVisible();
-		}
-	});
+	const memoizedTextLines = createMemo(() =>
+		props.editor().getText().split("\n"),
+	);
 
 	return (
 		<div
@@ -88,31 +161,25 @@ const EditorView: Component<EditorViewProps> = (props) => {
 			<TabsWrapper />
 			<div class={styles["editor-view-inner"]}>
 				<div class={styles["editor-line-numbers"]}>
-					<LineNumbers top={viewScrollTop} editor={props.editor} />
+					<LineNumbers scrollTop={viewScrollTop} editor={props.editor} />
 				</div>
 				<div
 					ref={contentContainerRef}
 					class={styles["editor-content-container"]}
-					onScroll={(e) => {
-						setViewScrollTop(e.target.scrollTop);
-						setViewScrollLeft(e.target.scrollLeft);
-						const scrollX = contentContainerRef?.scrollLeft ?? 0;
-						const scrollY = contentContainerRef?.scrollTop ?? 0;
-						TabStore.updateTab(TabStore.activeTab!.id, { scrollX, scrollY });
-					}}
+					onScroll={handleScroll}
 				>
 					<div class={styles["editor-lines-padding"]}>
 						<div class={styles["editor-lines"]}>
-							<For each={props.editor().getText().split("\n")}>
+							<For
+								each={memoizedTextLines().slice(
+									visibleLinesStart(),
+									visibleLinesEnd() + 1,
+								)}
+							>
 								{(text, index) => (
 									<EditorLine
-										// @ts-ignore
-										ref={(el) => {
-											lineRefs[index()] = el;
-											return el;
-										}}
 										content={text}
-										line={index()}
+										line={visibleLinesStart() + index() - 1}
 									/>
 								)}
 							</For>
@@ -126,7 +193,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 										editor={props.editor}
 										cursor={() => cursor}
 										ref={(el) => {
-											cursorRefs[index()] = el;
+											cursorRefs()[index()] = el;
 											return el;
 										}}
 									/>

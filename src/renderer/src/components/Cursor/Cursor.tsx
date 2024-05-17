@@ -38,13 +38,16 @@ const Cursor: Component<CursorProps> = (props: CursorProps) => {
 		);
 	};
 
+	const horizontalPosition = createMemo(() => calculateHorizontalPosition(character()));
+	const verticalPosition = createMemo(() => calculateVerticalPosition(line()));
+
 	return (
 		<div
-			ref={props.ref}
-			class={styles.cursor}
-			style={`left: ${calculateHorizontalPosition(
-				character(),
-			)}px; top: ${calculateVerticalPosition(line())}px;`}
+		ref={props.ref}
+		class={styles.cursor}
+		style={{
+			transform: `translateX(${horizontalPosition()}px) translateY(${verticalPosition()}px)`
+		}}
 		/>
 	);
 };

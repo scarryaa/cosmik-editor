@@ -1,54 +1,51 @@
 import { lineHeight } from "@renderer/const/const";
 import {
-	type ParseType,
-	parseBasedOnExtension,
+    type ParseType,
+    parseBasedOnExtension,
 } from "@renderer/services/syntaxService";
 import TabStore from "@renderer/stores/tabs";
 import { debounce } from "@renderer/util/util";
 import {
-	type Component,
-	batch,
-	createEffect,
-	createMemo,
-	createSignal,
+    type Component,
+    createEffect,
+    createMemo,
+    createSignal,
 } from "solid-js";
 import styles from "./EditorLine.module.scss";
 
 interface EditorLineProps {
-	content: string;
-	line: number;
-	ref?: HTMLDivElement;
+    content: string;
+    line: number;
+    ref?: HTMLDivElement;
 }
+
 const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
-	const [highlightedContent, setHighlightedContent] = createSignal<string>(
-		props.content,
-	);
+    const [highlightedContent, setHighlightedContent] = createSignal<string>(
+        props.content,
+    );
 
-  // @TODO run syntax highlighting in the background and 
-  // only update the new content instead of the whole text
+    const debouncedParse = debounce(async (content: string) => {
+        if (TabStore.activeTab) {
+            const extension = TabStore.activeTab.id.split(".").pop() as ParseType;
+            const parsedContent = await parseBasedOnExtension(extension, content);
+            setHighlightedContent(parsedContent);
+        }
+    }, 0);
 
-	const debouncedParse = debounce(async (content: string) => {
-		if (TabStore.activeTab) {
-			const extension = TabStore.activeTab.id.split(".").pop() as ParseType;
-			const parsedContent = await parseBasedOnExtension(extension, content);
-			setHighlightedContent(parsedContent);
-		}
-	}, 0);
+    const content = createMemo(() => props.content);
 
-	const content = createMemo(() => props.content);
+    createEffect(() => {
+        debouncedParse(content());
+    });
 
-	createEffect(() => {
-		debouncedParse(content());
-	});
-
-	return (
-		<div
-			ref={props.ref}
-			style={`top: ${props.line * lineHeight}px;`}
-			class={styles.line}
-			innerHTML={highlightedContent()}
-		/>
-	);
+    return (
+        <div
+            ref={props.ref}
+            style={{ transform: `translate3D(5px, ${props.line * lineHeight + 25}px, 0px)` }}
+            class={styles.line}
+            innerHTML={highlightedContent()}
+        />
+    );
 };
 
 export default EditorLine;

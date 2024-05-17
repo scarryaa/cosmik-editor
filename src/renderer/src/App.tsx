@@ -1,4 +1,4 @@
-import { type Component, createSignal } from "solid-js";
+import { type Component, createSignal, onMount } from "solid-js";
 import EditorCore from "./components/EditorCore/EditorCore";
 import EditorView from "./components/EditorView/EditorView";
 import LeftSidebar from "./components/LeftSidebar/LeftSidebar";
@@ -7,11 +7,13 @@ import { Editor } from "./models/Editor";
 import EditorStore from "./stores/editors";
 import TabStore from "./stores/tabs";
 
+EditorStore.addEditor(new Editor("", "editor1"));
+EditorStore.setActiveEditor("editor1");
+
 const App: Component = () => {
 	const [scrollSignal, setScrollSignal] = createSignal<boolean>(false);
-	EditorStore.addEditor(new Editor("", "editor1"));
-	EditorStore.setActiveEditor("editor1");
 	let textAreaRef!: HTMLTextAreaElement;
+
 	const click = () => {
 		if (textAreaRef) {
 			textAreaRef.focus();

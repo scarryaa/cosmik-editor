@@ -94,7 +94,6 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			<textarea
 				ref={props.ref}
 				class={styles["editor-core__textarea"]}
-				value={editor.getText()}
 				onkeydown={onKeydown}
 			/>
 		</div>
