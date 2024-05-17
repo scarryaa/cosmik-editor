@@ -42,13 +42,13 @@ jobs:
 
       - name: Build App
         run: |
-          if ${{ runner.os == 'Linux' }}; then
+          if (${{ runner.os == 'Linux' }}) {
             pnpm run build:linux
-          elif ${{ runner.os == 'macOS' }}; then
+          } elseif (${{ runner.os == 'macOS' }}) {
             pnpm run build:mac
-          else
+          } else {
             pnpm run build:win
-          fi
+          }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
 
