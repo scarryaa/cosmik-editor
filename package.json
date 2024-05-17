@@ -5,6 +5,51 @@
 	"main": "./out/main/index.js",
 	"author": "scarryaa",
 	"homepage": "https://github.com/scarryaa/meteor",
+	"electronForge": {	  
+		"makers": [
+		  {
+			"name": "@electron-forge/maker-squirrel",
+			"config": {
+			  "name": "meteor"
+			}
+		  },
+		  {
+			"name": "@electron-forge/maker-wix",
+			"config": {
+			  "language": 1033,
+			  "manufacturer": "scarryaa" 
+			}
+		  },
+		  {
+			"name": "@electron-forge/maker-zip",
+			"platforms": ["darwin", "linux"]
+		  },
+		  {
+			"name": "@electron-forge/maker-deb",
+			"config": {
+				"title": "Meteor",
+                "description": "A simple multi-platform code editor.",
+                "publisher": "scarryaa"
+			}
+		  },
+		  {
+			"name": "@electron-forge/maker-rpm",
+			"config": {
+				"title": "Meteor",
+                "description": "A simple multi-platform code editor.",
+                "publisher": "scarryaa"
+			}
+		  },
+		  {
+			"name": "@electron-forge/maker-dmg",
+			"config": {
+				"title": "Meteor",
+                "description": "A simple multi-platform code editor.",
+                "publisher": "scarryaa"
+			}
+		  }
+		]
+	},
 	"scripts": {
 		"biome:format:fix": "pnpm biome format --write ./",
 		"biome:lint:fix": "pnpm biome lint --apply ./",

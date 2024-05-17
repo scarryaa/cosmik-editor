@@ -1,40 +1,54 @@
-appId: com.meteor.app
-productName: meteor
-directories:
-  buildResources: build
-files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-asarUnpack:
-  - resources/**
-win:
-  executableName: meteor
-nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  notarize: true
-dmg:
-  artifactName: ${name}-${version}.${ext}
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
-npmRebuild: false
-publish:
-  provider: generic
-  url: https://example.com/auto-updates
-electronDownload:
-  mirror: https://npmmirror.com/mirrors/electron/
+name: Electron Build & Release (All Platforms)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Generate Tag
+        id: tag
+        run: |
+          echo "tag=$(git describe --tags --always HEAD)" >> $GITHUB_OUTPUT
+      
+      - name: Install WiX Toolset (Windows only)
+        if: matrix.os == 'windows-latest'
+        uses: crazy-max/ghaction-chocolatey@v1
+        with:
+          args: install wixtoolset
+
+      - name: Build App
+        run: pnpm run make -- --platform=${{ matrix.os }} --arch=x64 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: electron-app-${{ matrix.os }}
+          path: out/make
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: out/make/*  
+          name: Electron App ${{ matrix.os }}
+          tag_name: ${{ steps.tag.outputs.tag }}
