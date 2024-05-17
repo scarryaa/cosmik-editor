@@ -40,17 +40,23 @@ jobs:
         with:
           args: install wixtoolset
 
-      - name: Build App
-        run: |
-          if (${{ runner.os == 'Linux' }}) {
-            pnpm run build:linux
-          } elseif (${{ runner.os == 'macOS' }}) {
-            pnpm run build:mac
-          } else {
-            pnpm run build:win
-          }
+      - name: Build App (Linux)
+        if: runner.os == 'Linux'
+        run: pnpm run build:linux
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build App (macOS)
+        if: runner.os == 'macOS'
+        run: pnpm run build:mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build App (Windows)
+        if: runner.os == 'Windows'
+        run: pnpm run build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
