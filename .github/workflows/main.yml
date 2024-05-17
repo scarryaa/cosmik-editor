@@ -11,9 +11,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
 
     steps:
-      - name: Checkout Code
+     - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Setup Node.js
@@ -58,15 +60,80 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ELECTRON_BUILD_TOKEN }}
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: electron-app-${{ matrix.os }}
-          path: dist
-
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: dist/*
-          name: Electron App ${{ matrix.os }}
           tag_name: ${{ steps.tag.outputs.tag }}
+          release_name: Electron App ${{ matrix.os }} (${{ steps.tag.outputs.tag }})
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.deb
+          asset_name: Meteor-amd64-${{ steps.tag.outputs.tag }}.deb
+          asset_content_type: application/vnd.debian.binary-package
+      
+      - name: Upload Release Assets (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.rpm
+          asset_name: Meteor-x86_64-${{ steps.tag.outputs.tag }}.rpm
+          asset_content_type: application/x-rpm
+
+      - name: Upload Release Assets (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.dmg
+          asset_name: Meteor-${{ steps.tag.outputs.tag }}.dmg
+          asset_content_type: application/octet-stream
+      
+      - name: Upload Release Assets (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.zip
+          asset_name: Meteor-${{ steps.tag.outputs.tag }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload Release Assets (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.exe
+          asset_name: Meteor Setup ${{ steps.tag.outputs.tag }}.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+      
+      - name: Upload Release Assets (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/*.msi
+          asset_name: Meteor Setup ${{ steps.tag.outputs.tag }}.msi
+          asset_content_type: application/octet-stream
+
