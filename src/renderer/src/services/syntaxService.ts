@@ -13,7 +13,8 @@ export type ParseType =
 	| "md"
 	| "toml"
 	| "txt"
-	| "gitignore";
+	| "gitignore"
+	| "tsx";
 
 export const escapeHtml = (unsafe: string): string => {
 	return unsafe
@@ -99,6 +100,12 @@ export const parseBasedOnExtension = async (
 				theme: "github-light",
 				structure: "inline",
 			});
+			case "tsx":
+				return codeToHtml(content, {
+                    lang: "tsx",
+                    theme: "github-light",
+                    structure: "inline",
+                });
 		default:
 			return codeToHtml(content, {
 				lang: "plaintext",
