@@ -33,7 +33,19 @@ jobs:
         id: tag
         run: |
           echo "tag=$(git describe --tags --always HEAD)" >> $GITHUB_OUTPUT
-      
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create Git Tag
+        env:
+          ELECTRON_BUILD_TOKEN: ${{ secrets.ELECTRON_BUILD_TOKEN }}
+        run: |
+          git tag ${{ steps.tag.outputs.tag }}
+          git push https://x-access-token:${{ secrets.ELECTRON_BUILD_TOKEN }}@github.com/${{ github.repository }}.git ${{ steps.tag.outputs.tag }}
+
       - name: Install WiX Toolset (Windows only)
         if: runner.os == 'Windows'
         uses: crazy-max/ghaction-chocolatey@v1
@@ -64,13 +76,10 @@ jobs:
           name: electron-app-${{ matrix.os }}
           path: dist
 
-      - name: Create Git Tag
-        run: git tag ${{ steps.tag.outputs.tag }} && git push origin ${{ steps.tag.outputs.tag }}
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           files: dist/*
           name: Electron App ${{ matrix.os }}
