@@ -41,7 +41,7 @@ jobs:
           args: install wixtoolset
 
       - name: Build App
-        run: pnpm run make -- --platform=${{ matrix.os }} --arch=x64 
+        run: pnpm run build 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
@@ -49,11 +49,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: electron-app-${{ matrix.os }}
-          path: out/make
+          path: out
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: out/make/*  
+          files: out/*  
           name: Electron App ${{ matrix.os }}
           tag_name: ${{ steps.tag.outputs.tag }}
