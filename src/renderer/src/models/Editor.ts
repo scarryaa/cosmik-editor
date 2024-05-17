@@ -1,6 +1,7 @@
 import { batch, createSignal } from "solid-js";
 import { Cursor } from "./Cursor";
 import { PieceTable } from "./PieceTable";
+import { Selection } from "./Selection";
 
 export interface IEditor {
 	content: PieceTable;
@@ -15,6 +16,7 @@ export class Editor implements IEditor {
 	tabId: string | null = null;
 
 	private contentSignal;
+	private selectionSignal = createSignal<Selection[]>([]);
 	private cursorsSignal = createSignal<Cursor[]>([]);
 	private lineNumbersSignal = createSignal<number>(1);
 
@@ -25,6 +27,8 @@ export class Editor implements IEditor {
 
 		this.contentSignal = createSignal(this.content.getText());
 		this.cursorsSignal[1]([new Cursor()]);
+
+		this.selectionSignal[1]([new Selection(this.content, 0, 0, 0, 0)]);
 	}
 
 	setPieceTable = (pieceTable: PieceTable): void => {
@@ -86,6 +90,9 @@ export class Editor implements IEditor {
 		this.contentSignal[1](this.content.getText());
 		this.lineBreakIndices = this.calculateLineBreaks();
 
+		// @TODO delete selection
+		this.resetSelectionAndEmit();
+
 		cursor.moveTo(
 			cursor.character + 4,
 			cursor.line,
@@ -106,8 +113,11 @@ export class Editor implements IEditor {
 			this.contentSignal[1](this.content.getText());
 			this.lineBreakIndices = this.calculateLineBreaks();
 			const lineLength = this.lineContent(cursor.line).length;
-			this.lineNumbersSignal[1](this.lineBreakIndices.length); 
-	
+			this.lineNumbersSignal[1](this.lineBreakIndices.length);
+
+			// @TODO delete selection
+			this.resetSelectionAndEmit();
+
 			cursor.moveRight(lineLength, this.lineBreakIndices.length);
 		});
 	};
@@ -119,6 +129,9 @@ export class Editor implements IEditor {
 			cursor.character,
 		);
 		const currentTextLength = this.content.getText().length;
+
+		// @TODO delete selection
+		this.resetSelectionAndEmit();
 
 		if (currentTextLength > 0) {
 			if (cursor.character === 0 && cursor.line > 0) {
@@ -173,15 +186,15 @@ export class Editor implements IEditor {
 		if (lineNumber < 0 || lineNumber >= this.numberOfLines()) {
 			return "";
 		}
-		
-		// Start at the previous index if lineNumber is not 0.
+
+		// Start at the previous index if lineNumber is not 0
 		const startIndex =
 			lineNumber === 0 ? 0 : this.lineBreakIndices[lineNumber - 1] + 1;
 		const endIndex =
 			lineNumber < this.lineBreakIndices.length
 				? this.lineBreakIndices[lineNumber]
 				: this.content.getText().length;
-	
+
 		return this.content.extractText(startIndex, endIndex);
 	};
 
@@ -193,6 +206,9 @@ export class Editor implements IEditor {
 		);
 		this.content.insert("\n", globalIndex);
 		this.contentSignal[1](this.content.getText());
+
+		// @TODO delete selection
+		this.resetSelectionAndEmit();
 
 		this.lineBreakIndices = this.calculateLineBreaks();
 		const nextLineLength = this.lineContent(cursor.line + 1).length;
@@ -235,6 +251,7 @@ export class Editor implements IEditor {
 			totalLines - 1,
 		);
 
+		this.resetSelectionAndEmit();
 		if (cursor.line === 0) {
 			this.moveToLineStart(cursorIndex);
 		} else if (cursor.line === totalLines - 1) {
@@ -244,6 +261,7 @@ export class Editor implements IEditor {
 
 	moveToLineStart = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
+		this.resetSelectionAndEmit();
 		cursor.moveTo(
 			0,
 			cursor.line,
@@ -256,6 +274,7 @@ export class Editor implements IEditor {
 		const cursor = this.cursors[cursorIndex];
 		const lineLength = this.lineContent(cursor.line).length;
 
+		this.resetSelectionAndEmit();
 		cursor.moveTo(
 			lineLength,
 			cursor.line,
@@ -269,6 +288,7 @@ export class Editor implements IEditor {
 		const lineLength = this.lineContent(cursor.line).length;
 		const totalLines = this.lineBreakIndices.length;
 
+		this.resetSelectionAndEmit();
 		cursor.moveRight(lineLength, totalLines);
 	};
 
@@ -278,11 +298,13 @@ export class Editor implements IEditor {
 		const prevLineLength = this.lineContent(
 			cursor.line === 0 ? 0 : cursor.line - 1,
 		).length;
+		this.resetSelectionAndEmit();
 		cursor.moveLeft(prevLineLength);
 	};
 
 	moveUp = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
+		this.resetSelectionAndEmit();
 		cursor.moveUp();
 	};
 
@@ -290,6 +312,8 @@ export class Editor implements IEditor {
 		const cursor = this.cursors[cursorIndex];
 		const totalLines = this.lineBreakIndices.length;
 		const nextLineLength = this.lineContent(cursor.line).length;
+
+		this.resetSelectionAndEmit();
 
 		cursor.moveDown(totalLines, nextLineLength);
 	};
@@ -300,5 +324,40 @@ export class Editor implements IEditor {
 
 	removeCursor(index: number): void {
 		this.cursors = this.cursors.filter((_, i) => i !== index);
+	}
+
+	// Selection management
+
+	resetSelectionAndEmit = (): void => {
+		this.selections[0].reset();
+		this.selectionSignal[1](this.selections);
+	};
+
+	addSelection(selection: Selection): void {
+		this.selectionSignal[1]([...this.selectionSignal[0](), selection]);
+	}
+
+	removeSelection(index: number): void {
+		this.selectionSignal[1](
+			this.selectionSignal[0]().filter((_, i) => i !== index),
+		);
+	}
+
+	updateSelection(index: number, selection: Selection): void {
+		const selections = this.selectionSignal[0]();
+		selections[index] = selection;
+		this.selectionSignal[1]([...selections]);
+	}
+
+	getSelection(index: number): Selection | undefined {
+		return this.selectionSignal[0]()[index];
+	}
+
+	get selections(): Selection[] {
+		return this.selectionSignal[0]();
+	}
+
+	clearSelections(): void {
+		this.selectionSignal[1]([]);
 	}
 }

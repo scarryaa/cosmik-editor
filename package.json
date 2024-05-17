@@ -1,6 +1,6 @@
 {
 	"name": "meteor",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "A simple multi-platform code editor.",
 	"main": "./out/main/index.js",
 	"author": "scarryaa",

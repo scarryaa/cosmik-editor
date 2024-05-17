@@ -1,5 +1,6 @@
 import FileItem from "@renderer/components/FileItem/FileItem";
 import FolderItem from "@renderer/components/FolderItem/FolderItem";
+import TabStore, { TabState } from "@renderer/stores/tabs";
 import {
 	VsChevronDown,
 	VsCollapseAll,
@@ -36,7 +37,14 @@ const Explorer = () => {
 
 	createEffect(() => {
 		api.onFileOpened((_, response) => {
-			setFileContent(response);
+			// Open a new tab
+			setFileContent(response.data);
+			TabStore.openTab({
+				editorId: "editor1",
+				id: response.path,
+				name: response.path.split("/").pop()!,
+				state: TabState.Untracked,
+			});
 		});
 
 		api.onFolderOpened(async (_, response: FolderResponse) => {
@@ -88,9 +96,6 @@ const Explorer = () => {
 
 			api
 				.createFolder(newFolderPath)
-				.then(() => {
-					console.log(`Folder created successfully at ${newFolderPath}`);
-				})
 				.catch((error) => {
 					console.error(`Failed to create folder: ${newFolderPath}`, error);
 				});

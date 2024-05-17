@@ -1,3 +1,7 @@
+:root {
+    --selection-color: #94d0f8;
+}
+
 .line {
     color: black;
     position: absolute;
@@ -10,4 +14,8 @@
     height: 19px;
     background-color: var(--selection-color);
     left: 0px;
+}
+
+.selected {
+    background-color: var(--selection-color);
 }

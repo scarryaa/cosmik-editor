@@ -85,7 +85,6 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 			<div class={styles["line-numbers-inner"]}>
 				<For each={Array.from({ length: arrayLength() })}>
 					{(_, index) => {
-						const lineNumber = visibleLinesStart() + index();
 						return (
 							<Show
 								when={
@@ -94,7 +93,6 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 								}
 							>
 								<div
-									key={lineNumber + 1}
 									class={
 										styles["line-number"] +
 										(activeLine() === visibleLinesStart() + index()

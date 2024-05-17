@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount } from "solid-js";
+import { type Component, createSignal } from "solid-js";
 import EditorCore from "./components/EditorCore/EditorCore";
 import EditorView from "./components/EditorView/EditorView";
 import LeftSidebar from "./components/LeftSidebar/LeftSidebar";

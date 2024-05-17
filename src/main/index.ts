@@ -30,7 +30,6 @@ async function readFile(filePath: string): Promise<string> {
 
 async function readFolder(folderPath: string): Promise<any> {
 	try {
-		console.log(folderPath);
 		const files = await fs.readdir(folderPath);
 		return { path: folderPath, files };
 	} catch (error) {
@@ -135,8 +134,9 @@ async function openFile(): Promise<void> {
 			filters: [{ name: "All Files", extensions: ["*"] }],
 		});
 		if (!result.canceled && result.filePaths.length > 0) {
+			const path = result.filePaths[0];
 			const data = await readFile(result.filePaths[0]);
-			mainWindow?.webContents.send("file-opened", data);
+			mainWindow?.webContents.send("file-opened", { data, path });
 		}
 	} catch (error) {
 		console.error("Failed to open file:", error);
@@ -258,7 +258,6 @@ app.whenReady().then(() => {
 			const filesOnly = fullPaths
 				.filter((f) => !f.isDirectory)
 				.map((f) => f.path);
-				console.log(filesOnly);
 			return { folders, files: filesOnly };
 		} catch (error) {
 			console.error(`Failed to read folder contents: ${error.message}`);

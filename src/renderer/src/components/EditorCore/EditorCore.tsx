@@ -46,16 +46,32 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				editor.tab(0);
 				break;
 			case "ArrowLeft":
-				editor.moveLeft(0);
+				if (e.shiftKey) {
+					editor.getSelection(0)?.expandLeft();
+				} else {
+					editor.moveLeft(0);
+				}
 				break;
 			case "ArrowRight":
-				editor.moveRight(0);
+				if (e.shiftKey) {
+					editor.getSelection(0)?.expandRight();
+                } else {
+                    editor.moveRight(0);
+                }
 				break;
 			case "ArrowUp":
-				editor.moveUp(0);
+				if (e.shiftKey) {
+					editor.getSelection(0)?.expandUp();
+                } else {
+					editor.moveUp(0);
+				}
 				break;
 			case "ArrowDown":
-				editor.moveDown(0);
+				if (e.shiftKey) {
+					editor.getSelection(0)?.expandDown();
+                } else {
+                    editor.moveDown(0);
+                }
 				break;
 			case "Home":
 				editor.moveToLineStart(0);
