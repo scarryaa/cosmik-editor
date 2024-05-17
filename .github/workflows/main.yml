@@ -41,9 +41,16 @@ jobs:
           args: install wixtoolset
 
       - name: Build App
-        run: pnpm run build 
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            pnpm run build:linux
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            pnpm run build:mac
+          else
+            pnpm run build:win
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
@@ -54,6 +61,6 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: out/*  
+          files: out/*
           name: Electron App ${{ matrix.os }}
           tag_name: ${{ steps.tag.outputs.tag }}
