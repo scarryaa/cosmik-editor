@@ -11,13 +11,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      
-      steps:
+
+    steps:
       - name: Checkout Code
-      uses: actions/checkout@v3
-      
+        uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -71,7 +69,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Assets (Linux)
+      - name: Upload Release Assets (Linux .deb)
         if: runner.os == 'Linux'
         uses: actions/upload-release-asset@v1
         env:
@@ -82,7 +80,7 @@ jobs:
           asset_name: Meteor-amd64-${{ steps.tag.outputs.tag }}.deb
           asset_content_type: application/vnd.debian.binary-package
       
-      - name: Upload Release Assets (Linux)
+      - name: Upload Release Assets (Linux .rpm)
         if: runner.os == 'Linux'
         uses: actions/upload-release-asset@v1
         env:
@@ -93,7 +91,7 @@ jobs:
           asset_name: Meteor-x86_64-${{ steps.tag.outputs.tag }}.rpm
           asset_content_type: application/x-rpm
 
-      - name: Upload Release Assets (macOS)
+      - name: Upload Release Assets (macOS .dmg)
         if: runner.os == 'macOS'
         uses: actions/upload-release-asset@v1
         env:
@@ -104,7 +102,7 @@ jobs:
           asset_name: Meteor-${{ steps.tag.outputs.tag }}.dmg
           asset_content_type: application/octet-stream
       
-      - name: Upload Release Assets (macOS)
+      - name: Upload Release Assets (macOS .zip)
         if: runner.os == 'macOS'
         uses: actions/upload-release-asset@v1
         env:
@@ -115,7 +113,7 @@ jobs:
           asset_name: Meteor-${{ steps.tag.outputs.tag }}.zip
           asset_content_type: application/zip
 
-      - name: Upload Release Assets (Windows)
+      - name: Upload Release Assets (Windows .exe)
         if: runner.os == 'Windows'
         uses: actions/upload-release-asset@v1
         env:
@@ -126,7 +124,7 @@ jobs:
           asset_name: Meteor Setup ${{ steps.tag.outputs.tag }}.exe
           asset_content_type: application/vnd.microsoft.portable-executable
       
-      - name: Upload Release Assets (Windows)
+      - name: Upload Release Assets (Windows .msi)
         if: runner.os == 'Windows'
         uses: actions/upload-release-asset@v1
         env:
@@ -136,4 +134,3 @@ jobs:
           asset_path: ./dist/*.msi
           asset_name: Meteor Setup ${{ steps.tag.outputs.tag }}.msi
           asset_content_type: application/octet-stream
-
