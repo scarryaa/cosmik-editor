@@ -44,19 +44,19 @@ jobs:
         if: runner.os == 'Linux'
         run: pnpm run build:linux
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ELECTRON_BUILD_TOKEN }}
 
       - name: Build App (macOS)
         if: runner.os == 'macOS'
         run: pnpm run build:mac
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ELECTRON_BUILD_TOKEN }}
 
       - name: Build App (Windows)
         if: runner.os == 'Windows'
         run: pnpm run build:win
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ELECTRON_BUILD_TOKEN }}
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
