@@ -22,6 +22,9 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 	const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
 	const [visibleLinesEnd, setVisibleLinesEnd] = createSignal(0);
 	const [arrayLength, setArrayLength] = createSignal(0);
+	const [activeLine, setActiveLine] = createSignal(
+		props.editor().cursorAt(0).line,
+	);
 
 	const calculateVisibleLines = () => {
 		const start = Math.floor(props.scrollTop() / lineHeight);
@@ -38,6 +41,16 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 		on(props.scrollTop, () => {
 			calculateVisibleLines();
 		}),
+	);
+
+	// Update active line on cursor change
+	createEffect(
+		on(
+			() => props.editor().cursorAt(0).line,
+			() => {
+				setActiveLine(props.editor().cursorAt(0).line);
+			},
+		),
 	);
 
 	createEffect(
@@ -84,7 +97,7 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 									key={lineNumber + 1}
 									class={
 										styles["line-number"] +
-										(lineNumber === props.editor().cursorAt(0).line
+										(activeLine() === visibleLinesStart() + index()
 											? ` ${styles.active}`
 											: "")
 									}
