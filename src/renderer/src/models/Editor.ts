@@ -35,7 +35,7 @@ export class Editor implements IEditor {
 
 	deleteSelectionIfNeeded = (): void => {
 		if (!this.selectionSignal[0]()[0].isEmpty()) {
-			this.deleteSelection();
+			this.deleteSelection(0);
 		}
 	};
 
@@ -109,45 +109,44 @@ export class Editor implements IEditor {
 	};
 
 	insert = (text: string, cursorIndex: number): void => {
-		const cursor = this.cursors[cursorIndex];
-		const globalIndex = this.calculateGlobalIndex(
-			cursor.line,
-			this.cursorAt(0).character,
-		);
-
+		const cursor = this.cursorsSignal[0]()[cursorIndex];
+		const globalIndex = this.calculateGlobalIndex(cursor.line, cursor.character);
+	
 		batch(() => {
 			this.deleteSelectionIfNeeded();
 			this.content.insert(text, globalIndex);
 			this.contentSignal[1](this.content.getText());
 			this.lineBreakIndices = this.calculateLineBreaks();
-			const lineLength = this.lineContent(cursor.line).length;
 			this.lineNumbersSignal[1](this.lineBreakIndices.length);
-
-			// @TODO delete selection
-			this.selections[0].reset();
-
-			cursor.moveRight(lineLength, this.lineBreakIndices.length);
+	
+			const selections = this.selectionSignal[0]();
+			selections[0].reset();
+			this.selectionSignal[1](selections);
+	
+			cursor.character += text.length;
+			this.cursorsSignal[1](this.cursorsSignal[0]());
 		});
-	};
+	}
+	
 
-	deleteSelection = (): void => {
+	deleteSelection = (selectionIndex: number): void => {
 		const globalIndexStart = this.calculateGlobalIndex(
-			this.selections[0].startLine,
-			this.selections[0].startIndex,
+			this.selections[selectionIndex].startLine,
+			this.selections[selectionIndex].startIndex,
 		);
 
 		const globalIndexEnd = this.calculateGlobalIndex(
-			this.selections[0].endLine,
-			this.selections[0].endIndex,
+			this.selections[selectionIndex].endLine,
+			this.selections[selectionIndex].endIndex,
 		);
 
 		this.content.delete(globalIndexStart, globalIndexEnd - globalIndexStart);
 
 		// Set cursor to start of selection
 		this.cursorAt(0).moveTo(
-			this.selections[0].startIndex,
-			this.selections[0].startLine,
-			this.lineContent(this.selections[0].startLine).length,
+			this.selections[selectionIndex].startIndex,
+			this.selections[selectionIndex].startLine,
+			this.lineContent(this.selections[selectionIndex].startLine).length,
 			this.lineBreakIndices.length - 1,
 		);
 
@@ -163,28 +162,20 @@ export class Editor implements IEditor {
 	delete = (cursorIndex: number): void => {
 		if (this.selections[0].isEmpty()) {
 			const cursor = this.cursors[cursorIndex];
-			const globalIndex = this.calculateGlobalIndex(
-				cursor.line,
-				cursor.character,
-			);
+			const globalIndex = this.calculateGlobalIndex(cursor.line, cursor.character);
 			const currentTextLength = this.content.getText().length;
-
+	
 			if (currentTextLength > 0) {
 				if (cursor.character === 0 && cursor.line > 0) {
-					// Handle deletion at the start of a non-first line
-					const indexToDelete = this.calculateGlobalIndex(cursor.line, 0) - 1;
-					this.content.delete(indexToDelete, 1);
+					const prevLineLength = this.lineContent(cursor.line - 1).length;
+	
+					this.content.delete(globalIndex - 1, 1); // Delete the line break
 					this.lineBreakIndices = this.calculateLineBreaks();
 					this.contentSignal[1](this.content.getText());
-					this.lineNumbersSignal[1](this.lineBreakIndices.length + 1);
-
-					cursor.moveTo(
-						this.lineContent(cursor.line - 1).length,
-						cursor.line - 1,
-						this.lineContent(cursor.line - 1).length,
-						this.lineBreakIndices.length - 1,
-						// TODO make sure this is correct
-					);
+					this.lineNumbersSignal[1](this.lineBreakIndices.length);
+	
+					const newChar = prevLineLength; // Cursor goes to end of previous line
+					cursor.moveTo(newChar, cursor.line - 1, newChar, this.lineBreakIndices.length - 1);
 				} else if (cursor.character > 0) {
 					// Delete character before cursor in the middle of a line
 					this.content.delete(globalIndex - 1, 1);
@@ -199,7 +190,8 @@ export class Editor implements IEditor {
 			this.deleteSelectionIfNeeded();
 		}
 	};
-
+	
+	
 	length(): number {
 		return this.content.length() ?? 0;
 	}
@@ -239,22 +231,25 @@ export class Editor implements IEditor {
 
 	addLine = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-		const globalIndex = this.calculateGlobalIndex(
-			cursor.line,
-			this.cursorAt(0).character,
-		);
+		const currentLine = cursor.line;
+		const currentChar = cursor.character;
+		const globalIndex = this.calculateGlobalIndex(currentLine, currentChar);
+	
 		this.deleteSelectionIfNeeded();
 		this.content.insert("\n", globalIndex);
 		this.contentSignal[1](this.content.getText());
-
+	
 		this.lineBreakIndices = this.calculateLineBreaks();
-		const nextLineLength = this.lineContent(cursor.line + 1).length;
-
 		const totalLines = this.lineBreakIndices.length;
-		this.lineNumbersSignal[1](totalLines + 1);
-
-		cursor.moveDown(totalLines, nextLineLength);
+		this.lineNumbersSignal[1](totalLines);
+	
+		if (currentChar === this.lineContent(currentLine).length) {
+			cursor.moveDown(totalLines - 1, 0);
+		} else {
+			cursor.moveDown(totalLines - 1, currentChar);
+		}
 	};
+	
 
 	calculateGlobalIndex = (line: number, column: number): number => {
 		let index = 0;

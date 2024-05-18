@@ -21,12 +21,24 @@ export class Cursor {
 		return this._character[0]();
 	}
 
+	set character(value: number) {
+		this._character[1](value);
+	}
+
 	get line() {
 		return this._line[0]();
 	}
 
+	set line(value: number) {
+		this._line[1](value);
+	}
+
 	get basis() {
 		return this._basis[0]();
+	}
+
+	set basis(value: number) {
+		this._basis[1](value);
 	}
 
 	moveTo(

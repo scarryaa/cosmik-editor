@@ -195,10 +195,6 @@ export class Selection {
 				this.endLineSignal[1](this.endLine - 1);
 				this.endIndexSignal[1](cursor.basis);
                 this.normalizeSelection();
-                console.log(this.startIndex);
-                console.log(this.endIndex);
-                console.log(this.startLine);
-                console.log(this.endLine);
 				break;
 			case SelectionDirection.Down:
 				this.startLineSignal[1](this.startLine + 1);
