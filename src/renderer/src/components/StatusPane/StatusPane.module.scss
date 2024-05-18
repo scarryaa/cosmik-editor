@@ -4,7 +4,7 @@
 
 .status-pane {
     height: var(--status-pane-height);
-    background-color: #d4d4d4;
+    background-color: var(--meteor-pane-background);
     line-height: 19px;
     padding: 0 5px;
     z-index: 999;
@@ -13,6 +13,6 @@
     left: 0;
     right: 0;
     font-size: 13px;
-    border-top: 1px solid #fff;
+    border-top: 1px solid var(--meteor-border);
     width: 100%;
 }

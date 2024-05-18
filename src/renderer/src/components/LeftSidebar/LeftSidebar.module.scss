@@ -1,14 +1,26 @@
 :root {
     --meteor-border: #fff;
+    --meteor-border: #2b2b2b;
     --meteor-focus-bar: #007acc;
     --meteor-pane-background: #e4e4e4;
+    --meteor-pane-background: #1a1a1a;
 }
 
 .tabs-container {
+    position: relative;
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid var(--meteor-border);
-    padding-inline: 5px;
     border-right: 1px solid var(--meteor-border);
-    min-width: 165px;
+    min-width: 155px;
+    padding-inline: 5px;
+    
+    &::after {
+        content: "";
+        height: calc(100% + 1px);
+        position: absolute;
+        border-right: 1px solid var(--meteor-border);
+        left: 165px;
+        z-index: 999;
+    }
 }

@@ -11,8 +11,7 @@
     align-items: center;
     justify-content: space-between;
     background-color: var(--meteor-pane-background);
-    border-right: 1px solid #ffffff;
-    border-left: 1px solid #fff;
+    border-right: 1px solid var(--meteor-border);
     flex-direction: row;
     flex-wrap: nowrap;
     flex-grow: 1;
@@ -31,7 +30,7 @@
     }
 
     &.active {
-        background-color: #ffffff;
+        background-color: var(--page-background);
     }
 
     .saved-indicator-wrapper {

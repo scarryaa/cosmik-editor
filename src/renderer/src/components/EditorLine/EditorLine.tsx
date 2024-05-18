@@ -44,12 +44,10 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 
 	const updateSelection = () => {
 		let { startLine, endLine, startIndex, endIndex } = props.selection;
-        
+
 		if (startLine === endLine) {
-            console.log(startIndex, endIndex);
 			// Single-line selection
 			setSelectedContent(props.content.slice(startIndex, endIndex));
-            console.log(selectedContent());
 			setSelectionLeft(
 				textService.measureTextWidth(
 					props.content.substring(0, startIndex),

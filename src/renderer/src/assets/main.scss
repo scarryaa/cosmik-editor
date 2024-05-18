@@ -1,4 +1,14 @@
+:root {
+  --page-background: #fff;
+  --page-background: #202020;
+  --text-color: #000;
+  --text-color: #dfdfdf;
+  --text-color-muted: #252525;
+  --text-color-muted: #b9b9b9;
+  --text-color-muted-2:#727272;
+}
 html, body, #root, .app-container {
+  color: var(--text-color);
   margin: 0;
   padding: 0;
   width: 100%;
@@ -11,6 +21,7 @@ html, body, #root, .app-container {
   -moz-user-select: none;
   -ms-user-select: none;
   -o-user-select: none;
+  background-color: var(--page-background);
 }
 
 @font-face {
@@ -39,4 +50,24 @@ html, body, #root, .app-container {
   color: inherit;
   appearance: none;
   cursor: pointer;
+}
+
+*::-webkit-scrollbar {
+  background-color: var(--page-background);
+}
+
+*::-webkit-scrollbar-track:vertical {
+  background-color: var(--page-background);
+}
+
+*::-webkit-scrollbar-track:horizontal {
+  background-color: var(--page-background);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #2c2c2c;
+}
+
+*::-webkit-scrollbar-corner {
+  background-color: var(--page-background);
 }

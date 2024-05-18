@@ -1,6 +1,7 @@
 :root {
-    --action-bar-item-hover-color: #000;
-    --action-bar-item-color: #464646;
+    --action-bar-item-hover-color: var(--text-color);
+    --action-bar-item-color: #646464;
+    --action-bar-item-color: #707070;
 }
 
 .pane-button {

@@ -54,7 +54,7 @@ const LeftSidebar = () => {
 				width: "165px",
 				"min-width": "165px",
 				height: "100%",
-				"border-right": "1px solid var(--meteor-pane-border)",
+				"border-right": "1px solid var(--meteor-border)",
 				"background-color": "var(--meteor-pane-background",
 			}}
 		>

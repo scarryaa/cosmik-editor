@@ -45,7 +45,7 @@ export const parseBasedOnExtension = async (
 
 	return codeToHtml(content, {
 		lang,
-		theme: "github-light",
+		theme: "github-dark",
 		structure: "inline",
 	});
 };

@@ -16,7 +16,7 @@
     z-index: 0;
     line-height: 19px;
     min-height: 100vh;
-    background-color: white;
+    background-color: var(--page-background);
     position: absolute;
 
     &.shift-right {
@@ -41,8 +41,8 @@
 
         .line-number {
             text-align: right;
-            background-color: white;
-            color: #707070;
+            background-color: var(--page-background);
+            color: var(--text-color-muted-2);
             position: absolute;
             width: 100%;
             z-index: 999;
@@ -50,7 +50,7 @@
             padding-top: 5px;
     
             &.active {
-                color: #000;
+                color: var(--text-color);
             }
         }
     }
