@@ -26,8 +26,8 @@ export class Cursor {
 	}
 
 	get basis() {
-        return this._basis[0]();
-    }
+		return this._basis[0]();
+	}
 
 	moveTo(
 		character: number,

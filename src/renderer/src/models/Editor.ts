@@ -337,8 +337,8 @@ export class Editor implements IEditor {
 	moveUp = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
 		const prevLineLength = this.lineContent(
-			cursor.line === 0? 0 : cursor.line - 1,
-        ).length;
+			cursor.line === 0 ? 0 : cursor.line - 1,
+		).length;
 		cursor.moveUp(prevLineLength);
 	};
 

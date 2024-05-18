@@ -88,52 +88,85 @@ export class Selection {
 		direction: SelectionDirection,
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		if (this.isEmpty()) {
-			this.startNewSelection(direction, cursor);
+			this.startNewSelection(direction, cursor, prevLineIndex, lineEndIndex);
 			this.directionSignal[1](direction);
 		} else {
-			this.updateSelection(direction, cursor, lineEndIndex, totalLines);
+			this.updateSelection(direction, cursor, lineEndIndex, prevLineIndex, totalLines);
 		}
 		this.updateCachedContent();
 	}
 
-	private startNewSelection(
-		direction: SelectionDirection,
-		cursor: Cursor,
-	): void {
-		switch (direction) {
-			case SelectionDirection.Forward:
-				this.startLineSignal[1](cursor.line);
-				this.endLineSignal[1](cursor.line);
-				this.startIndexSignal[1](cursor.character);
-				this.endIndexSignal[1](cursor.character + 1);
-				break;
-			case SelectionDirection.Backward:
-				this.startLineSignal[1](cursor.line);
-				this.endLineSignal[1](cursor.line);
-				this.startIndexSignal[1](cursor.character - 1);
-				this.endIndexSignal[1](cursor.character);
-				break;
-			case SelectionDirection.Up:
-				this.startLineSignal[1](cursor.line - 1);
-				this.endLineSignal[1](cursor.line);
-				this.startIndexSignal[1](cursor.character);
-				this.endIndexSignal[1](cursor.character);
-				break;
-			case SelectionDirection.Down:
-				this.startLineSignal[1](cursor.line);
-				this.endLineSignal[1](cursor.line + 1);
-				this.startIndexSignal[1](cursor.character);
-				this.endIndexSignal[1](cursor.character);
-				break;
-		}
-	}
+    private startNewSelection(
+        direction: SelectionDirection,
+        cursor: Cursor,
+        prevLineIndex: number,
+        lineEndIndex: number,
+    ): void {
+        switch (direction) {
+            case SelectionDirection.Forward:
+                // Handle new line
+                if (cursor.basis === lineEndIndex) {
+                } else {
+                    this.startLineSignal[1](cursor.line);
+                    this.endLineSignal[1](cursor.line);
+                    this.startIndexSignal[1](cursor.character);
+                    this.endIndexSignal[1](cursor.character + 1);
+                }
+                break;
+            case SelectionDirection.Backward:
+                this.startLineSignal[1](cursor.line);
+                this.endLineSignal[1](cursor.line);
+                if (cursor.character > 0) {
+                    this.startIndexSignal[1](cursor.character - 1);
+                    this.endIndexSignal[1](cursor.character);
+                } else if (cursor.line > 0) {
+                    this.startIndexSignal[1](prevLineIndex);
+                    this.endIndexSignal[1](cursor.character);
+                    this.startLineSignal[1](cursor.line - 1);
+                } else {
+                    this.startIndexSignal[1](cursor.character);
+                    this.endIndexSignal[1](cursor.character);
+                }
+                break;
+            case SelectionDirection.Up:
+                this.startLineSignal[1](cursor.line - 1);
+                this.endLineSignal[1](cursor.line);
+                this.startIndexSignal[1](cursor.character);
+                this.endIndexSignal[1](cursor.character);
+                break;
+            case SelectionDirection.Down:
+                this.startLineSignal[1](cursor.line);
+                this.endLineSignal[1](cursor.line + 1);
+                this.startIndexSignal[1](cursor.character);
+                this.endIndexSignal[1](cursor.character);
+                break;
+        }
+    }
+
+    private normalizeSelection(
+    ): void {
+        if (this.startLine > this.endLine) {
+            const tmp = this.startLineSignal[0]();
+            this.startLineSignal[1](this.endLineSignal[0]());
+            this.endLineSignal[1](tmp);
+        }
+
+        if (this.startIndex > this.endIndex && this.endLine === this.startLine) {
+            const tmp = this.startIndexSignal[0]();
+            this.startIndexSignal[1](this.endIndexSignal[0]());
+            this.endIndexSignal[1](tmp);
+        }
+    }
 
 	private contractSelection(
 		direction: SelectionDirection,
 		cursor: Cursor,
+        lineEndIndex: number,
+        prevLineIndex: number,
 	): void {
 		if (this.isEmpty()) {
 			return;
@@ -141,14 +174,31 @@ export class Selection {
 
 		switch (direction) {
 			case SelectionDirection.Forward:
-				this.startIndexSignal[1](this.startIndex + 1);
+                // Handle new line
+                if (cursor.basis === lineEndIndex) {
+                    this.startLineSignal[1](this.startLine + 1);
+                    this.startIndexSignal[1](0);
+                } else {
+                    this.startIndexSignal[1](this.startIndex + 1);
+                }
 				break;
 			case SelectionDirection.Backward:
-				this.endIndexSignal[1](this.endIndex - 1);
+                // Handle new line
+                if (cursor.basis === 0) {
+                    this.endLineSignal[1](this.endLine - 1);
+                    this.endIndexSignal[1](prevLineIndex);
+                } else {
+                    this.endIndexSignal[1](this.endIndex - 1);
+                }
 				break;
 			case SelectionDirection.Up:
 				this.endLineSignal[1](this.endLine - 1);
 				this.endIndexSignal[1](cursor.basis);
+                this.normalizeSelection();
+                console.log(this.startIndex);
+                console.log(this.endIndex);
+                console.log(this.startLine);
+                console.log(this.endLine);
 				break;
 			case SelectionDirection.Down:
 				this.startLineSignal[1](this.startLine + 1);
@@ -161,15 +211,35 @@ export class Selection {
 		direction: SelectionDirection,
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		switch (direction) {
-			case SelectionDirection.Forward:
-				this.endIndexSignal[1](Math.min(lineEndIndex, this.endIndex + 1));
+			case SelectionDirection.Forward: {
+				if (this.endIndex === lineEndIndex) {
+					// Move to start of next line
+					if (cursor.line < totalLines - 1) {
+						this.endIndexSignal[1](0);
+						this.endLineSignal[1](this.endLine + 1);
+					}
+				} else {
+					this.endIndexSignal[1](this.endIndex + 1);
+				}
 				break;
-			case SelectionDirection.Backward:
-				this.startIndexSignal[1](Math.max(0, this.startIndex - 1));
+			}
+			case SelectionDirection.Backward: {
+				if (this.startIndex === 0) {
+					if (cursor.line > 0) {
+						// Move to end of previous line
+						const newStartIndex = Math.max(0, prevLineIndex);
+						this.startIndexSignal[1](newStartIndex);
+						this.startLineSignal[1](this.startLine - 1);
+					}
+				} else {
+					this.startIndexSignal[1](this.startIndex - 1);
+				}
 				break;
+			}
 			case SelectionDirection.Up:
 				this.startLineSignal[1](Math.max(0, cursor.line - 1));
 				this.startIndexSignal[1](cursor.basis);
@@ -202,6 +272,7 @@ export class Selection {
 		direction: SelectionDirection,
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		const expandOrContract = (
@@ -209,9 +280,9 @@ export class Selection {
 			contractCondition: boolean,
 		) => {
 			if (expandDirections.includes(this.direction)) {
-				this.expandSelection(direction, cursor, lineEndIndex, totalLines);
+				this.expandSelection(direction, cursor, lineEndIndex, prevLineIndex, totalLines);
 			} else if (contractCondition) {
-				this.contractSelection(direction, cursor);
+				this.contractSelection(direction, cursor, lineEndIndex, prevLineIndex);
 			}
 		};
 
@@ -264,17 +335,21 @@ export class Selection {
 				}
 				break;
 		}
+
+        this.normalizeSelection();
 	}
 
 	handleSelectionLeft(
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		this.handleSelection(
 			SelectionDirection.Backward,
 			cursor,
 			lineEndIndex,
+            prevLineIndex,
 			totalLines,
 		);
 	}
@@ -282,12 +357,14 @@ export class Selection {
 	handleSelectionRight(
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		this.handleSelection(
 			SelectionDirection.Forward,
 			cursor,
 			lineEndIndex,
+            prevLineIndex,
 			totalLines,
 		);
 	}
@@ -295,12 +372,14 @@ export class Selection {
 	handleSelectionUp(
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		this.handleSelection(
 			SelectionDirection.Up,
 			cursor,
 			lineEndIndex,
+            prevLineIndex,
 			totalLines,
 		);
 	}
@@ -308,12 +387,14 @@ export class Selection {
 	handleSelectionDown(
 		cursor: Cursor,
 		lineEndIndex: number,
+        prevLineIndex: number,
 		totalLines: number,
 	): void {
 		this.handleSelection(
 			SelectionDirection.Down,
 			cursor,
 			lineEndIndex,
+            prevLineIndex,
 			totalLines,
 		);
 	}

@@ -33,6 +33,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 		e.preventDefault();
 		const cursor = editor.cursorAt(0);
 		const lineContent = editor.lineContent(cursor.line);
+		const prevLineIndex = editor.lineContent(cursor.line - 1).length;
 
 		switch (e.key) {
 			case "Enter":
@@ -54,6 +55,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 						?.handleSelectionLeft(
 							editor.cursorAt(0),
 							lineContent.length,
+							prevLineIndex,
 							editor.totalLines(),
 						);
 				} else {
@@ -68,6 +70,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 						?.handleSelectionRight(
 							editor.cursorAt(0),
 							lineContent.length,
+							prevLineIndex,
 							editor.totalLines(),
 						);
 				} else {
@@ -82,6 +85,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 						?.handleSelectionUp(
 							editor.cursorAt(0),
 							lineContent.length,
+							prevLineIndex,
 							editor.totalLines(),
 						);
 				} else {
@@ -96,6 +100,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 						?.handleSelectionDown(
 							editor.cursorAt(0),
 							lineContent.length,
+							prevLineIndex,
 							editor.totalLines(),
 						);
 				} else {

@@ -35,7 +35,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 
 	const debouncedParse = debounce(async (content: string) => {
 		const activeTab = TabStore.activeTab;
-		if (activeTab) {
+		if (activeTab) {    
 			const extension = activeTab.id.split(".").pop() as ParseType;
 			const parsedContent = await parseBasedOnExtension(extension, content);
 			setHighlightedContent(parsedContent);
@@ -43,11 +43,13 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 	}, 0);
 
 	const updateSelection = () => {
-		const { startLine, endLine, startIndex, endIndex } = props.selection;
-
+		let { startLine, endLine, startIndex, endIndex } = props.selection;
+        
 		if (startLine === endLine) {
+            console.log(startIndex, endIndex);
 			// Single-line selection
 			setSelectedContent(props.content.slice(startIndex, endIndex));
+            console.log(selectedContent());
 			setSelectionLeft(
 				textService.measureTextWidth(
 					props.content.substring(0, startIndex),
