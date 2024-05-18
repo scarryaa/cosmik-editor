@@ -29,7 +29,9 @@ const FolderItem: Component<FolderItemProps> = (props: FolderItemProps) => {
 		folders: [],
 	});
 	const fileStore = useFileStore();
-	const selected = createMemo(() => fileStore.selectedItems.includes(props.path));
+	const selected = createMemo(() =>
+		fileStore.selectedItems.includes(props.path),
+	);
 
 	const isOpen = createMemo(() => openFolders.includes(props.path));
 

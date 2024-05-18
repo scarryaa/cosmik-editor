@@ -24,7 +24,9 @@ const Tab: Component<TabProps> = (props: TabProps) => {
 			onclick={props.onclick}
 			onmouseenter={() => setHovered(true)}
 			onmouseleave={() => setHovered(false)}
-			onmousedown={(e) => { if (e.button === 1) props.oncloseclick?.(e)}}
+			onmousedown={(e) => {
+				if (e.button === 1) props.oncloseclick?.(e);
+			}}
 		>
 			<button
 				class={`${styles.tab} no-button-style ${

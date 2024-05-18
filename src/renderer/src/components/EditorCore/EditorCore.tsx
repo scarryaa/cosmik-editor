@@ -31,6 +31,8 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 		];
 
 		e.preventDefault();
+		const cursor = editor.cursorAt(0);
+		const lineContent = editor.lineContent(cursor.line);
 
 		switch (e.key) {
 			case "Enter":
@@ -47,31 +49,59 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				break;
 			case "ArrowLeft":
 				if (e.shiftKey) {
-					editor.getSelection(0)?.expandLeft();
+					editor
+						.getSelection(0)
+						?.handleSelectionLeft(
+							editor.cursorAt(0),
+							lineContent.length,
+							editor.totalLines(),
+						);
 				} else {
-					editor.moveLeft(0);
+					editor.clearSelection(0);
 				}
+				editor.moveLeft(0);
 				break;
 			case "ArrowRight":
 				if (e.shiftKey) {
-					editor.getSelection(0)?.expandRight();
-                } else {
-                    editor.moveRight(0);
-                }
+					editor
+						.getSelection(0)
+						?.handleSelectionRight(
+							editor.cursorAt(0),
+							lineContent.length,
+							editor.totalLines(),
+						);
+				} else {
+					editor.clearSelection(0);
+				}
+				editor.moveRight(0);
 				break;
 			case "ArrowUp":
 				if (e.shiftKey) {
-					editor.getSelection(0)?.expandUp();
-                } else {
-					editor.moveUp(0);
+					editor
+						.getSelection(0)
+						?.handleSelectionUp(
+							editor.cursorAt(0),
+							lineContent.length,
+							editor.totalLines(),
+						);
+				} else {
+					editor.clearSelection(0);
 				}
+				editor.moveUp(0);
 				break;
 			case "ArrowDown":
 				if (e.shiftKey) {
-					editor.getSelection(0)?.expandDown();
-                } else {
-                    editor.moveDown(0);
-                }
+					editor
+						.getSelection(0)
+						?.handleSelectionDown(
+							editor.cursorAt(0),
+							lineContent.length,
+							editor.totalLines(),
+						);
+				} else {
+					editor.clearSelection(0);
+				}
+				editor.moveDown(0);
 				break;
 			case "Home":
 				editor.moveToLineStart(0);

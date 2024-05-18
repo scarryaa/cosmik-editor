@@ -5,7 +5,7 @@ const [store, setStore] = createStore({
 	folderContent: { root: "", folders: [], files: [] },
 	selectedItems: [] as string[],
 	firstSelectedIndex: null as number | null,
-    lastSelectedIndex: null as number | null,
+	lastSelectedIndex: null as number | null,
 });
 
 export const [openFolders, setOpenFolders] = createStore<string[]>(
@@ -26,11 +26,11 @@ export const setSelectedItems = (folders) => {
 };
 
 export const setFirstSelectedIndex = (index) => {
-    setStore("firstSelectedIndex", index);
+	setStore("firstSelectedIndex", index);
 };
 
 export const setLastSelectedIndex = (index) => {
-    setStore("lastSelectedIndex", index);
+	setStore("lastSelectedIndex", index);
 };
 
 export const useFileStore = () => store;

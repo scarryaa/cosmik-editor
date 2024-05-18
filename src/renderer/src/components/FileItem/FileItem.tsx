@@ -26,16 +26,21 @@ const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
 		} else {
 			deselectAllAndSelectItem(props.file);
 		}
-		TabStore.openTab({  id: props.file, name: props.file.split('/').pop()!, state: TabState.Untracked, editorId: EditorStore.getActiveEditorId()! });
+		TabStore.openTab({
+			id: props.file,
+			name: props.file.split("/").pop()!,
+			state: TabState.Untracked,
+			editorId: EditorStore.getActiveEditorId()!,
+		});
 		// biome-ignore lint/suspicious/noExplicitAny: Needed here
 		const contents = await (window.api as any).getFileContents(props.file);
 		EditorStore.setEditorContent("editor1", contents);
 		TabStore.updateTab(props.file, { content: contents });
 	};
-	
+
 	const deselectAllAndSelectItem = (file: string) => {
 		setSelectedItems([file]);
-    };
+	};
 
 	const toggleFileSelect = (file: string) => {
 		if (selected()) {
@@ -44,7 +49,7 @@ const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
 			);
 		} else {
 			setSelectedItems([...fileStore.selectedItems, props.file]);
-        }
+		}
 	};
 
 	return (

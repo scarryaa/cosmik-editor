@@ -94,11 +94,9 @@ const Explorer = () => {
 			const newFolderName = "newfolder/";
 			const newFolderPath = `${folderPath}${newFolderName}`;
 
-			api
-				.createFolder(newFolderPath)
-				.catch((error) => {
-					console.error(`Failed to create folder: ${newFolderPath}`, error);
-				});
+			api.createFolder(newFolderPath).catch((error) => {
+				console.error(`Failed to create folder: ${newFolderPath}`, error);
+			});
 		} else {
 			// No folder selected, try to find the parent folder of the last selected file
 			const lastSelectedFile = fileStore.selectedItems

@@ -16,7 +16,7 @@ const PieceTableStore = {
 	get activePieceTableId() {
 		return state.activePieceTableId;
 	},
-    
+
 	setActivePieceTable(id: string | null) {
 		setState("activePieceTableId", id);
 	},

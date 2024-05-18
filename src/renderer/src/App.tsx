@@ -31,7 +31,11 @@ const App: Component = () => {
 		<div class="app-container">
 			<LeftSidebar />
 			{TabStore.tabs.length > 0 && (
-				<EditorView scrollSignal={scrollSignal} click={click} editor={() => EditorStore.getEditor("editor1")!} />
+				<EditorView
+					scrollSignal={scrollSignal}
+					click={click}
+					editor={() => EditorStore.getEditor("editor1")!}
+				/>
 			)}
 			<EditorCore
 				ensureCursorVisible={handleEnter}

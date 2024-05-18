@@ -1,4 +1,5 @@
 import { type Signal, createSignal } from "solid-js";
+import type { Cursor } from "./Cursor";
 import type { PieceTable } from "./PieceTable";
 
 export enum SelectionDirection {
@@ -13,18 +14,24 @@ export class Selection {
 
 	private startIndexSignal: Signal<number>;
 	private endIndexSignal: Signal<number>;
-    private startLineSignal: Signal<number>;
-    private endLineSignal: Signal<number>;
+	private startLineSignal: Signal<number>;
+	private endLineSignal: Signal<number>;
 	private cachedContentSignal: Signal<string>;
 	private directionSignal: Signal<SelectionDirection>;
 
-	constructor(pieceTable: PieceTable, startIndex: number, endIndex: number, public startLine: number, public endLine: number) {
+	constructor(
+		pieceTable: PieceTable,
+		startIndex: number,
+		endIndex: number,
+		startLine: number,
+		endLine: number,
+	) {
 		this.pieceTable = pieceTable;
 
 		this.startIndexSignal = createSignal(startIndex);
 		this.endIndexSignal = createSignal(endIndex);
-        this.startLineSignal = createSignal<number>(0);
-        this.endLineSignal = createSignal<number>(0);
+		this.startLineSignal = createSignal<number>(startLine);
+		this.endLineSignal = createSignal<number>(endLine);
 		this.cachedContentSignal = createSignal("");
 		this.directionSignal = createSignal<SelectionDirection>(
 			SelectionDirection.Forward,
@@ -52,16 +59,24 @@ export class Selection {
 		return this.endIndexSignal[0]();
 	}
 
+	get startLine(): number {
+		return this.startLineSignal[0]();
+	}
+
+	get endLine(): number {
+		return this.endLineSignal[0]();
+	}
+
 	get direction(): SelectionDirection {
 		return this.directionSignal[0]();
 	}
 
 	isEmpty(): boolean {
-		return this.startIndex === this.endIndex;
+		return this.startIndex === this.endIndex && this.startLine === this.endLine;
 	}
 
 	length(): number {
-		return this.endIndex - this.startIndex;
+		return this.cachedContentSignal[0]().length;
 	}
 
 	expandTo(newEndIndex: number): void {
@@ -69,75 +84,253 @@ export class Selection {
 		this.updateCachedContent();
 	}
 
-	handleSelection(direction: SelectionDirection): void {
-		switch (this.direction) {
+	handleSelection(
+		direction: SelectionDirection,
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		if (this.isEmpty()) {
+			this.startNewSelection(direction, cursor);
+			this.directionSignal[1](direction);
+		} else {
+			this.updateSelection(direction, cursor, lineEndIndex, totalLines);
+		}
+		this.updateCachedContent();
+	}
+
+	private startNewSelection(
+		direction: SelectionDirection,
+		cursor: Cursor,
+	): void {
+		switch (direction) {
 			case SelectionDirection.Forward:
-				{
-					// If the direction is the same as the current direction,
-					// expand the end index by 1
-					if (direction === this.direction) {
-                        this.endLineSignal[1](this.endLine + 1);
-					} else {
-						// Otherwise, contract the end index by 1
-						this.startIndexSignal[1](this.endIndex - 1);
-					}
-				}
+				this.startLineSignal[1](cursor.line);
+				this.endLineSignal[1](cursor.line);
+				this.startIndexSignal[1](cursor.character);
+				this.endIndexSignal[1](cursor.character + 1);
 				break;
 			case SelectionDirection.Backward:
-				{
-					// If the direction is the same as the current direction,
-					// expand the start index by 1
-					if (direction === this.direction) {
-						this.startIndexSignal[1](this.startIndex + 1);
-					} else {
-						// Otherwise, contract the start index by 1
-						this.endIndexSignal[1](this.startIndex - 1);
-					}
-				}
+				this.startLineSignal[1](cursor.line);
+				this.endLineSignal[1](cursor.line);
+				this.startIndexSignal[1](cursor.character - 1);
+				this.endIndexSignal[1](cursor.character);
 				break;
 			case SelectionDirection.Up:
-				{
-					// If the direction is the same as the current direction,
-					// expand the start index by 1
-					if (direction === this.direction) {
-						this.startIndexSignal[1](this.startIndex + 1);
-					} else {
-						// Otherwise, contract the start index by 1
-						this.endIndexSignal[1](this.startIndex - 1);
-					}
-				}
+				this.startLineSignal[1](cursor.line - 1);
+				this.endLineSignal[1](cursor.line);
+				this.startIndexSignal[1](cursor.character);
+				this.endIndexSignal[1](cursor.character);
 				break;
 			case SelectionDirection.Down:
-				// If the direction is the same as the current direction,
-				// expand the start index by 1
-				if (direction === this.direction) {
-					this.startIndexSignal[1](this.startIndex + 1);
-				} else {
-					// Otherwise, contract the start index by 1
-					this.endIndexSignal[1](this.startIndex - 1);
-				}
+				this.startLineSignal[1](cursor.line);
+				this.endLineSignal[1](cursor.line + 1);
+				this.startIndexSignal[1](cursor.character);
+				this.endIndexSignal[1](cursor.character);
 				break;
 		}
 	}
 
-	expandLeft(): void {
-        this.handleSelection(SelectionDirection.Backward);
-		this.updateCachedContent();
+	private contractSelection(direction: SelectionDirection): void {
+		if (this.isEmpty()) {
+			return;
+		}
+
+		switch (direction) {
+			case SelectionDirection.Forward:
+				this.startIndexSignal[1](this.startIndex + 1);
+				break;
+			case SelectionDirection.Backward:
+				this.endIndexSignal[1](this.endIndex - 1);
+				break;
+			case SelectionDirection.Up:
+				this.endLineSignal[1](this.endLine - 1);
+				break;
+			case SelectionDirection.Down:
+				this.startLineSignal[1](this.startLine + 1);
+				break;
+		}
 	}
 
-	expandRight(): void {
-        this.handleSelection(SelectionDirection.Forward);
-        this.updateCachedContent();
+	private expandSelection(
+		direction: SelectionDirection,
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		switch (direction) {
+			case SelectionDirection.Forward:
+				this.endIndexSignal[1](Math.min(lineEndIndex, this.endIndex + 1));
+				break;
+			case SelectionDirection.Backward:
+				this.startIndexSignal[1](Math.max(0, this.startIndex - 1));
+				break;
+			case SelectionDirection.Up:
+				this.startLineSignal[1](Math.max(0, cursor.line - 1));
+				break;
+			case SelectionDirection.Down:
+				this.endLineSignal[1](Math.min(totalLines, cursor.line + 1));
+				break;
+		}
 	}
 
-	expandUp(): void {
-        this.handleSelection(SelectionDirection.Up);
-        this.updateCachedContent();
+	private updateSelection(
+		direction: SelectionDirection,
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		const expandOrContract = (
+			expandDirections: SelectionDirection[],
+			contractCondition: boolean,
+		) => {
+			if (expandDirections.includes(this.direction)) {
+				this.expandSelection(direction, cursor, lineEndIndex, totalLines);
+			} else if (contractCondition) {
+				this.contractSelection(direction);
+			}
+		};
+
+		switch (direction) {
+			case SelectionDirection.Forward:
+				expandOrContract(
+					[SelectionDirection.Forward, SelectionDirection.Down],
+					true,
+				);
+				break;
+			case SelectionDirection.Backward:
+				expandOrContract(
+					[SelectionDirection.Backward, SelectionDirection.Up],
+					true,
+				);
+				break;
+			case SelectionDirection.Up:
+				expandOrContract(
+					[SelectionDirection.Up, SelectionDirection.Backward],
+					cursor.line !== this.startLine,
+				);
+				if (
+					this.direction === SelectionDirection.Forward &&
+					cursor.line === this.startLine
+				) {
+					this.handleForwardsToUpInversion();
+				}
+
+                if (
+                    this.direction === SelectionDirection.Down &&
+                    cursor.line === this.endLine
+                ) {
+                    this.handleUpToDownInversion();
+                }
+				break;
+			case SelectionDirection.Down:
+				expandOrContract(
+					[SelectionDirection.Down, SelectionDirection.Forward],
+					cursor.line !== this.endLine,
+				);
+				if (
+					this.direction === SelectionDirection.Backward &&
+					cursor.line === this.endLine
+				) {
+					this.handleBackwardsToDownInversion();
+				}
+
+                if (
+                    this.direction === SelectionDirection.Up &&
+                    cursor.line === this.startLine
+                ) {
+                    this.handleDownToUpInversion();
+                }
+				break;
+		}
 	}
 
-	expandDown(): void {
-        this.handleSelection(SelectionDirection.Down);
-        this.updateCachedContent();
+	private handleForwardsToUpInversion(): void {
+		// Start index becomes end index
+		// End index becomes start index
+		// Start line -= 1
+		// End line stays the same
+		const tmp = this.endIndex;
+		this.endIndexSignal[1](this.startIndex);
+		this.startIndexSignal[1](tmp);
+		this.startLineSignal[1](this.startLine - 1);
+		this.directionSignal[1](SelectionDirection.Up);
+	}
+
+	private handleBackwardsToDownInversion(): void {
+		// Start index becomes end index
+		// End index becomes start index
+		// End line += 1
+		// Start line stays the same
+		const tmp = this.startIndex;
+		this.startIndexSignal[1](this.endIndex);
+		this.endIndexSignal[1](tmp);
+		this.endLineSignal[1](this.endLine + 1);
+		this.directionSignal[1](SelectionDirection.Down);
+	}
+
+	private handleDownToUpInversion(): void {
+		// End line -= 1
+		this.endLineSignal[1](this.endLine - 1);
+		this.directionSignal[1](SelectionDirection.Up);
+	}
+
+	private handleUpToDownInversion(): void {
+		// Start line += 1
+		this.startLineSignal[1](this.startLine + 1);
+		this.directionSignal[1](SelectionDirection.Down);
+	}
+
+	handleSelectionLeft(
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		this.handleSelection(
+			SelectionDirection.Backward,
+			cursor,
+			lineEndIndex,
+			totalLines,
+		);
+	}
+
+	handleSelectionRight(
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		this.handleSelection(
+			SelectionDirection.Forward,
+			cursor,
+			lineEndIndex,
+			totalLines,
+		);
+	}
+
+	handleSelectionUp(
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		this.handleSelection(
+			SelectionDirection.Up,
+			cursor,
+			lineEndIndex,
+			totalLines,
+		);
+	}
+
+	handleSelectionDown(
+		cursor: Cursor,
+		lineEndIndex: number,
+		totalLines: number,
+	): void {
+		this.handleSelection(
+			SelectionDirection.Down,
+			cursor,
+			lineEndIndex,
+			totalLines,
+		);
 	}
 
 	setStartIndex(newStartIndex: number): void {
@@ -151,8 +344,12 @@ export class Selection {
 	}
 
 	reset(): void {
-		this.startIndexSignal[1](0);
-		this.endIndexSignal[1](0);
+		this.startIndexSignal[1](-100);
+		this.endIndexSignal[1](-100);
+		this.startLineSignal[1](-100);
+		this.endLineSignal[1](-100);
+		this.directionSignal[1](SelectionDirection.Forward);
 		this.updateCachedContent();
+		this.cachedContentSignal[1]("");
 	}
 }

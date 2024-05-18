@@ -1,5 +1,5 @@
 :root {
-    --selection-color: #94d0f8;
+    --selection-color: #0076d72a;
 }
 
 .line {
@@ -16,6 +16,8 @@
     left: 0px;
 }
 
-.selected {
+.selection {
     background-color: var(--selection-color);
+    color: transparent;
+    position: absolute;
 }

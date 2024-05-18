@@ -7,10 +7,12 @@ const api = {
 	onFolderOpened: (callback) => ipcRenderer.on("folder-opened", callback),
 	joinPath: (...args) => path.join(...args),
 	isDirectory: (fullPath) => ipcRenderer.invoke("check-if-directory", fullPath),
-	getFolderContents: (folderPath) => ipcRenderer.invoke("get-folder-contents", folderPath),
+	getFolderContents: (folderPath) =>
+		ipcRenderer.invoke("get-folder-contents", folderPath),
 	createFolder: (folderPath) => ipcRenderer.invoke("create-folder", folderPath),
 	createFile: (filePath) => ipcRenderer.invoke("create-file", filePath),
-	getFileContents: (filePath) => ipcRenderer.invoke("get-file-contents", filePath),
+	getFileContents: (filePath) =>
+		ipcRenderer.invoke("get-file-contents", filePath),
 };
 
 if (process.contextIsolated) {

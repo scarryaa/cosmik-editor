@@ -28,8 +28,16 @@ export class Editor implements IEditor {
 		this.contentSignal = createSignal(this.content.getText());
 		this.cursorsSignal[1]([new Cursor()]);
 
-		this.selectionSignal[1]([new Selection(this.content, 0, 0, 0, 0)]);
+		this.selectionSignal[1]([
+			new Selection(this.content, -100, -100, -100, -100),
+		]);
 	}
+
+	deleteSelectionIfNeeded = (): void => {
+		if (!this.selectionSignal[0]()[0].isEmpty()) {
+			this.deleteSelection();
+		}
+	};
 
 	setPieceTable = (pieceTable: PieceTable): void => {
 		this.content = pieceTable;
@@ -86,12 +94,11 @@ export class Editor implements IEditor {
 			this.cursorAt(0).character,
 		);
 
+		this.deleteSelectionIfNeeded();
+
 		this.content.insert("    ", globalIndex);
 		this.contentSignal[1](this.content.getText());
 		this.lineBreakIndices = this.calculateLineBreaks();
-
-		// @TODO delete selection
-		this.resetSelectionAndEmit();
 
 		cursor.moveTo(
 			cursor.character + 4,
@@ -109,6 +116,7 @@ export class Editor implements IEditor {
 		);
 
 		batch(() => {
+			this.deleteSelectionIfNeeded();
 			this.content.insert(text, globalIndex);
 			this.contentSignal[1](this.content.getText());
 			this.lineBreakIndices = this.calculateLineBreaks();
@@ -116,48 +124,79 @@ export class Editor implements IEditor {
 			this.lineNumbersSignal[1](this.lineBreakIndices.length);
 
 			// @TODO delete selection
-			this.resetSelectionAndEmit();
+			this.selections[0].reset();
 
 			cursor.moveRight(lineLength, this.lineBreakIndices.length);
 		});
 	};
 
-	delete = (cursorIndex: number): void => {
-		const cursor = this.cursors[cursorIndex];
-		const globalIndex = this.calculateGlobalIndex(
-			cursor.line,
-			cursor.character,
+	deleteSelection = (): void => {
+		const globalIndexStart = this.calculateGlobalIndex(
+			this.selections[0].startLine,
+			this.selections[0].startIndex,
 		);
-		const currentTextLength = this.content.getText().length;
 
-		// @TODO delete selection
-		this.resetSelectionAndEmit();
+		const globalIndexEnd = this.calculateGlobalIndex(
+			this.selections[0].endLine,
+			this.selections[0].endIndex,
+		);
 
-		if (currentTextLength > 0) {
-			if (cursor.character === 0 && cursor.line > 0) {
-				// Handle deletion at the start of a non-first line
-				const indexToDelete = this.calculateGlobalIndex(cursor.line, 0) - 1;
-				this.content.delete(indexToDelete, 1);
-				this.lineBreakIndices = this.calculateLineBreaks();
-				this.contentSignal[1](this.content.getText());
-				this.lineNumbersSignal[1](this.lineBreakIndices.length + 1);
+		this.content.delete(globalIndexStart, globalIndexEnd - globalIndexStart);
 
-				cursor.moveTo(
-					this.lineContent(cursor.line - 1).length,
-					cursor.line - 1,
-					this.lineContent(cursor.line - 1).length,
-					this.lineBreakIndices.length - 1,
-					// TODO make sure this is correct
-				);
-			} else if (cursor.character > 0) {
-				// Delete character before cursor in the middle of a line
-				this.content.delete(globalIndex - 1, 1);
-				cursor.moveLeft(this.lineContent(cursor.line).length);
-				this.lineBreakIndices = this.calculateLineBreaks();
-				this.contentSignal[1](this.content.getText());
-			} else if (cursor.character === 0 && cursor.line === 0) {
-				return;
+		// Set cursor to start of selection
+		this.cursorAt(0).moveTo(
+			this.selections[0].startIndex,
+			this.selections[0].startLine,
+			this.lineContent(this.selections[0].startLine).length,
+			this.lineBreakIndices.length - 1,
+		);
+
+		// Deselect
+		this.selections[0].reset();
+
+		// Update content and line breaks
+		this.contentSignal[1](this.content.getText());
+		this.lineBreakIndices = this.calculateLineBreaks();
+		this.lineNumbersSignal[1](this.lineBreakIndices.length);
+	};
+
+	delete = (cursorIndex: number): void => {
+		if (this.selections[0].isEmpty()) {
+			const cursor = this.cursors[cursorIndex];
+			const globalIndex = this.calculateGlobalIndex(
+				cursor.line,
+				cursor.character,
+			);
+			const currentTextLength = this.content.getText().length;
+
+			if (currentTextLength > 0) {
+				if (cursor.character === 0 && cursor.line > 0) {
+					// Handle deletion at the start of a non-first line
+					const indexToDelete = this.calculateGlobalIndex(cursor.line, 0) - 1;
+					this.content.delete(indexToDelete, 1);
+					this.lineBreakIndices = this.calculateLineBreaks();
+					this.contentSignal[1](this.content.getText());
+					this.lineNumbersSignal[1](this.lineBreakIndices.length + 1);
+
+					cursor.moveTo(
+						this.lineContent(cursor.line - 1).length,
+						cursor.line - 1,
+						this.lineContent(cursor.line - 1).length,
+						this.lineBreakIndices.length - 1,
+						// TODO make sure this is correct
+					);
+				} else if (cursor.character > 0) {
+					// Delete character before cursor in the middle of a line
+					this.content.delete(globalIndex - 1, 1);
+					cursor.moveLeft(this.lineContent(cursor.line).length);
+					this.lineBreakIndices = this.calculateLineBreaks();
+					this.contentSignal[1](this.content.getText());
+				} else if (cursor.character === 0 && cursor.line === 0) {
+					return;
+				}
 			}
+		} else {
+			this.deleteSelectionIfNeeded();
 		}
 	};
 
@@ -187,7 +226,7 @@ export class Editor implements IEditor {
 			return "";
 		}
 
-		// Start at the previous index if lineNumber is not 0
+		// Start at the previous index if lineNumber is not 0.
 		const startIndex =
 			lineNumber === 0 ? 0 : this.lineBreakIndices[lineNumber - 1] + 1;
 		const endIndex =
@@ -204,11 +243,9 @@ export class Editor implements IEditor {
 			cursor.line,
 			this.cursorAt(0).character,
 		);
+		this.deleteSelectionIfNeeded();
 		this.content.insert("\n", globalIndex);
 		this.contentSignal[1](this.content.getText());
-
-		// @TODO delete selection
-		this.resetSelectionAndEmit();
 
 		this.lineBreakIndices = this.calculateLineBreaks();
 		const nextLineLength = this.lineContent(cursor.line + 1).length;
@@ -251,7 +288,6 @@ export class Editor implements IEditor {
 			totalLines - 1,
 		);
 
-		this.resetSelectionAndEmit();
 		if (cursor.line === 0) {
 			this.moveToLineStart(cursorIndex);
 		} else if (cursor.line === totalLines - 1) {
@@ -261,7 +297,6 @@ export class Editor implements IEditor {
 
 	moveToLineStart = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-		this.resetSelectionAndEmit();
 		cursor.moveTo(
 			0,
 			cursor.line,
@@ -274,7 +309,6 @@ export class Editor implements IEditor {
 		const cursor = this.cursors[cursorIndex];
 		const lineLength = this.lineContent(cursor.line).length;
 
-		this.resetSelectionAndEmit();
 		cursor.moveTo(
 			lineLength,
 			cursor.line,
@@ -288,7 +322,6 @@ export class Editor implements IEditor {
 		const lineLength = this.lineContent(cursor.line).length;
 		const totalLines = this.lineBreakIndices.length;
 
-		this.resetSelectionAndEmit();
 		cursor.moveRight(lineLength, totalLines);
 	};
 
@@ -298,13 +331,11 @@ export class Editor implements IEditor {
 		const prevLineLength = this.lineContent(
 			cursor.line === 0 ? 0 : cursor.line - 1,
 		).length;
-		this.resetSelectionAndEmit();
 		cursor.moveLeft(prevLineLength);
 	};
 
 	moveUp = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-		this.resetSelectionAndEmit();
 		cursor.moveUp();
 	};
 
@@ -312,8 +343,6 @@ export class Editor implements IEditor {
 		const cursor = this.cursors[cursorIndex];
 		const totalLines = this.lineBreakIndices.length;
 		const nextLineLength = this.lineContent(cursor.line).length;
-
-		this.resetSelectionAndEmit();
 
 		cursor.moveDown(totalLines, nextLineLength);
 	};
@@ -328,11 +357,6 @@ export class Editor implements IEditor {
 
 	// Selection management
 
-	resetSelectionAndEmit = (): void => {
-		this.selections[0].reset();
-		this.selectionSignal[1](this.selections);
-	};
-
 	addSelection(selection: Selection): void {
 		this.selectionSignal[1]([...this.selectionSignal[0](), selection]);
 	}
@@ -341,6 +365,10 @@ export class Editor implements IEditor {
 		this.selectionSignal[1](
 			this.selectionSignal[0]().filter((_, i) => i !== index),
 		);
+	}
+
+	clearSelection(index: number): void {
+		this.selections[index].reset();
 	}
 
 	updateSelection(index: number, selection: Selection): void {

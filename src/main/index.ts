@@ -216,32 +216,32 @@ app.whenReady().then(() => {
 
 	ipcMain.handle("create-folder", async (event, folderPath) => {
 		try {
-            await fs.mkdir(folderPath);
-            return true;
-        } catch (error) {
-            console.error(`Failed to create folder: ${folderPath}`, error);
-            return false;
-        }
-    });
+			await fs.mkdir(folderPath);
+			return true;
+		} catch (error) {
+			console.error(`Failed to create folder: ${folderPath}`, error);
+			return false;
+		}
+	});
 
 	ipcMain.handle("create-file", async (event, filePath) => {
 		try {
-            await fs.writeFile(filePath, "");
-            return true;
-        } catch (error) {
-            console.error(`Failed to create file: ${filePath}`, error);
-            return false;
-        }
-    });
+			await fs.writeFile(filePath, "");
+			return true;
+		} catch (error) {
+			console.error(`Failed to create file: ${filePath}`, error);
+			return false;
+		}
+	});
 
 	ipcMain.handle("get-file-contents", async (event, filePath) => {
 		try {
 			const data = await fs.readFile(filePath, "utf-8");
-            return data;
+			return data;
 		} catch (error) {
 			console.error(`Failed to read file contents: ${error.message}`);
-            return "";
-        }
+			return "";
+		}
 	});
 
 	ipcMain.handle("get-folder-contents", async (event, folderPath) => {
