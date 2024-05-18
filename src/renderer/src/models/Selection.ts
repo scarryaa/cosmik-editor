@@ -131,7 +131,10 @@ export class Selection {
 		}
 	}
 
-	private contractSelection(direction: SelectionDirection): void {
+	private contractSelection(
+		direction: SelectionDirection,
+		cursor: Cursor,
+	): void {
 		if (this.isEmpty()) {
 			return;
 		}
@@ -145,9 +148,11 @@ export class Selection {
 				break;
 			case SelectionDirection.Up:
 				this.endLineSignal[1](this.endLine - 1);
+				this.endIndexSignal[1](cursor.basis);
 				break;
 			case SelectionDirection.Down:
 				this.startLineSignal[1](this.startLine + 1);
+				this.startIndexSignal[1](cursor.basis);
 				break;
 		}
 	}
@@ -167,11 +172,30 @@ export class Selection {
 				break;
 			case SelectionDirection.Up:
 				this.startLineSignal[1](Math.max(0, cursor.line - 1));
+				this.startIndexSignal[1](cursor.basis);
 				break;
 			case SelectionDirection.Down:
 				this.endLineSignal[1](Math.min(totalLines, cursor.line + 1));
+				this.endIndexSignal[1](cursor.basis);
 				break;
 		}
+	}
+
+	private handleInversion(direction: SelectionDirection, cursor: Cursor) {
+		// Swap start and end indices
+		const tmpIndex = this.startIndex;
+		this.startIndexSignal[1](this.endIndex);
+		this.endIndexSignal[1](tmpIndex);
+
+		// Adjust lines based on direction AND cursor position
+		if (direction === SelectionDirection.Up) {
+			this.startLineSignal[1](cursor.line - 1);
+		} else if (direction === SelectionDirection.Down) {
+			this.endLineSignal[1](cursor.line + 1);
+		}
+
+		// Update direction
+		this.directionSignal[1](direction);
 	}
 
 	private updateSelection(
@@ -187,7 +211,7 @@ export class Selection {
 			if (expandDirections.includes(this.direction)) {
 				this.expandSelection(direction, cursor, lineEndIndex, totalLines);
 			} else if (contractCondition) {
-				this.contractSelection(direction);
+				this.contractSelection(direction, cursor);
 			}
 		};
 
@@ -213,16 +237,15 @@ export class Selection {
 					this.direction === SelectionDirection.Forward &&
 					cursor.line === this.startLine
 				) {
-					this.handleForwardsToUpInversion();
+					this.handleInversion(SelectionDirection.Up, cursor);
+				} else if (
+					this.direction === SelectionDirection.Down &&
+					this.startLine === this.endLine
+				) {
+					this.handleInversion(SelectionDirection.Up, cursor);
 				}
-
-                if (
-                    this.direction === SelectionDirection.Down &&
-                    cursor.line === this.endLine
-                ) {
-                    this.handleUpToDownInversion();
-                }
 				break;
+
 			case SelectionDirection.Down:
 				expandOrContract(
 					[SelectionDirection.Down, SelectionDirection.Forward],
@@ -232,53 +255,15 @@ export class Selection {
 					this.direction === SelectionDirection.Backward &&
 					cursor.line === this.endLine
 				) {
-					this.handleBackwardsToDownInversion();
+					this.handleInversion(SelectionDirection.Down, cursor);
+				} else if (
+					this.direction === SelectionDirection.Up &&
+					this.startLine === this.endLine
+				) {
+					this.handleInversion(SelectionDirection.Down, cursor);
 				}
-
-                if (
-                    this.direction === SelectionDirection.Up &&
-                    cursor.line === this.startLine
-                ) {
-                    this.handleDownToUpInversion();
-                }
 				break;
 		}
-	}
-
-	private handleForwardsToUpInversion(): void {
-		// Start index becomes end index
-		// End index becomes start index
-		// Start line -= 1
-		// End line stays the same
-		const tmp = this.endIndex;
-		this.endIndexSignal[1](this.startIndex);
-		this.startIndexSignal[1](tmp);
-		this.startLineSignal[1](this.startLine - 1);
-		this.directionSignal[1](SelectionDirection.Up);
-	}
-
-	private handleBackwardsToDownInversion(): void {
-		// Start index becomes end index
-		// End index becomes start index
-		// End line += 1
-		// Start line stays the same
-		const tmp = this.startIndex;
-		this.startIndexSignal[1](this.endIndex);
-		this.endIndexSignal[1](tmp);
-		this.endLineSignal[1](this.endLine + 1);
-		this.directionSignal[1](SelectionDirection.Down);
-	}
-
-	private handleDownToUpInversion(): void {
-		// End line -= 1
-		this.endLineSignal[1](this.endLine - 1);
-		this.directionSignal[1](SelectionDirection.Up);
-	}
-
-	private handleUpToDownInversion(): void {
-		// Start line += 1
-		this.startLineSignal[1](this.startLine + 1);
-		this.directionSignal[1](SelectionDirection.Down);
 	}
 
 	handleSelectionLeft(

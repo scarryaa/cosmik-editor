@@ -226,7 +226,7 @@ export class Editor implements IEditor {
 			return "";
 		}
 
-		// Start at the previous index if lineNumber is not 0.
+		// Start at the previous index if lineNumber is not 0
 		const startIndex =
 			lineNumber === 0 ? 0 : this.lineBreakIndices[lineNumber - 1] + 1;
 		const endIndex =
@@ -336,13 +336,16 @@ export class Editor implements IEditor {
 
 	moveUp = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-		cursor.moveUp();
+		const prevLineLength = this.lineContent(
+			cursor.line === 0? 0 : cursor.line - 1,
+        ).length;
+		cursor.moveUp(prevLineLength);
 	};
 
 	moveDown = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
 		const totalLines = this.lineBreakIndices.length;
-		const nextLineLength = this.lineContent(cursor.line).length;
+		const nextLineLength = this.lineContent(cursor.line + 1).length;
 
 		cursor.moveDown(totalLines, nextLineLength);
 	};

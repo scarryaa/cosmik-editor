@@ -40,7 +40,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 			const parsedContent = await parseBasedOnExtension(extension, content);
 			setHighlightedContent(parsedContent);
 		}
-	}, 300);
+	}, 0);
 
 	const updateSelection = () => {
 		const { startLine, endLine, startIndex, endIndex } = props.selection;
