@@ -1,3 +1,4 @@
+import { panes } from "@renderer/stores/panes";
 import TabStore from "@renderer/stores/tabs";
 import { type Component, For } from "solid-js";
 import Tab from "../Tab/Tab";
@@ -15,7 +16,8 @@ const TabsWrapper: Component = () => {
 	};
 
 	return (
-		<div class={styles["tabs-wrapper"]}>
+		<div class={styles["tabs-wrapper"]}
+		style={{ "margin-left": panes().length === 0 ? "4px" : "2px"}}>
 			<For each={TabStore.tabs}>
 				{(tab) => (
 					<Tab

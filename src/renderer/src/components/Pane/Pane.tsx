@@ -9,8 +9,10 @@ interface PaneProps {
 	onDragOver?: (e: DragEvent) => void;
 	onDrop?: (e: DragEvent) => void;
 	onDragEnd?: (e: DragEvent) => void;
+	onClose: (index: number) => void;
+	index: number;
 	title?: string;
-	icon?: JSXElement;
+	icon: Component;
 	childStyle?: object;
 }
 
@@ -23,10 +25,7 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 	};
 
 	return (
-		<div
-			id={props.title}
-			class={styles["pane-container"]}
-		>
+		<div id={props.title} class={styles["pane-container"]}>
 			<div
 				class={styles["pane-title"]}
 				draggable="true"
@@ -35,7 +34,7 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 				onDrop={props.onDrop}
 				onDragEnd={props.onDragEnd}
 			>
-				{props.icon}
+				<props.icon />
 				<h2>{props.title}</h2>
 				<div class={styles["buttons-container"]}>
 					<button
@@ -48,6 +47,7 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 					<button
 						type="button"
 						class={`${styles["close-button"]} no-button-style`}
+						onclick={props.onClose(props.index)!}
 					>
 						<VsClose />
 					</button>
