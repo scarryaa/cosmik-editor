@@ -51,6 +51,7 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 			id={props.title}
 			class={styles["pane-container"]}
 			style={{ ...props.style, height: props.height }}
+			// biome-ignore lint/suspicious/noAssignInExpressions: Ignore
 			ref={(el) => (container = el)}
 		>
 			<div
