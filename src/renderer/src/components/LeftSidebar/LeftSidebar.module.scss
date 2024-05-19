@@ -1,26 +1,28 @@
-:root {
-    --meteor-border: #fff;
-    --meteor-border: #2b2b2b;
-    --meteor-focus-bar: #007acc;
-    --meteor-pane-background: #e4e4e4;
-    --meteor-pane-background: #1a1a1a;
-}
-
-.tabs-container {
-    position: relative;
+.pane-list {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    list-style: none;
     display: flex;
-    flex-direction: row;
-    border-bottom: 1px solid var(--meteor-border);
-    border-right: 1px solid var(--meteor-border);
-    min-width: 155px;
-    padding-inline: 5px;
-    
-    &::after {
-        content: "";
-        height: calc(100% + 1px);
-        position: absolute;
-        border-right: 1px solid var(--meteor-border);
-        left: 165px;
-        z-index: 999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    .pane-item {
+        position: relative;
+
+        &.dragging {
+            opacity: 0.5;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            cursor: ns-resize;
+            background: inherit;
+        }
     }
 }

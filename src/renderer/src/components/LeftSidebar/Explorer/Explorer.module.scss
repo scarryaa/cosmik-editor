@@ -1,3 +1,14 @@
+.explorer-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-inline: 12px;
+    margin-block: 4px;
+    width: 100%;
+    overflow-x: hidden;
+}
+
 .explorer-content {
     display: flex;
     flex-direction: column;
@@ -26,11 +37,8 @@
 
     .explorer {
         overflow-y: auto;
+        overflow-x: hidden;
         position: relative;
-
-        &::-webkit-scrollbar {
-            width: 10px;
-          }
     }
 
     .explorer-content-header {

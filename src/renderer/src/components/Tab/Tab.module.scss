@@ -11,13 +11,16 @@
     align-items: center;
     justify-content: space-between;
     background-color: var(--meteor-pane-background);
-    border-right: 1px solid var(--meteor-border);
+    border: 1px solid var(--meteor-border);
     flex-direction: row;
     flex-wrap: nowrap;
     flex-grow: 1;
     max-width: max-content;
     cursor: pointer;
     z-index: 221;
+    border-radius: 4px;
+    margin-block: 4px;
+    margin-inline: 4px;
 
     .tab-name {
         overflow: hidden;

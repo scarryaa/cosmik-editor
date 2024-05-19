@@ -195,10 +195,10 @@ const Explorer = () => {
 	};
 
 	const updateExplorerHeight = () => {
-		if (explorerRef && headerRef) {
-			const availableHeight = window.innerHeight - headerRef.clientHeight - 85; // Manual height for now
-			setExplorerHeight(availableHeight);
-		}
+		// if (explorerRef && headerRef) {
+		// 	const availableHeight = window.innerHeight - headerRef.clientHeight - 85; // Manual height for now
+		// 	setExplorerHeight(availableHeight);
+		// }
 	};
 
 	onMount(() => {
@@ -289,9 +289,6 @@ const Explorer = () => {
 
 	return (
 		<div>
-			<div ref={headerRef}>
-				<h2>Explorer</h2>
-			</div>
 			{renderExplorerContent()}
 		</div>
 	);

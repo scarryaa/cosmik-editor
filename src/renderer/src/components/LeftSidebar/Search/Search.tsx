@@ -1,7 +1,18 @@
-import type { Component } from "solid-js";
+import { type Component, createSignal } from "solid-js";
+import styles from "./Search.module.scss";
 
 const Search: Component = () => {
-	return <h2>Search</h2>;
+	const [collapsed, setCollapsed] = createSignal(false);
+
+	const handleCollapseClick = () => {
+		setCollapsed(!collapsed());
+	};
+
+	return (
+		<div class={styles["search-container"]}>
+			Content
+		</div>
+	);
 };
 
 export default Search;

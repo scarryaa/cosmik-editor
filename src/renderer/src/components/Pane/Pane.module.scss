@@ -1,4 +1,50 @@
 .pane-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .pane-title {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        align-items: center;
+        margin-inline: 8px;
+        min-height: 40px;
+
+        .buttons-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            margin-inline: 12px;
+            margin-block: 4px;
+            width: 100%;
+            position: absolute;
+            right: 0px;
+        }
+    }
+
+    .pane-content {
+        display: flex;
+        overflow-y: auto;
+        height: 100%;
+        overflow-x: hidden;
+
+        &::-webkit-scrollbar {
+            cursor: default !important;
+            background-color: transparent;
+            width: 10px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: #2c2c2c;
+        }
+
+        &::-webkit-scrollbar-corner {
+            background-color: transparent;
+        }
+    }
+    
     h2 {
         color: var(--text-color-muted);
         text-transform: uppercase;
@@ -9,8 +55,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         font-size: 11px;
-        margin-inline: 18px;
+        margin-left: 14px;
         margin-block: 10px;
-        margin-bottom: 5px;
     }
 }

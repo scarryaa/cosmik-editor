@@ -6,7 +6,14 @@
   --text-color-muted: #252525;
   --text-color-muted: #b9b9b9;
   --text-color-muted-2:#727272;
+
+  --meteor-border: #fff;
+  --meteor-border: #2b2b2b;
+  --meteor-focus-bar: #007acc;
+  --meteor-pane-background: #e4e4e4;
+  --meteor-pane-background: #1a1a1a;
 }
+
 html, body, #root, .app-container {
   color: var(--text-color);
   margin: 0;
@@ -50,24 +57,4 @@ html, body, #root, .app-container {
   color: inherit;
   appearance: none;
   cursor: pointer;
-}
-
-*::-webkit-scrollbar {
-  background-color: var(--page-background);
-}
-
-*::-webkit-scrollbar-track:vertical {
-  background-color: var(--page-background);
-}
-
-*::-webkit-scrollbar-track:horizontal {
-  background-color: var(--page-background);
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: #2c2c2c;
-}
-
-*::-webkit-scrollbar-corner {
-  background-color: var(--page-background);
 }
