@@ -1,6 +1,6 @@
 import path from "node:path";
 import { electronAPI } from "@electron-toolkit/preload";
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcMain, ipcRenderer } from "electron";
 
 const api = {
 	onFileOpened: (callback) => ipcRenderer.on("file-opened", callback),
@@ -13,6 +13,14 @@ const api = {
 	createFile: (filePath) => ipcRenderer.invoke("create-file", filePath),
 	getFileContents: (filePath) =>
 		ipcRenderer.invoke("get-file-contents", filePath),
+	saveFile: (filePath, data) =>
+		ipcRenderer.invoke("save-file", filePath, data),
+    sendSaveFileRequest: (filepath: string, fileData: string) => {
+        ipcRenderer.send('save-file-request', filepath, fileData);
+    },
+	sendSaveFileAsRequest: (filepath: string, fileData: string) => {
+        ipcRenderer.send('save-file-as-request', filepath, fileData);
+    },
 };
 
 if (process.contextIsolated) {

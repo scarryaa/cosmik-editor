@@ -95,6 +95,14 @@ const App: Component = () => {
 		setPanes(panes().filter((pane) => pane.name !== paneName));
 	};
 
+	const saveFile = (filepath: string, fileData: string) => {
+		(window as any).api.sendSaveFileRequest(filepath, fileData);
+	};
+
+	const saveFileAs = (filepath: string, fileData: string) => {
+        (window as any).api.sendSaveFileAsRequest(filepath, fileData);
+    };
+
 	const handleGlobalKeyDown = (e: KeyboardEvent) => {
 		if (e.ctrlKey && e.key === "p") {
 			e.preventDefault();
@@ -104,11 +112,33 @@ const App: Component = () => {
 			e.preventDefault();
 			setInitWithPrefix(true);
 			setIsOpen(true);
+		} else if (e.ctrlKey && e.key === "s") {
+			e.preventDefault();
+            saveFile(TabStore.activeTab?.id!, EditorStore.getActiveEditor()?.getText()!);
+        } else if (e.ctrlKey && e.shiftKey && e.key === "S") {
+			e.preventDefault();
+			saveFileAs(TabStore.activeTab?.id!, EditorStore.getActiveEditor()?.getText()!);
 		}
 	};
 
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
+	
+		window.addEventListener('save-file-request', () => {
+			const filepath = TabStore.activeTab?.id;
+			const fileData = EditorStore.getActiveEditor()?.getText();
+			if (filepath && fileData) {
+				saveFile(filepath, fileData); 
+			}
+		});
+
+		window.addEventListener("save-file-as-request", () => {
+			const filepath = TabStore.activeTab?.id;
+            const fileData = EditorStore.getActiveEditor()?.getText();
+            if (filepath && fileData) {
+                saveFileAs(filepath, fileData); 
+            }
+        });
 	});
 
 	onCleanup(() => {

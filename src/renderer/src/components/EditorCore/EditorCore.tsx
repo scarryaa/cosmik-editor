@@ -57,6 +57,24 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 					}
 				}
 				break;
+			case "S":
+				{
+					if (e.ctrlKey && e.shiftKey) {
+						e.preventDefault();
+					} else {
+						editor.insert("S", 0);
+					}
+				}
+				break;
+			case "s":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+					} else {
+						editor.insert("e", 0);
+					}
+				}
+				break;
 			case "Enter":
 				editor.addLine(0);
 				break;

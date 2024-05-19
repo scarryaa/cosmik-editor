@@ -1,10 +1,48 @@
 import fs from "node:fs/promises";
-import { join } from "node:path";
+import path, { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, Menu, app, dialog, ipcMain, shell } from "electron";
+import {
+	BrowserWindow,
+	Menu,
+	app,
+	dialog,
+	ipcMain,
+	ipcRenderer,
+	shell,
+} from "electron";
 import icon from "../../resources/icon.png?asset";
 
 let mainWindow: BrowserWindow | null = null;
+
+const requestSaveFile = () => {
+	const focusedWindow = BrowserWindow.getFocusedWindow();
+	if (focusedWindow) {
+	  focusedWindow.webContents.executeJavaScript(`
+		window.dispatchEvent(new Event('save-file-request'));
+	  `);
+	} else {
+	  console.error('No focused window found.');
+	}
+  };
+
+  const requestSaveAsFile = () => {
+	const focusedWindow = BrowserWindow.getFocusedWindow();
+	if (focusedWindow) {
+		focusedWindow.webContents.executeJavaScript(`
+            window.dispatchEvent(new Event('save-file-as-request'));
+        `);
+    } else {
+		console.error('No focused window found.');
+    }
+};
+
+async function saveFile(filePath: string, data: string) {
+	try {
+		await fs.writeFile(filePath, data);
+	} catch (error) {
+		throw new Error(`Failed to save file: ${error.message}`);
+	}
+}
 
 async function listFiles(dirPath: string): Promise<string[]> {
 	try {
@@ -83,8 +121,8 @@ function createMenu(): void {
 					click: openFolder,
 				},
 				{ type: "separator" },
-				{ label: "Save", accelerator: "CmdOrCtrl+S" },
-				{ label: "Save As", accelerator: "CmdOrCtrl+Shift+S" },
+				{ label: "Save", accelerator: "CmdOrCtrl+S", click: requestSaveFile },
+				{ label: "Save As", accelerator: "CmdOrCtrl+Shift+S", click: requestSaveAsFile },
 				{ type: "separator" },
 				{ label: "Quit", role: "quit", accelerator: "CmdOrCtrl+Q" },
 			],
@@ -264,6 +302,57 @@ app.whenReady().then(() => {
 			return { folders: [], files: [] };
 		}
 	});
+
+	ipcMain.handle("save-file", async (event, filePath, fileData) => {
+		fs.writeFile(filePath, fileData, (err) => {
+			if (err) {
+				console.error("Error saving file:", err);
+			} else {
+				console.log("File saved successfully:", filePath);
+			}
+		});
+	});
+
+	ipcMain.on("save-file-request", async (event, filepath, fileData) => {
+		let defaultPath = filepath;
+		if (!path.isAbsolute(filepath)) {
+			defaultPath = path.join(app.getPath('documents'), filepath);
+		}
+
+
+		if (filepath && fileData) {
+			fs.writeFile(filepath, fileData, (err) => {
+				if (err) {
+					console.error("Error saving file:", err);
+				} else {
+					console.log("File saved successfully:", filepath);
+				}
+			});
+		}
+	});
+
+	ipcMain.on("save-file-as-request", async (event, filepath, fileData) => {
+		let defaultPath = filepath;
+        if (!path.isAbsolute(filepath)) {
+            defaultPath = path.join(app.getPath('documents'), filepath);
+        }
+
+		// Show save dialog
+		const result = await dialog.showSaveDialog(mainWindow!, {
+            defaultPath,
+            buttonLabel: "Save",
+        });
+
+        if (!result.canceled && result.filePath) {
+            fs.writeFile(result.filePath, fileData, (err) => {
+                if (err) {
+                    console.error("Error saving file:", err);
+                } else {
+                    console.log("File saved successfully:", result.filePath);
+                }
+            });
+        }
+    });
 });
 
 ipcMain.handle("is-directory", async (event, fullPath) => {
