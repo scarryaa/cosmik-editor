@@ -31,9 +31,20 @@ const App: Component = () => {
 	let textAreaRef!: HTMLTextAreaElement;
 
 	const commands = [
-		{ id: 1, label: "Open File", action: () => console.log("Open File") },
-		{ id: 2, label: "Save File", action: () => console.log("Save File") },
-		{ id: 3, label: "Close File", action: () => console.log("Close File") },
+		{
+			id: 1,
+			label: "File: Open File",
+			action: () => (window.api as any).sendOpenFileRequest(),
+		},
+		{
+			id: 2,
+			label: "File: Save File",
+			action: () =>
+				saveFile(
+					TabStore.activeTab?.id!,
+					EditorStore.getActiveEditor()?.getText()!,
+				),
+		},
 		{
 			id: 4,
 			label: "View: Show Files",
@@ -100,8 +111,8 @@ const App: Component = () => {
 	};
 
 	const saveFileAs = (filepath: string, fileData: string) => {
-        (window as any).api.sendSaveFileAsRequest(filepath, fileData);
-    };
+		(window as any).api.sendSaveFileAsRequest(filepath, fileData);
+	};
 
 	const handleGlobalKeyDown = (e: KeyboardEvent) => {
 		if (e.ctrlKey && e.key === "p") {
@@ -114,31 +125,37 @@ const App: Component = () => {
 			setIsOpen(true);
 		} else if (e.ctrlKey && e.key === "s") {
 			e.preventDefault();
-            saveFile(TabStore.activeTab?.id!, EditorStore.getActiveEditor()?.getText()!);
-        } else if (e.ctrlKey && e.shiftKey && e.key === "S") {
+			saveFile(
+				TabStore.activeTab?.id!,
+				EditorStore.getActiveEditor()?.getText()!,
+			);
+		} else if (e.ctrlKey && e.shiftKey && e.key === "S") {
 			e.preventDefault();
-			saveFileAs(TabStore.activeTab?.id!, EditorStore.getActiveEditor()?.getText()!);
+			saveFileAs(
+				TabStore.activeTab?.id!,
+				EditorStore.getActiveEditor()?.getText()!,
+			);
 		}
 	};
 
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
-	
-		window.addEventListener('save-file-request', () => {
+
+		window.addEventListener("save-file-request", () => {
 			const filepath = TabStore.activeTab?.id;
 			const fileData = EditorStore.getActiveEditor()?.getText();
 			if (filepath && fileData) {
-				saveFile(filepath, fileData); 
+				saveFile(filepath, fileData);
 			}
 		});
 
 		window.addEventListener("save-file-as-request", () => {
 			const filepath = TabStore.activeTab?.id;
-            const fileData = EditorStore.getActiveEditor()?.getText();
-            if (filepath && fileData) {
-                saveFileAs(filepath, fileData); 
-            }
-        });
+			const fileData = EditorStore.getActiveEditor()?.getText();
+			if (filepath && fileData) {
+				saveFileAs(filepath, fileData);
+			}
+		});
 	});
 
 	onCleanup(() => {

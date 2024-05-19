@@ -17,23 +17,23 @@ let mainWindow: BrowserWindow | null = null;
 const requestSaveFile = () => {
 	const focusedWindow = BrowserWindow.getFocusedWindow();
 	if (focusedWindow) {
-	  focusedWindow.webContents.executeJavaScript(`
+		focusedWindow.webContents.executeJavaScript(`
 		window.dispatchEvent(new Event('save-file-request'));
 	  `);
 	} else {
-	  console.error('No focused window found.');
+		console.error("No focused window found.");
 	}
-  };
+};
 
-  const requestSaveAsFile = () => {
+const requestSaveAsFile = () => {
 	const focusedWindow = BrowserWindow.getFocusedWindow();
 	if (focusedWindow) {
 		focusedWindow.webContents.executeJavaScript(`
             window.dispatchEvent(new Event('save-file-as-request'));
         `);
-    } else {
-		console.error('No focused window found.');
-    }
+	} else {
+		console.error("No focused window found.");
+	}
 };
 
 async function saveFile(filePath: string, data: string) {
@@ -122,7 +122,11 @@ function createMenu(): void {
 				},
 				{ type: "separator" },
 				{ label: "Save", accelerator: "CmdOrCtrl+S", click: requestSaveFile },
-				{ label: "Save As", accelerator: "CmdOrCtrl+Shift+S", click: requestSaveAsFile },
+				{
+					label: "Save As",
+					accelerator: "CmdOrCtrl+Shift+S",
+					click: requestSaveAsFile,
+				},
 				{ type: "separator" },
 				{ label: "Quit", role: "quit", accelerator: "CmdOrCtrl+Q" },
 			],
@@ -316,9 +320,8 @@ app.whenReady().then(() => {
 	ipcMain.on("save-file-request", async (event, filepath, fileData) => {
 		let defaultPath = filepath;
 		if (!path.isAbsolute(filepath)) {
-			defaultPath = path.join(app.getPath('documents'), filepath);
+			defaultPath = path.join(app.getPath("documents"), filepath);
 		}
-
 
 		if (filepath && fileData) {
 			fs.writeFile(filepath, fileData, (err) => {
@@ -333,26 +336,42 @@ app.whenReady().then(() => {
 
 	ipcMain.on("save-file-as-request", async (event, filepath, fileData) => {
 		let defaultPath = filepath;
-        if (!path.isAbsolute(filepath)) {
-            defaultPath = path.join(app.getPath('documents'), filepath);
-        }
+		if (!path.isAbsolute(filepath)) {
+			defaultPath = path.join(app.getPath("documents"), filepath);
+		}
 
 		// Show save dialog
 		const result = await dialog.showSaveDialog(mainWindow!, {
-            defaultPath,
-            buttonLabel: "Save",
-        });
+			defaultPath,
+			buttonLabel: "Save",
+		});
 
-        if (!result.canceled && result.filePath) {
-            fs.writeFile(result.filePath, fileData, (err) => {
-                if (err) {
-                    console.error("Error saving file:", err);
-                } else {
-                    console.log("File saved successfully:", result.filePath);
-                }
-            });
-        }
-    });
+		if (!result.canceled && result.filePath) {
+			fs.writeFile(result.filePath, fileData, (err) => {
+				if (err) {
+					console.error("Error saving file:", err);
+				} else {
+					console.log("File saved successfully:", result.filePath);
+				}
+			});
+		}
+	});
+
+	ipcMain.on("open-file-request", async (event, fullPath) => {
+		try {
+			const result = await dialog.showOpenDialog({
+				properties: ["openFile"],
+				filters: [{ name: "All Files", extensions: ["*"] }],
+			});
+			if (!result.canceled && result.filePaths.length > 0) {
+				const path = result.filePaths[0];
+				const data = await readFile(result.filePaths[0]);
+				mainWindow?.webContents.send("file-opened", { data, path });
+			}
+		} catch (error) {
+			console.error("Failed to open file:", error);
+		}
+	});
 });
 
 ipcMain.handle("is-directory", async (event, fullPath) => {

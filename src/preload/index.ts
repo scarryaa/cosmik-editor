@@ -13,14 +13,16 @@ const api = {
 	createFile: (filePath) => ipcRenderer.invoke("create-file", filePath),
 	getFileContents: (filePath) =>
 		ipcRenderer.invoke("get-file-contents", filePath),
-	saveFile: (filePath, data) =>
-		ipcRenderer.invoke("save-file", filePath, data),
-    sendSaveFileRequest: (filepath: string, fileData: string) => {
-        ipcRenderer.send('save-file-request', filepath, fileData);
-    },
+	saveFile: (filePath, data) => ipcRenderer.invoke("save-file", filePath, data),
+	sendSaveFileRequest: (filepath: string, fileData: string) => {
+		ipcRenderer.send("save-file-request", filepath, fileData);
+	},
 	sendSaveFileAsRequest: (filepath: string, fileData: string) => {
-        ipcRenderer.send('save-file-as-request', filepath, fileData);
-    },
+		ipcRenderer.send("save-file-as-request", filepath, fileData);
+	},
+	sendOpenFileRequest: (filepath: string) => {
+		ipcRenderer.send("open-file-request", filepath);
+	},
 };
 
 if (process.contextIsolated) {
