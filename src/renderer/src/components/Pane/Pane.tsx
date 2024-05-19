@@ -55,7 +55,7 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 			ref={(el) => (container = el)}
 		>
 			<div
-				class={styles["pane-title"]}
+				class={`${styles["pane-title"]}`}
 				draggable="true"
 				onDragStart={props.onDragStart}
 				onDragOver={props.onDragOver}
@@ -85,6 +85,8 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 				<div
 					style={{
 						...props.childStyle,
+						flex: "1 1 auto",
+						"overflow-y": "auto",
 					}}
 					class={styles["pane-content"]}
 				>

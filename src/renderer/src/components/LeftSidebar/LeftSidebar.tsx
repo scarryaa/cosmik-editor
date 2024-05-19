@@ -4,13 +4,19 @@ import { type Component, For, createSignal, onCleanup } from "solid-js";
 import Pane from "../Pane/Pane";
 import styles from "./LeftSidebar.module.scss";
 
-const LeftSidebar: Component = () => {
+export interface LeftSidebarProps {
+	addPane: (pane: any) => void;
+	removePane: (paneName: string) => void;
+}
+
+const LeftSidebar: Component<LeftSidebarProps> = (props: LeftSidebarProps) => {
 	const MAX_COLUMNS = 50;
 	const [columns, setColumns] = createSignal(2);
 	const [isDragging, setIsDragging] = createSignal(false);
 	const [dropTarget, setDropTarget] = createSignal<number | null>(null);
 	const [windowHeight, setWindowHeight] = createSignal(window.innerHeight);
 	const [padding, setPadding] = createSignal(20);
+	let dragImage: HTMLDivElement | null = null;
 
 	const updateWindowHeight = () => {
 		setWindowHeight(window.innerHeight);
@@ -24,12 +30,23 @@ const LeftSidebar: Component = () => {
 
 	const handleDragStart = (e: DragEvent, id: number) => {
 		e.dataTransfer!.setData("text/plain", id.toString());
+
+		dragImage = document.createElement("div");
+		dragImage.classList.add(styles["drag-image"]);
+		const pane = panes().find((p) => p.id === id);
+		if (pane) {
+			dragImage.textContent = pane.name;
+			document.body.appendChild(dragImage);
+			e.dataTransfer!.setDragImage(dragImage, 0, 0);
+		}
+
 		setIsDragging(true);
 	};
 
 	const handleDragEnd = () => {
 		setIsDragging(false);
 		setDropTarget(null);
+		document.body.removeChild(dragImage!);
 	};
 
 	const handleDragOver = (e: DragEvent, columnIndex: number) => {
@@ -42,7 +59,7 @@ const LeftSidebar: Component = () => {
 		const paneId = Number.parseInt(e.dataTransfer!.getData("text/plain"), 10);
 
 		let updatedPanes = panes().map((pane) =>
-			pane.id === paneId ? { ...pane, column: columnIndex } : pane
+			pane.id === paneId ? { ...pane, column: columnIndex } : pane,
 		);
 
 		if (columnIndex === columns() && columns() < MAX_COLUMNS) {
@@ -66,23 +83,27 @@ const LeftSidebar: Component = () => {
 
 	const adjustPaneHeights = (panes, columnIndex) => {
 		const columnPanes = panes.filter((pane) => pane.column === columnIndex);
-	
+
 		// Find the index of the first pane in the column
-		const firstPaneIndex = panes.findIndex((pane) => pane.column === columnIndex);
-	
+		const firstPaneIndex = panes.findIndex(
+			(pane) => pane.column === columnIndex,
+		);
+
 		let totalHeight = columnPanes.reduce((acc, pane, index) => {
 			const panePadding = index === 0 ? padding() : 0; // Add padding only to the first pane
 			return acc + Number.parseInt(pane.height) + panePadding;
 		}, 0);
-	
+
 		if (totalHeight > windowHeight()) {
 			const ratio = windowHeight() / totalHeight;
 			return panes.map((pane, index) => {
-				const panePadding = index === firstPaneIndex ? padding() : 0; 
+				const panePadding = index === firstPaneIndex ? padding() : 0;
 				if (pane.column === columnIndex) {
 					return {
 						...pane,
-						height: `${((Number.parseInt(pane.height) + panePadding) * ratio) - panePadding}px`,
+						height: `${
+							(Number.parseInt(pane.height) + panePadding) * ratio - panePadding
+						}px`,
 					};
 				}
 				return pane;
@@ -90,7 +111,6 @@ const LeftSidebar: Component = () => {
 		}
 		return panes;
 	};
-	
 
 	const getPanesForColumn = (columnIndex: number) =>
 		panes().filter((pane) => pane.column === columnIndex);
@@ -138,7 +158,10 @@ const LeftSidebar: Component = () => {
 	};
 
 	return (
-		<div class={styles["left-sidebar"]}>
+		<div
+			class={styles["left-sidebar"]}
+			style={{ display: "flex", "flex-direction": "row", height: "100%" }}
+		>
 			<For each={Array.from({ length: columns() })}>
 				{(_, columnIndex) => (
 					<div

@@ -36,6 +36,27 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 		const prevLineIndex = editor.lineContent(cursor.line - 1).length;
 
 		switch (e.key) {
+			case "P": {
+				if (e.ctrlKey && e.shiftKey) {
+					e.preventDefault();
+				} else if (e.ctrlKey) {
+					e.preventDefault();
+				} else {
+					editor.insert("P", 0);
+				}
+				break;
+			}
+			case "p":
+				{
+					if (e.ctrlKey && e.shiftKey) {
+						e.preventDefault();
+					} else if (e.ctrlKey) {
+						e.preventDefault();
+					} else {
+						editor.insert("p", 0);
+					}
+				}
+				break;
 			case "Enter":
 				editor.addLine(0);
 				break;

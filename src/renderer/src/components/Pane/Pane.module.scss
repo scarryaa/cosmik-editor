@@ -9,6 +9,10 @@
     background-color: var(--meteor-pane-background);
     margin-block: 4px;
 
+    &.expanded {
+        min-height: 49%;
+    }
+
     .resize-handle {
         position: absolute;
         bottom: 0;
@@ -33,10 +37,12 @@
     .pane-title {
         display: flex;
         flex-direction: row;
-        width: 100%;
+        width: 95px;
         align-items: center;
         margin-inline: 8px;
         min-height: 40px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
         .buttons-container {
             display: flex;

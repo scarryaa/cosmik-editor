@@ -35,7 +35,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 
 	const debouncedParse = debounce(async (content: string) => {
 		const activeTab = TabStore.activeTab;
-		if (activeTab) {    
+		if (activeTab) {
 			const extension = activeTab.id.split(".").pop() as ParseType;
 			const parsedContent = await parseBasedOnExtension(extension, content);
 			setHighlightedContent(parsedContent);

@@ -287,11 +287,7 @@ const Explorer = () => {
 		);
 	};
 
-	return (
-		<div>
-			{renderExplorerContent()}
-		</div>
-	);
+	return <div>{renderExplorerContent()}</div>;
 };
 
 export default Explorer;

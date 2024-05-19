@@ -15,26 +15,26 @@ describe("Editor", () => {
 		expect(editor.selections.length).toBe(1);
 	});
 
-    it("correctly calculates line breaks", () => {
-        const text = "Line 1\nLine 2\r\nLine 3\n"; 
-        const editor = new Editor(text, "editor2");
-        editor.lineBreakIndices = editor.calculateLineBreaks();
-        expect(editor.lineBreakIndices).toEqual([6, 14, 21, 22]); 
-    });
-    
-    it("inserts text and updates state", () => {
-        const editor = new Editor("Hello", "editor3");
-        editor.cursorAt(0).character = 5;
-        editor.insert(" world!", 0);
-    
-        expect(editor.getText()).toBe("Hello world!");
-        expect(editor.lineBreakIndices).toEqual([12]); // No new lines
-        expect(editor.cursors[0].character).toBe(12); // Cursor at end of the text
-    });
+	it("correctly calculates line breaks", () => {
+		const text = "Line 1\nLine 2\r\nLine 3\n";
+		const editor = new Editor(text, "editor2");
+		editor.lineBreakIndices = editor.calculateLineBreaks();
+		expect(editor.lineBreakIndices).toEqual([6, 14, 21, 22]);
+	});
+
+	it("inserts text and updates state", () => {
+		const editor = new Editor("Hello", "editor3");
+		editor.cursorAt(0).character = 5;
+		editor.insert(" world!", 0);
+
+		expect(editor.getText()).toBe("Hello world!");
+		expect(editor.lineBreakIndices).toEqual([12]); // No new lines
+		expect(editor.cursors[0].character).toBe(12); // Cursor at end of the text
+	});
 
 	it("deletes text and updates state", () => {
 		const editor = new Editor("Hello world!", "editor4");
-        editor.cursorAt(0).character = 12;
+		editor.cursorAt(0).character = 12;
 		editor.delete(0);
 
 		expect(editor.getText()).toBe("Hello world");
@@ -44,10 +44,10 @@ describe("Editor", () => {
 
 	it("handles line breaks and cursor movement", () => {
 		const editor = new Editor("Hello\nWorld", "editor5");
-        editor.cursorAt(0).character = 5;
+		editor.cursorAt(0).character = 5;
 		editor.addLine(0);
-        editor.cursorAt(0).character = 3;
-        editor.cursorAt(0).line = 1;
+		editor.cursorAt(0).character = 3;
+		editor.cursorAt(0).line = 1;
 
 		expect(editor.getText()).toBe("Hello\n\nWorld");
 		expect(editor.lineBreakIndices).toEqual([5, 6, 12]);

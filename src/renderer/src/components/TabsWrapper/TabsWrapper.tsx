@@ -16,8 +16,10 @@ const TabsWrapper: Component = () => {
 	};
 
 	return (
-		<div class={styles["tabs-wrapper"]}
-		style={{ "margin-left": panes().length === 0 ? "4px" : "2px"}}>
+		<div
+			class={styles["tabs-wrapper"]}
+			style={{ "margin-left": panes().length === 0 ? "4px" : "2px" }}
+		>
 			<For each={TabStore.tabs}>
 				{(tab) => (
 					<Tab
