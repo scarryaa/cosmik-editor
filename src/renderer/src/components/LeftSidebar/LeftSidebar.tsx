@@ -1,226 +1,193 @@
 import { panes, setPanes } from "@renderer/stores/panes";
-import { For, batch, createEffect, createSignal, onCleanup } from "solid-js";
+import { TbPlus } from "solid-icons/tb";
+import { type Component, For, createSignal, onCleanup } from "solid-js";
 import Pane from "../Pane/Pane";
 import styles from "./LeftSidebar.module.scss";
 
-const LeftSidebar = () => {
-	const [draggingIndex, setDraggingIndex] = createSignal<number | null>(null);
-	const [placeholderIndex, setPlaceholderIndex] = createSignal<number | null>(
-		null,
-	);
+const LeftSidebar: Component = () => {
+	const MAX_COLUMNS = 50;
 	const [columns, setColumns] = createSignal(2);
-	const getPanesForColumn = (columnIndex: number) =>
-		panes().filter((_, index) => index % columns() === columnIndex);
+	const [isDragging, setIsDragging] = createSignal(false);
+	const [dropTarget, setDropTarget] = createSignal<number | null>(null);
+	const [windowHeight, setWindowHeight] = createSignal(window.innerHeight);
+	const [padding, setPadding] = createSignal(20);
 
-	const resizeHandleHeight = 58;
-	const minPaneHeight = 50;
-
-	const onClose = (index: number) => () => {
-		const newPanes = [...panes()];
-		newPanes.splice(index, 1);
-		setPanes(newPanes);
+	const updateWindowHeight = () => {
+		setWindowHeight(window.innerHeight);
 	};
 
-	const handleDragStart =
-		(index: number) => (e: DragEvent) => {
-			setDraggingIndex(index);
-			e.dataTransfer!.effectAllowed = "move";
-			e.dataTransfer!.setData(
-                "text/plain",
-                `${index}-${Math.floor(index / columns())}`,
-            );
+	window.addEventListener("resize", updateWindowHeight);
 
-			const dragImage = document.createElement("div");
-			dragImage.classList.add(styles["drag-image"]);
-			dragImage.textContent = panes()[index].name;
+	onCleanup(() => {
+		window.removeEventListener("resize", updateWindowHeight);
+	});
 
-			// Append to the body
-			document.body.appendChild(dragImage);
-			e.dataTransfer!.setDragImage(dragImage, 0, 0);
-		};
-
-	const handleDragOver = (index: number) => (e: DragEvent) => {
-		e.preventDefault();
-		setPlaceholderIndex(index);
-	};
-
-	const handleDrop = (index: number) => (e: DragEvent) => {
-		e.preventDefault();
-		const data = e.dataTransfer!.getData("text/plain").split("-");
-		const [draggedIndex, draggedColumnIndex] = [
-			Number.parseInt(data[0]),
-			Number.parseInt(data[1]),
-		];
-
-		if (draggedIndex !== null && draggedColumnIndex !== null) {
-			batch(() => {
-				const newPanes = [...panes()];
-				const [draggedPane] = newPanes.splice(
-					draggedIndex +
-						draggedColumnIndex * Math.ceil(panes().length / columns()),
-					1,
-				);
-				newPanes.splice(
-					index * Math.ceil(panes().length / columns()),
-					0,
-					draggedPane,
-				);
-				setPanes(newPanes);
-				setDraggingIndex(null);
-				setPlaceholderIndex(null);
-			});
-		}
+	const handleDragStart = (e: DragEvent, id: number) => {
+		e.dataTransfer!.setData("text/plain", id.toString());
+		setIsDragging(true);
 	};
 
 	const handleDragEnd = () => {
-		setDraggingIndex(null);
-		setPlaceholderIndex(null);
+		setIsDragging(false);
+		setDropTarget(null);
 	};
 
-	const calculateTotalHeight = () => {
-		return panes().reduce((total, pane) => {
-			const minHeight = Number.parseInt(pane.childStyle?.minHeight || "0", 10);
-			return Number.isNaN(minHeight) ? total : total + minHeight;
-		}, 0);
-	};
-
-	const handleResizeStart = (index: number, e: MouseEvent) => {
+	const handleDragOver = (e: DragEvent, columnIndex: number) => {
 		e.preventDefault();
-		e.stopPropagation();
-
-		const startY = e.clientY;
-		const startHeight = (e.target as HTMLElement).parentElement!.offsetHeight;
-		const onMouseMove = (moveEvent: MouseEvent) => {
-			const deltaY = moveEvent.clientY - startY;
-			let newHeight = startHeight + deltaY;
-
-			const totalOtherPanesHeight = panes().reduce(
-				(sum, pane, idx) =>
-					idx !== index
-						? sum +
-							(Number.parseInt(pane.childStyle?.height || "0") || 0) +
-							resizeHandleHeight
-						: sum,
-				0,
-			);
-			const maxHeight =
-				window.innerHeight - totalOtherPanesHeight - resizeHandleHeight;
-
-			newHeight = Math.min(Math.max(newHeight, minPaneHeight), maxHeight);
-
-			setPanes(
-				panes().map((pane, idx) => {
-					if (idx === index) {
-						return {
-							...pane,
-							childStyle: {
-								...pane.childStyle,
-								minHeight: `${newHeight}px`,
-								height: `${newHeight}px`,
-							},
-						};
-					}
-					return pane;
-				}),
-			);
-		};
-
-		const onMouseUp = () => {
-			document.removeEventListener("mousemove", onMouseMove);
-			document.removeEventListener("mouseup", onMouseUp);
-
-			adjustPaneHeights();
-		};
-
-		document.addEventListener("mousemove", onMouseMove);
-		document.addEventListener("mouseup", onMouseUp);
+		setDropTarget(columnIndex);
 	};
 
-	const adjustPaneHeights = () => {
-		const totalHeight = calculateTotalHeight();
-		const windowHeight = window.innerHeight;
+	const handleDrop = (e: DragEvent, columnIndex: number) => {
+		e.preventDefault();
+		const paneId = Number.parseInt(e.dataTransfer!.getData("text/plain"), 10);
 
-		if (totalHeight > windowHeight) {
-			const scaleFactor = windowHeight / totalHeight;
-			setPanes(
-				panes().map((pane) => {
-					const currentHeight = Number.parseInt(
-						pane.childStyle?.minHeight || "0",
-						10,
-					);
-					const newHeight = Math.floor(currentHeight * scaleFactor);
+		let updatedPanes = panes().map((pane) =>
+			pane.id === paneId ? { ...pane, column: columnIndex } : pane
+		);
+
+		if (columnIndex === columns() && columns() < MAX_COLUMNS) {
+			setColumns(columns() + 1);
+		}
+
+		const nonEmptyColumns = new Set(updatedPanes.map((pane) => pane.column));
+		const newPanes = updatedPanes.map((pane) => ({
+			...pane,
+			column: [...nonEmptyColumns].indexOf(pane.column),
+		}));
+
+		updatedPanes = adjustPaneHeights(newPanes, columnIndex);
+
+		setPanes(updatedPanes);
+		setColumns(nonEmptyColumns.size);
+
+		setIsDragging(false);
+		setDropTarget(null);
+	};
+
+	const adjustPaneHeights = (panes, columnIndex) => {
+		const columnPanes = panes.filter((pane) => pane.column === columnIndex);
+	
+		// Find the index of the first pane in the column
+		const firstPaneIndex = panes.findIndex((pane) => pane.column === columnIndex);
+	
+		let totalHeight = columnPanes.reduce((acc, pane, index) => {
+			const panePadding = index === 0 ? padding() : 0; // Add padding only to the first pane
+			return acc + Number.parseInt(pane.height) + panePadding;
+		}, 0);
+	
+		if (totalHeight > windowHeight()) {
+			const ratio = windowHeight() / totalHeight;
+			return panes.map((pane, index) => {
+				const panePadding = index === firstPaneIndex ? padding() : 0; 
+				if (pane.column === columnIndex) {
 					return {
 						...pane,
-						childStyle: {
-							...pane.childStyle,
-							minHeight: `${newHeight}px`,
-							height: `${newHeight}px`,
-						},
-						style: {
-							...pane.style,
-							minHeight: `${newHeight + 40}px`,
-						},
+						height: `${((Number.parseInt(pane.height) + panePadding) * ratio) - panePadding}px`,
 					};
-				}),
-			);
+				}
+				return pane;
+			});
 		}
+		return panes;
+	};
+	
+
+	const getPanesForColumn = (columnIndex: number) =>
+		panes().filter((pane) => pane.column === columnIndex);
+
+	const handleClosePane = (paneId: string) => {
+		const remainingPanes = panes().filter(
+			(pane) => pane.id.toString() !== paneId,
+		);
+		const nonEmptyColumns = new Set(remainingPanes.map((pane) => pane.column));
+		const newPanes = remainingPanes.map((pane) => ({
+			...pane,
+			column: [...nonEmptyColumns].indexOf(pane.column),
+		}));
+		setPanes(newPanes);
+		setColumns(nonEmptyColumns.size);
 	};
 
-	createEffect(() => {
-		const dragging = draggingIndex() !== null;
-		if (dragging) {
-			document.body.classList.add("dragging");
-		} else {
-			document.body.classList.remove("dragging");
-		}
-	});
+	const handleResizePane = (index: number, newHeight: string) => {
+		const updatedPanes = panes().map((pane) =>
+			pane.id === index
+				? { ...pane, height: newHeight, collapsed: false }
+				: pane,
+		);
 
-	createEffect(() => {
-		adjustPaneHeights();
+		const columnIndex = updatedPanes.find((pane) => pane.id === index)?.column;
+		const adjustedPanes = adjustPaneHeights(updatedPanes, columnIndex);
 
-		const handleResize = () => adjustPaneHeights();
-		window.addEventListener("resize", handleResize);
+		setPanes(adjustedPanes);
+	};
 
-		onCleanup(() => window.removeEventListener("resize", handleResize));
-	});
+	const toggleCollapsePane = (paneId: string) => {
+		const updatedPanes = panes().map((pane) => {
+			if (pane.id.toString() === paneId) {
+				const newHeight = pane.collapsed ? pane.previousHeight : "0px";
+				return {
+					...pane,
+					collapsed: !pane.collapsed,
+					height: newHeight,
+					previousHeight: pane.collapsed ? pane.previousHeight : pane.height,
+				};
+			}
+			return pane;
+		});
+		setPanes(updatedPanes);
+	};
 
 	return (
-		<div style={{ display: "flex", "flex-direction": "column" }}>
-			<ul class={styles["pane-list"]} onDragOver={(e) => e.preventDefault()}>
-				<For each={panes()}>
-					{(pane, index) => (
-						<li
-							class={styles["pane-item"]}
-							classList={{
-								[styles.dragging]: index() === draggingIndex(),
-								placeholder: index() === placeholderIndex(),
-							}}
-							style={{ ...pane.style }}
-							onDragOver={handleDragOver(index())}
-							onDrop={handleDrop(index())}
-							onDragEnd={handleDragEnd}
-						>
-							<Pane
-								icon={pane.icon}
-								title={pane.name}
-								childStyle={pane.childStyle}
-								onDragStart={handleDragStart(index())}
-								onDragOver={handleDragOver(index())}
-								onDrop={handleDrop(index())}
-								onDragEnd={handleDragEnd}
-								index={index()}
-								onClose={() => onClose(index())}
-							>
-								{pane.component({})}
-							</Pane>
-							<div
-								class={styles["resize-handle"]}
-								onMouseDown={(e) => handleResizeStart(index(), e)}
-							/>
-						</li>
-					)}
-				</For>
-			</ul>
+		<div class={styles["left-sidebar"]}>
+			<For each={Array.from({ length: columns() })}>
+				{(_, columnIndex) => (
+					<div
+						class={`${styles["pane-list"]} ${
+							dropTarget() === columnIndex() ? styles["drop-target"] : ""
+						} ${columnIndex() === 0 ? styles["first-column"] : ""}`}
+						onDragOver={(e) => handleDragOver(e, columnIndex())}
+						onDrop={(e) => handleDrop(e, columnIndex())}
+					>
+						<For each={getPanesForColumn(columnIndex())}>
+							{(pane) => (
+								<Pane
+									index={pane.id}
+									title={pane.name}
+									icon={pane.icon}
+									style={{ ...pane.style }}
+									height={pane.height.toString()}
+									collapsed={pane.collapsed}
+									onToggleCollapse={() =>
+										toggleCollapsePane(pane.id.toString())
+									}
+									onDragStart={(e) => handleDragStart(e, pane.id)}
+									onDragEnd={handleDragEnd}
+									onDragOver={(e) => handleDragOver(e, columnIndex())}
+									onDrop={(e) => handleDrop(e, columnIndex())}
+									onClose={() => handleClosePane(pane.id.toString())}
+									onResize={handleResizePane}
+									childStyle={{
+										...pane.childStyle,
+									}}
+								>
+									{pane.component({})}
+								</Pane>
+							)}
+						</For>
+					</div>
+				)}
+			</For>
+			{isDragging() && columns() < MAX_COLUMNS && (
+				<div
+					class={`${styles["new-column-area"]} ${
+						dropTarget() === columns() ? styles["drop-target"] : ""
+					}`}
+					onDragOver={(e) => handleDragOver(e, columns())}
+					onDrop={(e) => handleDrop(e, columns())}
+				>
+					<TbPlus font-size="36" />
+				</div>
+			)}
 		</div>
 	);
 };
