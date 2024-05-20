@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, Menu, app, clipboard, dialog, ipcMain, shell } from "electron";
+import { BrowserWindow, Menu, app, autoUpdater, clipboard, dialog, ipcMain, shell } from "electron";
 import electronUpdater, { type AppUpdater } from 'electron-updater';
 import icon from "../../resources/icon.png?asset";
 
@@ -105,7 +105,7 @@ function createMenu(): void {
 			submenu: [
 				{ label: "About" },
 				{ type: "separator" },
-				{ label: "Check For Updates" },
+				{ label: "Check For Updates", click: checkForUpdates },
 				{ label: "Report An Issue" },
 			],
 		},
@@ -185,6 +185,10 @@ const requestSaveFileAs = () => {
 		console.error("No focused window found.");
 	}
 };
+
+const checkForUpdates = () => {
+	getAutoUpdater().checkForUpdatesAndNotify();
+}
 
 app.whenReady().then(() => {
 	electronApp.setAppUserModelId("com.meteor");
