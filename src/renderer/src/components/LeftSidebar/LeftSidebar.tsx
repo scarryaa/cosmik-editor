@@ -174,6 +174,7 @@ const LeftSidebar: Component<LeftSidebarProps> = (props: LeftSidebarProps) => {
 						<For each={getPanesForColumn(columnIndex())}>
 							{(pane) => (
 								<Pane
+									overflow={pane.contentOverflow! as "auto" | "scroll" | "hidden"}
 									index={pane.id}
 									title={pane.name}
 									icon={pane.icon}

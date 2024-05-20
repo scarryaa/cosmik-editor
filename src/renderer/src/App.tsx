@@ -34,84 +34,71 @@ const App: Component = () => {
 		{
 			id: 1,
 			label: "File: Open File",
-			action: () => (window.api as any).sendOpenFileRequest(),
+			action: () => window.api.sendOpenFileRequest(),
 		},
-		{
-			id: 2,
-			label: "File: Save File",
-			action: () =>
-				saveFile(
-					TabStore.activeTab?.id!,
-					EditorStore.getActiveEditor()?.getText()!,
-				),
-		},
+		{ id: 2, label: "File: Save File", action: () => saveCurrentFile() },
 		{
 			id: 4,
 			label: "View: Show Files",
-			action: () =>
-				paneIsOpen(filePane) ? removePane(filePane.name) : addPane(filePane),
+			action: () => togglePane(filePane),
 			prefix: true,
 		},
 		{
 			id: 5,
 			label: "View: Show Search",
-			action: () =>
-				paneIsOpen(searchPane)
-					? removePane(searchPane.name)
-					: addPane(searchPane),
+			action: () => togglePane(searchPane),
 			prefix: true,
 		},
 		{
 			id: 6,
 			label: "View: Show Source Control",
-			action: () =>
-				paneIsOpen(sourceControlPane)
-					? removePane(sourceControlPane.name)
-					: addPane(sourceControlPane),
+			action: () => togglePane(sourceControlPane),
 			prefix: true,
 		},
 		{
 			id: 7,
 			label: "View: Show Run And Debug",
-			action: () =>
-				paneIsOpen(runAndDebugPane)
-					? removePane(runAndDebugPane.name)
-					: addPane(runAndDebugPane),
+			action: () => togglePane(runAndDebugPane),
 			prefix: true,
 		},
 		{
 			id: 8,
 			label: "View: Show Extensions",
-			action: () =>
-				paneIsOpen(extensionsPane)
-					? removePane(extensionsPane.name)
-					: addPane(extensionsPane),
+			action: () => togglePane(extensionsPane),
 			prefix: true,
 		},
 	];
 
-	const paneIsOpen = (openPane: any) => {
-		return panes().filter((pane) => pane.name === openPane.name).length > 0;
-	};
+	const paneIsOpen = (openPane: any) =>
+		panes().some((pane) => pane.name === openPane.name);
 
 	const addPane = (newPane: any) => {
-		if (paneIsOpen(newPane)) {
-			return;
+		if (!paneIsOpen(newPane)) {
+			setPanes([...panes(), newPane]);
 		}
-
-		setPanes([...panes(), newPane]);
 	};
 
-	const removePane = (paneName: string) => {
+	const removePane = (paneName: string) =>
 		setPanes(panes().filter((pane) => pane.name !== paneName));
+
+	const togglePane = (pane: any) => {
+		paneIsOpen(pane) ? removePane(pane.name) : addPane(pane);
+	};
+
+	const saveCurrentFile = () => {
+		const filepath = TabStore.activeTab?.id;
+		const fileData = EditorStore.getActiveEditor()?.getText();
+		if (filepath && fileData) {
+			saveFile(filepath, fileData);
+		}
 	};
 
 	const saveFile = (filepath: string, fileData: string) => {
-		(window as any).api.sendSaveFileRequest(filepath, fileData);
+		window.api.sendSaveFileRequest(filepath, fileData);
 	};
 
 	const saveFileAs = (filepath: string, fileData: string) => {
-		(window as any).api.sendSaveFileAsRequest(filepath, fileData);
+		window.api.sendSaveFileAsRequest(filepath, fileData);
 	};
 
 	const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -125,10 +112,7 @@ const App: Component = () => {
 			setIsOpen(true);
 		} else if (e.ctrlKey && e.key === "s") {
 			e.preventDefault();
-			saveFile(
-				TabStore.activeTab?.id!,
-				EditorStore.getActiveEditor()?.getText()!,
-			);
+			saveCurrentFile();
 		} else if (e.ctrlKey && e.shiftKey && e.key === "S") {
 			e.preventDefault();
 			saveFileAs(
@@ -141,14 +125,7 @@ const App: Component = () => {
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
 
-		window.addEventListener("save-file-request", () => {
-			const filepath = TabStore.activeTab?.id;
-			const fileData = EditorStore.getActiveEditor()?.getText();
-			if (filepath && fileData) {
-				saveFile(filepath, fileData);
-			}
-		});
-
+		window.addEventListener("save-file-request", saveCurrentFile);
 		window.addEventListener("save-file-as-request", () => {
 			const filepath = TabStore.activeTab?.id;
 			const fileData = EditorStore.getActiveEditor()?.getText();
@@ -160,6 +137,14 @@ const App: Component = () => {
 
 	onCleanup(() => {
 		document.removeEventListener("keydown", handleGlobalKeyDown);
+		window.removeEventListener("save-file-request", saveCurrentFile);
+		window.removeEventListener("save-file-as-request", () => {
+			const filepath = TabStore.activeTab?.id;
+			const fileData = EditorStore.getActiveEditor()?.getText();
+			if (filepath && fileData) {
+				saveFileAs(filepath, fileData);
+			}
+		});
 	});
 
 	createEffect(() => {
@@ -168,7 +153,7 @@ const App: Component = () => {
 		}
 	});
 
-	const click = () => {
+	const handleClick = () => {
 		if (textAreaRef) {
 			textAreaRef.focus();
 		}
@@ -192,7 +177,7 @@ const App: Component = () => {
 			{TabStore.tabs.length > 0 && (
 				<EditorView
 					scrollSignal={scrollSignal}
-					click={click}
+					click={handleClick}
 					editor={() => EditorStore.getEditor("editor1")!}
 				/>
 			)}

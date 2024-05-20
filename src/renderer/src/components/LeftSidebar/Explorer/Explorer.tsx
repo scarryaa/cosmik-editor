@@ -195,10 +195,10 @@ const Explorer = () => {
 	};
 
 	const updateExplorerHeight = () => {
-		// if (explorerRef && headerRef) {
-		// 	const availableHeight = window.innerHeight - headerRef.clientHeight - 85; // Manual height for now
-		// 	setExplorerHeight(availableHeight);
-		// }
+		if (explorerRef && headerRef) {
+			const availableHeight = document.querySelector("#Files")?.clientHeight! - 62;
+			setExplorerHeight(availableHeight!);
+		}
 	};
 
 	onMount(() => {
@@ -225,7 +225,9 @@ const Explorer = () => {
 						<VsChevronDown
 							class={rootOpen() ? styles.rotateDown : styles.rotateRight}
 						/>
-						<h3>{fileStore.folderContent.root.split("/").pop()}</h3>
+						<div class={styles["explorer-content-title"]}>
+							<h3>{fileStore.folderContent.root.split("/").pop()}</h3>
+						</div>
 						<div class={styles["explorer-actions"]}>
 							<button
 								type="button"

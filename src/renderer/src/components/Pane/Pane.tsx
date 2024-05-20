@@ -16,6 +16,7 @@ interface PaneProps {
 	title?: string;
 	icon: Component;
 	childStyle?: object;
+	overflow: "auto" | "scroll" | "hidden";
 	height: string;
 	onResize: (index: number, newHeight: string) => void;
 }
@@ -86,7 +87,7 @@ const Pane: Component<PaneProps> = (props: PaneProps) => {
 					style={{
 						...props.childStyle,
 						flex: "1 1 auto",
-						"overflow-y": "auto",
+						"overflow-y": props.overflow || "auto",
 					}}
 					class={styles["pane-content"]}
 				>

@@ -29,6 +29,7 @@ export const filePane = {
 	id: 0,
 	collapsed: false,
 	height: "900",
+	contentOverflow: "hidden",
 	previousHeight: "900",
 };
 

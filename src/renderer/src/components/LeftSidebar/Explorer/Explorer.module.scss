@@ -7,6 +7,7 @@
     margin-block: 4px;
     width: 100%;
     overflow-x: hidden;
+    max-width: 165px;
 }
 
 .explorer-content {
@@ -39,15 +40,42 @@
         overflow-y: auto;
         overflow-x: hidden;
         position: relative;
+        max-width: 165px;
+
+        &::-webkit-scrollbar {
+            cursor: default !important;
+            background-color: transparent;
+            width: 10px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: #2c2c2c;
+        }
+
+        &::-webkit-scrollbar-corner {
+            background-color: var(--page-background);
+        }
     }
 
     .explorer-content-header {
         overflow: hidden;
         padding-left: 4px;
+        box-sizing: border-box;
         display: flex;
         flex-direction: row;
         align-items: center;
+        min-width: 3ch;
         cursor: pointer;
+        
+        .explorer-content-title {
+            -webkit-margin-before: 0;
+            -webkit-margin-after: 0;
+            min-width: 3ch;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 11px;
+        }
     }
 }
 
@@ -80,9 +108,14 @@
     display: none;
     line-height: 22px;
     height: 10px;
-    margin-right: 5px;
+    margin-right: -20px;
+    margin-left: auto;
+    white-space: nowrap;
+    box-sizing: border-box;
+    width: 100%;
 
     .explorer-action {
+        position: relative;
         margin-top: 3px;
         padding: 2px;
         border-radius: 4px;

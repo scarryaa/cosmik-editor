@@ -7,13 +7,14 @@ export const [panes, setPanes] = createSignal([
 	{
 		name: "Files",
 		component: Explorer,
-		childStyle: { minHeight: "50px", height: "42vh" },
+		childStyle: { minHeight: "50px", height: "42vh", overflow: "hidden" },
 		style: {
 			width: "165px",
 			"min-width": "165px",
 			"margin-block": "2px",
 			"border-radius": "4px",
 			display: "flex",
+            overflow: "hidden",
 			"flex-direction": "column",
 			"background-color": "var(--meteor-pane-background)",
 		},
@@ -22,6 +23,7 @@ export const [panes, setPanes] = createSignal([
 		id: 0,
 		collapsed: false,
 		height: "900",
+        contentOverflow: "hidden",
 		previousHeight: "900",
 	},
 	{

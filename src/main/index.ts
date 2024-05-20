@@ -1,79 +1,10 @@
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import {
-	BrowserWindow,
-	Menu,
-	app,
-	dialog,
-	ipcMain,
-	ipcRenderer,
-	shell,
-} from "electron";
+import { BrowserWindow, Menu, app, dialog, ipcMain, shell } from "electron";
 import icon from "../../resources/icon.png?asset";
 
 let mainWindow: BrowserWindow | null = null;
-
-const requestSaveFile = () => {
-	const focusedWindow = BrowserWindow.getFocusedWindow();
-	if (focusedWindow) {
-		focusedWindow.webContents.executeJavaScript(`
-		window.dispatchEvent(new Event('save-file-request'));
-	  `);
-	} else {
-		console.error("No focused window found.");
-	}
-};
-
-const requestSaveAsFile = () => {
-	const focusedWindow = BrowserWindow.getFocusedWindow();
-	if (focusedWindow) {
-		focusedWindow.webContents.executeJavaScript(`
-            window.dispatchEvent(new Event('save-file-as-request'));
-        `);
-	} else {
-		console.error("No focused window found.");
-	}
-};
-
-async function saveFile(filePath: string, data: string) {
-	try {
-		await fs.writeFile(filePath, data);
-	} catch (error) {
-		throw new Error(`Failed to save file: ${error.message}`);
-	}
-}
-
-async function listFiles(dirPath: string): Promise<string[]> {
-	try {
-		console.log(`Listing files in directory: ${dirPath}`);
-		const files = await fs.readdir(dirPath, { withFileTypes: true });
-		if (!files) {
-			throw new Error("No files found or failed to read directory");
-		}
-		return files.filter((file) => file.isFile()).map((file) => file.name);
-	} catch (error) {
-		console.error(`Failed to list files in directory ${dirPath}:`, error);
-		throw new Error(`Failed to list files: ${error.message}`);
-	}
-}
-
-async function readFile(filePath: string): Promise<string> {
-	try {
-		return await fs.readFile(filePath, "utf-8");
-	} catch (error) {
-		throw new Error(`Failed to read file: ${error.message}`);
-	}
-}
-
-async function readFolder(folderPath: string): Promise<any> {
-	try {
-		const files = await fs.readdir(folderPath);
-		return { path: folderPath, files };
-	} catch (error) {
-		throw new Error(`Failed to read folder: ${error.message}`);
-	}
-}
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
@@ -81,10 +12,12 @@ function createWindow(): void {
 		height: 670,
 		show: false,
 		autoHideMenuBar: false,
+		title: "meteor",
 		...(process.platform === "linux" ? { icon } : {}),
 		webPreferences: {
 			preload: join(__dirname, "../preload/index.js"),
 			sandbox: false,
+			accessibleTitle: "meteor",
 		},
 	});
 
@@ -125,7 +58,7 @@ function createMenu(): void {
 				{
 					label: "Save As",
 					accelerator: "CmdOrCtrl+Shift+S",
-					click: requestSaveAsFile,
+					click: requestSaveFileAs,
 				},
 				{ type: "separator" },
 				{ label: "Quit", role: "quit", accelerator: "CmdOrCtrl+Q" },
@@ -177,7 +110,7 @@ async function openFile(): Promise<void> {
 		});
 		if (!result.canceled && result.filePaths.length > 0) {
 			const path = result.filePaths[0];
-			const data = await readFile(result.filePaths[0]);
+			const data = await fs.readFile(path, "utf-8");
 			mainWindow?.webContents.send("file-opened", { data, path });
 		}
 	} catch (error) {
@@ -198,6 +131,32 @@ async function openFolder(): Promise<void> {
 	} catch (error) {
 		console.error("Failed to open folder:", error);
 	}
+}
+
+async function readFile(filePath: string): Promise<string> {
+	try {
+		return await fs.readFile(filePath, "utf-8");
+	} catch (error) {
+		throw new Error(`Failed to read file: ${error.message}`);
+	}
+}
+
+async function readFolder(folderPath: string): Promise<any> {
+	try {
+		const files = await fs.readdir(folderPath);
+		return { path: folderPath, files };
+	} catch (error) {
+		console.error(`Failed to read folder: ${error.message}`);
+		throw new Error(`Failed to read folder: ${error.message}`);
+	}
+}
+
+function requestSaveFile() {
+	mainWindow?.webContents.send("save-file-request");
+}
+
+function requestSaveFileAs() {
+	mainWindow?.webContents.send("save-file-as-request");
 }
 
 app.whenReady().then(() => {
@@ -240,6 +199,16 @@ app.whenReady().then(() => {
 		} catch (error) {
 			console.error("Failed to open folder:", error);
 			return { error: error.message };
+		}
+	});
+
+	ipcMain.handle("save-file", async (event, filePath, data) => {
+		try {
+			await fs.writeFile(filePath, data);
+			return true;
+		} catch (error) {
+			console.error(`Failed to save file: ${filePath}`, error);
+			return false;
 		}
 	});
 
@@ -307,16 +276,6 @@ app.whenReady().then(() => {
 		}
 	});
 
-	ipcMain.handle("save-file", async (event, filePath, fileData) => {
-		fs.writeFile(filePath, fileData, (err) => {
-			if (err) {
-				console.error("Error saving file:", err);
-			} else {
-				console.log("File saved successfully:", filePath);
-			}
-		});
-	});
-
 	ipcMain.on("save-file-request", async (event, filepath, fileData) => {
 		let defaultPath = filepath;
 		if (!path.isAbsolute(filepath)) {
@@ -357,7 +316,7 @@ app.whenReady().then(() => {
 		}
 	});
 
-	ipcMain.on("open-file-request", async (event, fullPath) => {
+	ipcMain.on("open-file-request", async () => {
 		try {
 			const result = await dialog.showOpenDialog({
 				properties: ["openFile"],
@@ -372,16 +331,6 @@ app.whenReady().then(() => {
 			console.error("Failed to open file:", error);
 		}
 	});
-});
-
-ipcMain.handle("is-directory", async (event, fullPath) => {
-	try {
-		const stats = await fs.stat(fullPath);
-		return stats.isDirectory();
-	} catch (error) {
-		console.error(`Failed to check if path is a directory: ${fullPath}`, error);
-		return false;
-	}
 });
 
 app.on("window-all-closed", () => {
