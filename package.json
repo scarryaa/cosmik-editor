@@ -5,12 +5,28 @@
 	"main": "./out/main/index.js",
 	"author": "scarryaa",
 	"homepage": "https://github.com/scarryaa/meteor",
+	"repository":{
+		"url": "https://github.com/scarryaa/meteor"
+	},
 	"build": {
 		"win": {
-			"publish": ["github"]
+			"publish": [
+				"github"
+			]
 		}
 	},
 	"electronForge": {
+		"publishers": [
+			{
+				"name": "@electron-forge/publisher-github",
+				"config": {
+					"repository": {
+						"owner": "scarryaa",
+						"name": "meteor"
+					}
+				}
+			}
+		],
 		"makers": [
 			{
 				"name": "@electron-forge/maker-squirrel",
@@ -27,7 +43,10 @@
 			},
 			{
 				"name": "@electron-forge/maker-zip",
-				"platforms": ["darwin", "linux"]
+				"platforms": [
+					"darwin",
+					"linux"
+				]
 			},
 			{
 				"name": "@electron-forge/maker-deb",
@@ -78,7 +97,8 @@
 		"electron-updater": "^6.1.7",
 		"fast-diff": "^1.3.0",
 		"path-browserify": "^1.0.1",
-		"solid-icons": "^1.1.0"
+		"solid-icons": "^1.1.0",
+		"update-electron-app": "^3.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.7.3",

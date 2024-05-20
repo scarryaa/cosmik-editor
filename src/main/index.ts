@@ -11,16 +11,11 @@ import {
 	ipcMain,
 	shell,
 } from "electron";
-import electronUpdater, { type AppUpdater } from "electron-updater";
+import { updateElectronApp } from "update-electron-app";
 import icon from "../../resources/icon.png?asset";
 
 let isDev = process.env.NODE_ENV === "development";
 let mainWindow: BrowserWindow | null = null;
-
-export function getAutoUpdater(): AppUpdater {
-	const { autoUpdater } = electronUpdater;
-	return autoUpdater;
-}
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
@@ -40,13 +35,8 @@ function createWindow(): void {
 	mainWindow.on("ready-to-show", () => {
 		mainWindow?.show();
 	});
-
-	if (isDev) {
-		getAutoUpdater().checkForUpdates();
-	} else {
-		getAutoUpdater().checkForUpdatesAndNotify();
-	}
-
+	
+	checkForUpdates();
 	mainWindow.webContents.setWindowOpenHandler((details) => {
 		shell.openExternal(details.url);
 		return { action: "deny" };
@@ -207,7 +197,7 @@ const requestSaveFileAs = () => {
 };
 
 const checkForUpdates = () => {
-	getAutoUpdater().checkForUpdatesAndNotify();
+	updateElectronApp();
 };
 
 app.whenReady().then(() => {
