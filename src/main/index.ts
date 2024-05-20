@@ -35,7 +35,7 @@ function createWindow(): void {
 	mainWindow.on("ready-to-show", () => {
 		mainWindow?.show();
 	});
-	
+
 	checkForUpdates();
 	mainWindow.webContents.setWindowOpenHandler((details) => {
 		shell.openExternal(details.url);
@@ -102,7 +102,7 @@ function createMenu(): void {
 		{
 			label: "Help",
 			submenu: [
-				{ label: "About" },
+				{ label: "About", click: openAbout },
 				{ type: "separator" },
 				{ label: "Check For Updates", click: checkForUpdates },
 				{ label: "Report An Issue" },
@@ -112,6 +112,18 @@ function createMenu(): void {
 
 	const menu = Menu.buildFromTemplate(template);
 	Menu.setApplicationMenu(menu);
+}
+
+const openAbout = (): void => {
+	const result = dialog.showMessageBoxSync({
+		title: "About meteor",
+		buttons: ["OK", "Copy"],
+		type: "info",
+		message: `meteor\n\nVersion: ${app.getVersion()}\nElectron version: ${process.versions.electron}\nNode version: ${process.versions.node}`,
+	  });
+	  if (result === 1) {
+        clipboard.writeText(`meteor\n\nVersion: ${app.getVersion()}\nElectron version: ${process.versions.electron}\nNode version: ${process.versions.node}`);
+	  }
 }
 
 async function openFile(): Promise<void> {
