@@ -1,10 +1,15 @@
 {
 	"name": "meteor",
-	"version": "1.2.7",
+	"version": "1.2.8",
 	"description": "A simple multi-platform code editor.",
 	"main": "./out/main/index.js",
 	"author": "scarryaa",
 	"homepage": "https://github.com/scarryaa/meteor",
+	"build": {
+		"win": {
+			"publish": ["github"]
+		}
+	},
 	"electronForge": {
 		"makers": [
 			{

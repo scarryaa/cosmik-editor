@@ -2,9 +2,16 @@ import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, app, clipboard, dialog, ipcMain, shell } from "electron";
+import electronUpdater, { type AppUpdater } from 'electron-updater';
 import icon from "../../resources/icon.png?asset";
 
+let isDev = process.env.NODE_ENV === "development";
 let mainWindow: BrowserWindow | null = null;
+
+export function getAutoUpdater(): AppUpdater {
+	const { autoUpdater } = electronUpdater;
+	return autoUpdater;
+ }
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
@@ -24,6 +31,12 @@ function createWindow(): void {
 	mainWindow.on("ready-to-show", () => {
 		mainWindow?.show();
 	});
+
+    if (isDev) {
+		getAutoUpdater().checkForUpdates();
+	} else {
+		getAutoUpdater().checkForUpdatesAndNotify();
+	}
 
 	mainWindow.webContents.setWindowOpenHandler((details) => {
 		shell.openExternal(details.url);
