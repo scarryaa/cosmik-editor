@@ -88,6 +88,7 @@ const App: Component = () => {
 	const saveCurrentFile = () => {
 		const filepath = TabStore.activeTab?.id;
 		const fileData = EditorStore.getActiveEditor()?.getText();
+		console.log("called");
 		if (filepath && fileData) {
 			saveFile(filepath, fileData);
 		}

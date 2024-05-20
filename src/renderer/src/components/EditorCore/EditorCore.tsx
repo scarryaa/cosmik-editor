@@ -33,8 +33,9 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 		e.preventDefault();
 		const cursor = editor.cursorAt(0);
 		const lineContent = editor.lineContent(cursor.line);
-		const prevLineIndex = editor.lineContent(cursor.line - 1).length;
+		const prevLineIndex = editor.lineContent(cursor.line === 0 ? 0 : cursor.line - 1).length;
 
+		// @TODO develop a better method for this
 		switch (e.key) {
 			case "P": {
 				if (e.ctrlKey && e.shiftKey) {

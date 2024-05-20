@@ -151,13 +151,27 @@ async function readFolder(folderPath: string): Promise<any> {
 	}
 }
 
-function requestSaveFile() {
-	mainWindow?.webContents.send("save-file-request");
-}
+const requestSaveFile = () => {
+	const focusedWindow = BrowserWindow.getFocusedWindow();
+	if (focusedWindow) {
+		focusedWindow.webContents.executeJavaScript(`
+		window.dispatchEvent(new Event('save-file-request'));
+	  `);
+	} else {
+		console.error("No focused window found.");
+	}
+};
 
-function requestSaveFileAs() {
-	mainWindow?.webContents.send("save-file-as-request");
-}
+const requestSaveFileAs = () => {
+	const focusedWindow = BrowserWindow.getFocusedWindow();
+	if (focusedWindow) {
+		focusedWindow.webContents.executeJavaScript(`
+            window.dispatchEvent(new Event('save-file-as-request'));
+        `);
+	} else {
+		console.error("No focused window found.");
+	}
+};
 
 app.whenReady().then(() => {
 	electronApp.setAppUserModelId("com.meteor");
@@ -226,9 +240,7 @@ app.whenReady().then(() => {
 	});
 
 	ipcMain.handle("copy", async (event, data) => {
-		try {
-            
-			console.log(data);
+		try {   
 			await clipboard.writeText(data);
 			return true;
         } catch (error) {
@@ -239,7 +251,6 @@ app.whenReady().then(() => {
 
 	ipcMain.handle("cut", async (event, data) => {
 		try {
-			console.log(data);
             await clipboard.writeText(data);
             return true;
         } catch (error) {

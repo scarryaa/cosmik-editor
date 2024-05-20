@@ -74,6 +74,11 @@ export class Editor implements IEditor {
 			indices.push(text.length);
 		}
 
+		// If there are no line breaks, add one at the start of the text
+		if (indices.length === 0) {
+			indices.push(0);
+		}
+
 		// Explicitly add an extra line if the text ends with a newline
 		if (text.endsWith("\n")) {
 			indices.push(text.length);
@@ -108,96 +113,97 @@ export class Editor implements IEditor {
 	};
 
 	insert = (text: string, cursorIndex: number): void => {
+		this.deleteSelectionIfNeeded();
+	
 		const cursor = this.cursorsSignal[0]()[cursorIndex];
-		const globalIndex = this.calculateGlobalIndex(
-			cursor.line,
-			cursor.character,
-		);
-
+	
+		if (this.content.getText().length === 0) {
+			cursor.moveTo(0, 0, 0, 1); 
+		}
+	
+		const globalIndex = this.calculateGlobalIndex(cursor.line, cursor.character);
+	
 		batch(() => {
-			this.deleteSelectionIfNeeded();
 			this.content.insert(text, globalIndex);
 			this.contentSignal[1](this.content.getText());
 			this.lineBreakIndices = this.calculateLineBreaks();
 			this.lineNumbersSignal[1](this.lineBreakIndices.length);
-
+	
 			const selections = this.selectionSignal[0]();
 			selections[0].reset();
 			this.selectionSignal[1](selections);
-
+	
 			cursor.character += text.length;
 			this.cursorsSignal[1](this.cursorsSignal[0]());
 		});
 	};
 
 	deleteSelection = (selectionIndex: number): void => {
+		const selection = this.selections[selectionIndex];
+
 		const globalIndexStart = this.calculateGlobalIndex(
-			this.selections[selectionIndex].startLine,
-			this.selections[selectionIndex].startIndex,
+			selection.startLine,
+			selection.startIndex,
 		);
 
 		const globalIndexEnd = this.calculateGlobalIndex(
-			this.selections[selectionIndex].endLine,
-			this.selections[selectionIndex].endIndex,
+			selection.endLine,
+			selection.endIndex,
 		);
 
-		this.content.delete(globalIndexStart, globalIndexEnd - globalIndexStart);
+		batch(() => {
+			this.content.delete(globalIndexStart, globalIndexEnd - globalIndexStart);
 
-		// Set cursor to start of selection
-		this.cursorAt(0).moveTo(
-			this.selections[selectionIndex].startIndex,
-			this.selections[selectionIndex].startLine,
-			this.lineContent(this.selections[selectionIndex].startLine).length,
-			this.lineBreakIndices.length - 1,
-		);
+			// Reset cursor to the beginning of the document
+			this.cursorAt(0).moveTo(0, 0, 1, 1);
 
-		// Deselect
-		this.selections[0].reset();
+			// Deselect
+			this.selections[0].reset();
 
-		// Update content and line breaks
-		this.contentSignal[1](this.content.getText());
-		this.lineBreakIndices = this.calculateLineBreaks();
-		this.lineNumbersSignal[1](this.lineBreakIndices.length);
+			// Update content and line breaks
+			this.lineBreakIndices = this.calculateLineBreaks();
+			this.contentSignal[1](this.content.getText());
+			this.lineNumbersSignal[1](1);
+		});
 	};
 
 	delete = (cursorIndex: number): void => {
-		if (this.selections[0].isEmpty()) {
-			const cursor = this.cursors[cursorIndex];
-			const globalIndex = this.calculateGlobalIndex(
-				cursor.line,
-				cursor.character,
-			);
-			const currentTextLength = this.content.getText().length;
-
-			if (currentTextLength > 0) {
-				if (cursor.character === 0 && cursor.line > 0) {
-					const prevLineLength = this.lineContent(cursor.line - 1).length;
-
-					this.content.delete(globalIndex - 1, 1); // Delete the line break
-					this.lineBreakIndices = this.calculateLineBreaks();
-					this.contentSignal[1](this.content.getText());
-					this.lineNumbersSignal[1](this.lineBreakIndices.length);
-
-					const newChar = prevLineLength; // Cursor goes to end of previous line
-					cursor.moveTo(
-						newChar,
-						cursor.line - 1,
-						newChar,
-						this.lineBreakIndices.length - 1,
-					);
-				} else if (cursor.character > 0) {
-					// Delete character before cursor in the middle of a line
-					this.content.delete(globalIndex - 1, 1);
-					cursor.moveLeft(this.lineContent(cursor.line).length);
-					this.lineBreakIndices = this.calculateLineBreaks();
-					this.contentSignal[1](this.content.getText());
-				} else if (cursor.character === 0 && cursor.line === 0) {
-					return;
-				}
-			}
-		} else {
-			this.deleteSelectionIfNeeded();
+		if (!this.selections[0].isEmpty()) {
+			this.deleteSelection(0);
+			return;
 		}
+
+		const cursor = this.cursors[cursorIndex];
+
+		// Check if at beginning of document
+		if (cursor.line === 0 && cursor.character === 0) {
+			return;
+		}
+
+		batch(() => {
+			if (cursor.character === 0) {
+				const prevLineEndIndex = this.lineBreakIndices[cursor.line - 1];
+				this.content.delete(prevLineEndIndex, 1);
+				// Update the cursor's position to the end of the previous line
+				cursor.moveTo(
+					prevLineEndIndex,
+					cursor.line - 1,
+					this.lineLength(cursor.line - 1),
+					this.lineBreakIndices.length - 2,
+				); // Adjust totalLines as we removed one line
+			} else {
+				const globalIndex = this.calculateGlobalIndex(
+					cursor.line,
+					cursor.character,
+				);
+				this.content.delete(globalIndex - 1, 1);
+				cursor.moveLeft(this.lineContent(cursor.line).length);
+			}
+
+			this.lineBreakIndices = this.calculateLineBreaks();
+			this.contentSignal[1](this.content.getText());
+			this.lineNumbersSignal[1](this.lineBreakIndices.length);
+		});
 	};
 
 	length(): number {
@@ -223,6 +229,7 @@ export class Editor implements IEditor {
 	lineContent = (lineNumber: number): string => {
 		// Return an empty string if the line number is out of valid range
 		if (lineNumber < 0 || lineNumber >= this.numberOfLines()) {
+			console.warn(`Invalid line number ${lineNumber}`);
 			return "";
 		}
 
@@ -239,24 +246,30 @@ export class Editor implements IEditor {
 
 	addLine = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-		const currentLine = cursor.line;
-		const currentChar = cursor.character;
-		const globalIndex = this.calculateGlobalIndex(currentLine, currentChar);
-
-		this.deleteSelectionIfNeeded();
-		this.content.insert("\n", globalIndex);
-		this.contentSignal[1](this.content.getText());
-
-		this.lineBreakIndices = this.calculateLineBreaks();
-		const totalLines = this.lineBreakIndices.length;
-		this.lineNumbersSignal[1](totalLines);
-
-		if (currentChar === this.lineContent(currentLine).length) {
-			cursor.moveDown(totalLines - 1, 0);
-		} else {
-			cursor.moveDown(totalLines - 1, currentChar);
-		}
+		let currentLine = cursor.line;
+		let currentChar = cursor.character;
+	
+		batch(() => {
+			if (!this.selections[0].isEmpty()) {
+				this.deleteSelection(0);
+				// Update the cursor position after deleting the selection
+				currentLine = this.cursors[0].line;
+				currentChar = this.cursors[0].character;
+			}
+	
+			const globalIndex = this.calculateGlobalIndex(currentLine, currentChar);
+	
+			this.content.insert("\n", globalIndex);
+			this.lineBreakIndices = this.calculateLineBreaks();
+			this.contentSignal[1](this.content.getText());
+			this.lineNumbersSignal[1](this.lineBreakIndices.length);
+	
+			// Adjust cursor position
+			const newLine = currentLine + 1;
+			cursor.moveTo(0, newLine, 0, this.lineBreakIndices.length - 1);
+		});
 	};
+	
 
 	calculateGlobalIndex = (line: number, column: number): number => {
 		let index = 0;
@@ -425,29 +438,28 @@ export class Editor implements IEditor {
 		const initialLine = this.cursors[0].line;
 		const initialChar = this.cursors[0].character;
 		const index = this.calculateGlobalIndex(initialLine, initialChar);
-	  
+
 		this.content.insert(text, index);
 		this.lineBreakIndices = this.calculateLineBreaks();
 		const totalLines = this.lineBreakIndices.length;
-	  
+
 		batch(() => {
 			this.contentSignal[1](this.content.getText());
 			this.lineNumbersSignal[1](totalLines);
-	  
+
 			const pastedLines = text.split("\n").length;
 			const linesAdded = pastedLines - 1;
-	  
+
 			// Update cursor position based on pasted lines
-			this.cursorAt(0).line = linesAdded > 0
-				? initialLine + linesAdded
-				: initialLine;
-	  
-			this.cursorAt(0).character = linesAdded > 0
-				? text.split("\n")[linesAdded].length 
-				: initialChar + text.length;
+			this.cursorAt(0).line =
+				linesAdded > 0 ? initialLine + linesAdded : initialLine;
+
+			this.cursorAt(0).character =
+				linesAdded > 0
+					? text.split("\n")[linesAdded].length
+					: initialChar + text.length;
 		});
-	  };
-	  
+	};
 
 	selectAll = (): void => {
 		this.selectionSignal[1]([

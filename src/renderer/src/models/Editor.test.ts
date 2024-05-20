@@ -71,7 +71,7 @@ describe("Editor", () => {
 
 	it("manages selections correctly", () => {
 		const editor = new Editor("Hello world!", "editor7");
-		const selection = new Selection(editor.content, 0, 5, 0, 0); // Select "Hello"
+		const selection = new Selection(0, 5, 0, 0); // Select "Hello"
 		editor.addSelection(selection);
 
 		expect(editor.selections.length).toBe(2); // Initial empty + new
