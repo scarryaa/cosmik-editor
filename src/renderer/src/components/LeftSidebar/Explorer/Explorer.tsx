@@ -289,7 +289,7 @@ const Explorer = () => {
 		);
 	};
 
-	return <div>{renderExplorerContent()}</div>;
+	return <div style={{width: "100%"}}>{renderExplorerContent()}</div>;
 };
 
 export default Explorer;

@@ -1,4 +1,3 @@
-// EditorView.tsx
 import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
 import { useFileStore } from "@renderer/stores/files";
@@ -69,13 +68,11 @@ const EditorView: Component<EditorViewProps> = (props) => {
 			}
 
 			if (scrollTopAdjustment !== 0 || scrollLeftAdjustment !== 0) {
-				requestAnimationFrame(() => {
 					contentContainerRef!.scrollTo({
 						top: contentContainerRef!.scrollTop + scrollTopAdjustment,
 						left: contentContainerRef!.scrollLeft + scrollLeftAdjustment,
 						behavior: "auto",
 					});
-				});
 			}
 		});
 	};
@@ -85,18 +82,20 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		const scrollTop = container.scrollTop;
 		const scrollLeft = container.scrollLeft;
 
-		setViewScrollTop(scrollTop);
-		setViewScrollLeft(scrollLeft);
+		requestAnimationFrame(() => {
+			setViewScrollTop(scrollTop);
+			setViewScrollLeft(scrollLeft);
 
-		const visibleLinesStart = Math.max(
-			Math.floor(scrollTop / lineHeight) - 5,
-			0,
-		);
-		setVisibleLinesStart(visibleLinesStart);
+			const visibleLinesStart = Math.max(
+				Math.floor(scrollTop / lineHeight) - 5,
+				0,
+			);
+			setVisibleLinesStart(visibleLinesStart);
 
-		TabStore.updateTab(TabStore.activeTab!.id, {
-			scrollX: scrollLeft,
-			scrollY: scrollTop,
+			TabStore.updateTab(TabStore.activeTab!.id, {
+				scrollX: scrollLeft,
+				scrollY: scrollTop,
+			});
 		});
 	};
 
@@ -109,11 +108,6 @@ const EditorView: Component<EditorViewProps> = (props) => {
 					const scrollY = TabStore.activeTab.scrollY;
 					setViewScrollTop(scrollY);
 					setViewScrollLeft(scrollX);
-
-					const visibleLinesStart = Math.max(
-						Math.floor(scrollY / lineHeight) - 5,
-						0,
-					);
 
 					if (contentContainerRef) {
 						contentContainerRef.scrollTo({
@@ -203,8 +197,9 @@ const EditorView: Component<EditorViewProps> = (props) => {
 										editor={props.editor}
 										cursor={() => cursor}
 										ref={(el) => {
-											cursorRefs()[index()] = el;
-											return el;
+											const refs = cursorRefs();
+											refs[index()] = el;
+											setCursorRefs(refs);
 										}}
 									/>
 								)}
