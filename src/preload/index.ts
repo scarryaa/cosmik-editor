@@ -28,6 +28,8 @@ const api = {
 	sendOpenFileRequest: () => {
 		ipcRenderer.send("open-file-request");
 	},
+	copy: (text: string) => ipcRenderer.invoke("copy", text),
+	paste: () => ipcRenderer.invoke("paste"),
 };
 
 if (process.contextIsolated) {

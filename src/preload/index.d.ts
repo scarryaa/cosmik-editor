@@ -16,6 +16,8 @@ declare global {
 			sendSaveFileRequest: (filepath: string, fileData: string) => void;
 			sendSaveFileAsRequest: (filepath: string, fileData: string) => void;
 			sendOpenFileRequest: () => void;
+			copy: (text: string) => void;
+			paste: () => string;
 		};
 	}
 }

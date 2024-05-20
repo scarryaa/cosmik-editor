@@ -14,7 +14,7 @@ interface EditorCoreProps {
 const EditorCore: Component<EditorCoreProps> = (props) => {
 	const editor = props.editor();
 
-	const onKeydown = (e: KeyboardEvent) => {
+	const onKeydown = async (e: KeyboardEvent) => {
 		const scrollActions = [
 			"Enter",
 			"Backspace",
@@ -71,10 +71,95 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 					if (e.ctrlKey) {
 						e.preventDefault();
 					} else {
-						editor.insert("e", 0);
+						editor.insert("s", 0);
 					}
 				}
 				break;
+			case "a":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+						editor.selectAll();
+					} else {
+						editor.insert("a", 0);
+					}
+				}
+				break;
+			case "A":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+					} else {
+						editor.insert("A", 0);
+					}
+				}
+				break;
+			case "c":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+						const text = editor.copy();
+						window.api.copy(text);
+					} else {
+						editor.insert("c", 0);
+					}
+				}
+				break;
+			case "C":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+					} else {
+						editor.insert("C", 0);
+					}
+				}
+				break;
+			case "v":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+						const text = await window.api.paste();
+						editor.paste(text);
+					} else {
+						editor.insert("v", 0);
+					}
+				}
+				break;
+			case "V":
+				{
+					if (e.ctrlKey) {
+						e.preventDefault();
+						const text = await window.api.paste();
+						editor.paste(text);
+					} else {
+						editor.insert("V", 0);
+					}
+				}
+				break;
+			case "x":
+				{
+					if (e.ctrlKey) {
+                        e.preventDefault();
+                        const text = editor.cut();
+                        editor.delete(0);
+                        window.api.copy(text);
+                    } else {
+                        editor.insert("x", 0);
+                    }
+				}
+				break;
+				case "X":
+					{
+						if (e.ctrlKey) {
+							e.preventDefault();
+							const text = editor.cut();
+							editor.delete(0);
+							window.api.copy(text);
+						} else {
+							editor.insert("X", 0);
+						}
+					}
+					break;
 			case "Enter":
 				editor.addLine(0);
 				break;

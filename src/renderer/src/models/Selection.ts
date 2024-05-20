@@ -1,6 +1,5 @@
 import { type Signal, createSignal } from "solid-js";
 import type { Cursor } from "./Cursor";
-import type { PieceTable } from "./PieceTable";
 
 export enum SelectionDirection {
 	Forward = 0,
@@ -10,45 +9,25 @@ export enum SelectionDirection {
 }
 
 export class Selection {
-	private pieceTable: PieceTable;
-
 	private startIndexSignal: Signal<number>;
 	private endIndexSignal: Signal<number>;
 	private startLineSignal: Signal<number>;
 	private endLineSignal: Signal<number>;
-	private cachedContentSignal: Signal<string>;
 	private directionSignal: Signal<SelectionDirection>;
 
 	constructor(
-		pieceTable: PieceTable,
 		startIndex: number,
 		endIndex: number,
 		startLine: number,
 		endLine: number,
 	) {
-		this.pieceTable = pieceTable;
-
 		this.startIndexSignal = createSignal(startIndex);
 		this.endIndexSignal = createSignal(endIndex);
 		this.startLineSignal = createSignal<number>(startLine);
 		this.endLineSignal = createSignal<number>(endLine);
-		this.cachedContentSignal = createSignal("");
 		this.directionSignal = createSignal<SelectionDirection>(
 			SelectionDirection.Forward,
 		);
-
-		this.updateCachedContent();
-	}
-
-	private updateCachedContent(): void {
-		const startIndex = this.startIndexSignal[0]();
-		const endIndex = this.endIndexSignal[0]();
-		const content = this.pieceTable.extractText(startIndex, endIndex);
-		this.cachedContentSignal[1](content);
-	}
-
-	get content(): string {
-		return this.cachedContentSignal[0]();
 	}
 
 	get startIndex(): number {
@@ -75,13 +54,8 @@ export class Selection {
 		return this.startIndex === this.endIndex && this.startLine === this.endLine;
 	}
 
-	length(): number {
-		return this.cachedContentSignal[0]().length;
-	}
-
 	expandTo(newEndIndex: number): void {
 		this.endIndexSignal[1](newEndIndex);
-		this.updateCachedContent();
 	}
 
 	handleSelection(
@@ -103,7 +77,6 @@ export class Selection {
 				totalLines,
 			);
 		}
-		this.updateCachedContent();
 	}
 
 	private startNewSelection(
@@ -408,12 +381,10 @@ export class Selection {
 
 	setStartIndex(newStartIndex: number): void {
 		this.startIndexSignal[1](newStartIndex);
-		this.updateCachedContent();
 	}
 
 	setEndIndex(newEndIndex: number): void {
 		this.endIndexSignal[1](newEndIndex);
-		this.updateCachedContent();
 	}
 
 	reset(): void {
@@ -422,7 +393,5 @@ export class Selection {
 		this.startLineSignal[1](-100);
 		this.endLineSignal[1](-100);
 		this.directionSignal[1](SelectionDirection.Forward);
-		this.updateCachedContent();
-		this.cachedContentSignal[1]("");
 	}
 }

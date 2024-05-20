@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, Menu, app, dialog, ipcMain, shell } from "electron";
+import { BrowserWindow, Menu, app, clipboard, dialog, ipcMain, shell } from "electron";
 import icon from "../../resources/icon.png?asset";
 
 let mainWindow: BrowserWindow | null = null;
@@ -224,6 +224,38 @@ app.whenReady().then(() => {
 			return false;
 		}
 	});
+
+	ipcMain.handle("copy", async (event, data) => {
+		try {
+            
+			console.log(data);
+			await clipboard.writeText(data);
+			return true;
+        } catch (error) {
+            console.error(`Failed to copy to clipboard: ${error.message}`);
+            return false;
+        }
+    });
+
+	ipcMain.handle("cut", async (event, data) => {
+		try {
+			console.log(data);
+            await clipboard.writeText(data);
+            return true;
+        } catch (error) {
+            console.error(`Failed to cut: ${error.message}`);
+            return false;
+        }
+    });
+
+	ipcMain.handle("paste", async (event) => {
+		try {
+            return await clipboard.readText();
+        } catch (error) {
+            console.error(`Failed to paste: ${error.message}`);
+            return false;
+        }
+    });
 
 	ipcMain.handle("create-folder", async (event, folderPath) => {
 		try {

@@ -28,15 +28,14 @@ export class Editor implements IEditor {
 		this.contentSignal = createSignal(this.content.getText());
 		this.cursorsSignal[1]([new Cursor()]);
 
-		this.selectionSignal[1]([
-			new Selection(this.content, -100, -100, -100, -100),
-		]);
+		this.selectionSignal[1]([new Selection(-100, -100, -100, -100)]);
 	}
 
 	deleteSelectionIfNeeded = (): void => {
 		if (!this.selectionSignal[0]()[0].isEmpty()) {
 			this.deleteSelection(0);
 		}
+		this.selectionSignal[1]([new Selection(-100, -100, -100, -100)]);
 	};
 
 	setPieceTable = (pieceTable: PieceTable): void => {
@@ -362,6 +361,99 @@ export class Editor implements IEditor {
 	}
 
 	// Selection management
+
+	copy = (): string => {
+		const selection = this.getSelection(0);
+		if (!selection?.isEmpty()) {
+			const text = this.content.getText();
+			return text.substring(selection!.startIndex, selection!.endIndex);
+		}
+		return this.lineContent(this.cursors[0].line);
+	};
+
+	cut(): string {
+		const selection = this.getSelection(0);
+		if (selection && !selection?.isEmpty()) {
+			const text = this.content.getText();
+			const startIndex = this.calculateGlobalIndex(
+				selection.startLine,
+				selection.startIndex,
+			);
+			const endIndex = this.calculateGlobalIndex(
+				selection.endLine,
+				selection.endIndex,
+			);
+			this.content.delete(startIndex, endIndex - startIndex);
+
+			// Update state after cutting the selection
+			this.lineBreakIndices = this.calculateLineBreaks();
+			const totalLines = this.lineBreakIndices.length;
+			batch(() => {
+				this.contentSignal[1](this.content.getText());
+				this.lineNumbersSignal[1](totalLines);
+			});
+
+			this.cursors[0].line = selection.startLine;
+			this.cursors[0].character = selection.startIndex;
+
+			return text.substring(startIndex, endIndex);
+		}
+
+		// Handle cutting from the current cursor position
+		const currentLine = this.cursors[0].line;
+		const currentChar = this.cursors[0].character;
+		const text = this.lineContent(currentLine);
+
+		const startIndex = this.calculateGlobalIndex(currentLine, currentChar);
+		this.content.delete(startIndex, text.length);
+
+		this.lineBreakIndices = this.calculateLineBreaks();
+		const totalLines = this.lineBreakIndices.length;
+		batch(() => {
+			this.contentSignal[1](this.content.getText());
+			this.lineNumbersSignal[1](totalLines);
+		});
+
+		// Reset the cursor to the beginning of the line
+		this.cursors[0].line = currentLine;
+		this.cursors[0].character = 0;
+		return text;
+	}
+
+	paste = (text: string): void => {
+		this.deleteSelectionIfNeeded();
+		const initialLine = this.cursors[0].line;
+		const initialChar = this.cursors[0].character;
+		const index = this.calculateGlobalIndex(initialLine, initialChar);
+	  
+		this.content.insert(text, index);
+		this.lineBreakIndices = this.calculateLineBreaks();
+		const totalLines = this.lineBreakIndices.length;
+	  
+		batch(() => {
+			this.contentSignal[1](this.content.getText());
+			this.lineNumbersSignal[1](totalLines);
+	  
+			const pastedLines = text.split("\n").length;
+			const linesAdded = pastedLines - 1;
+	  
+			// Update cursor position based on pasted lines
+			this.cursorAt(0).line = linesAdded > 0
+				? initialLine + linesAdded
+				: initialLine;
+	  
+			this.cursorAt(0).character = linesAdded > 0
+				? text.split("\n")[linesAdded].length 
+				: initialChar + text.length;
+		});
+	  };
+	  
+
+	selectAll = (): void => {
+		this.selectionSignal[1]([
+			new Selection(0, this.length(), 0, this.totalLines()),
+		]);
+	};
 
 	addSelection(selection: Selection): void {
 		this.selectionSignal[1]([...this.selectionSignal[0](), selection]);
