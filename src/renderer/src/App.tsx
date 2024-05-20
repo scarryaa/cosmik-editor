@@ -14,7 +14,7 @@ import { Editor } from "./models/Editor";
 import { isOpen, setInitWithPrefix, setIsOpen } from "./stores/command-palette";
 import EditorStore from "./stores/editors";
 import { panes, setPanes } from "./stores/panes";
-import TabStore from "./stores/tabs";
+import TabStore, { TabState } from "./stores/tabs";
 import {
 	extensionsPane,
 	filePane,
@@ -37,6 +37,7 @@ const App: Component = () => {
 			action: () => window.api.sendOpenFileRequest(),
 		},
 		{ id: 2, label: "File: Save File", action: () => saveCurrentFile() },
+		{ id: 3, label: "File: New File", action: () => newFile()},
 		{
 			id: 4,
 			label: "View: Show Files",
@@ -85,6 +86,11 @@ const App: Component = () => {
 		paneIsOpen(pane) ? removePane(pane.name) : addPane(pane);
 	};
 
+	const newFile = () => {
+		console.log("new file");
+		TabStore.openTab({ editorId: EditorStore.getActiveEditor()?.id!, id: `Untitled-${TabStore.tabs.length + 1}`, name: `Untitled-${TabStore.tabs.length + 1}`, state: TabState.Untracked });
+    };
+
 	const saveCurrentFile = () => {
 		const filepath = TabStore.activeTab?.id;
 		const fileData = EditorStore.getActiveEditor()?.getText();
@@ -126,6 +132,7 @@ const App: Component = () => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
 
 		window.addEventListener("save-file-request", saveCurrentFile);
+		window.addEventListener("new-file-request", newFile);
 		window.addEventListener("save-file-as-request", () => {
 			const filepath = TabStore.activeTab?.id;
 			const fileData = EditorStore.getActiveEditor()?.getText();

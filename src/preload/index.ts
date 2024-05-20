@@ -22,6 +22,9 @@ const api = {
 	sendSaveFileRequest: (filepath: string, fileData: string) => {
 		ipcRenderer.send("save-file-request", filepath, fileData);
 	},
+	sendNewFileRequest: () => {
+		ipcRenderer.send("new-file-request");
+    },
 	sendSaveFileAsRequest: (filepath: string, fileData: string) => {
 		ipcRenderer.send("save-file-as-request", filepath, fileData);
 	},

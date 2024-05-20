@@ -14,6 +14,7 @@ declare global {
 			getFileContents: (filePath: string) => string;
 			saveFile: (filePath: string, data: string) => void;
 			sendSaveFileRequest: (filepath: string, fileData: string) => void;
+			sendNewFileRequest: () => void;
 			sendSaveFileAsRequest: (filepath: string, fileData: string) => void;
 			sendOpenFileRequest: () => void;
 			copy: (text: string) => void;

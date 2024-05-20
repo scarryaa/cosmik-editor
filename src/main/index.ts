@@ -1,8 +1,17 @@
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, Menu, app, autoUpdater, clipboard, dialog, ipcMain, shell } from "electron";
-import electronUpdater, { type AppUpdater } from 'electron-updater';
+import {
+	BrowserWindow,
+	Menu,
+	app,
+	autoUpdater,
+	clipboard,
+	dialog,
+	ipcMain,
+	shell,
+} from "electron";
+import electronUpdater, { type AppUpdater } from "electron-updater";
 import icon from "../../resources/icon.png?asset";
 
 let isDev = process.env.NODE_ENV === "development";
@@ -11,7 +20,7 @@ let mainWindow: BrowserWindow | null = null;
 export function getAutoUpdater(): AppUpdater {
 	const { autoUpdater } = electronUpdater;
 	return autoUpdater;
- }
+}
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
@@ -32,7 +41,7 @@ function createWindow(): void {
 		mainWindow?.show();
 	});
 
-    if (isDev) {
+	if (isDev) {
 		getAutoUpdater().checkForUpdates();
 	} else {
 		getAutoUpdater().checkForUpdatesAndNotify();
@@ -55,7 +64,7 @@ function createMenu(): void {
 		{
 			label: "File",
 			submenu: [
-				{ label: "New", accelerator: "CmdOrCtrl+N" },
+				{ label: "New", accelerator: "CmdOrCtrl+N", click: requestNewFile },
 				{
 					label: "Open File",
 					accelerator: "CmdOrCtrl+O",
@@ -164,6 +173,17 @@ async function readFolder(folderPath: string): Promise<any> {
 	}
 }
 
+const requestNewFile = () => {
+	const focusedWindow = BrowserWindow.getFocusedWindow();
+	if (focusedWindow) {
+		focusedWindow.webContents.executeJavaScript(`
+        window.dispatchEvent(new Event('new-file-request'));
+      `);
+	} else {
+		console.error("No focused window found.");
+	}
+};
+
 const requestSaveFile = () => {
 	const focusedWindow = BrowserWindow.getFocusedWindow();
 	if (focusedWindow) {
@@ -188,7 +208,7 @@ const requestSaveFileAs = () => {
 
 const checkForUpdates = () => {
 	getAutoUpdater().checkForUpdatesAndNotify();
-}
+};
 
 app.whenReady().then(() => {
 	electronApp.setAppUserModelId("com.meteor");
@@ -257,33 +277,33 @@ app.whenReady().then(() => {
 	});
 
 	ipcMain.handle("copy", async (event, data) => {
-		try {   
+		try {
 			await clipboard.writeText(data);
 			return true;
-        } catch (error) {
-            console.error(`Failed to copy to clipboard: ${error.message}`);
-            return false;
-        }
-    });
+		} catch (error) {
+			console.error(`Failed to copy to clipboard: ${error.message}`);
+			return false;
+		}
+	});
 
 	ipcMain.handle("cut", async (event, data) => {
 		try {
-            await clipboard.writeText(data);
-            return true;
-        } catch (error) {
-            console.error(`Failed to cut: ${error.message}`);
-            return false;
-        }
-    });
+			await clipboard.writeText(data);
+			return true;
+		} catch (error) {
+			console.error(`Failed to cut: ${error.message}`);
+			return false;
+		}
+	});
 
 	ipcMain.handle("paste", async (event) => {
 		try {
-            return await clipboard.readText();
-        } catch (error) {
-            console.error(`Failed to paste: ${error.message}`);
-            return false;
-        }
-    });
+			return await clipboard.readText();
+		} catch (error) {
+			console.error(`Failed to paste: ${error.message}`);
+			return false;
+		}
+	});
 
 	ipcMain.handle("create-folder", async (event, folderPath) => {
 		try {
