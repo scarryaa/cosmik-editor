@@ -114,25 +114,28 @@ export class Editor implements IEditor {
 
 	insert = (text: string, cursorIndex: number): void => {
 		this.deleteSelectionIfNeeded();
-	
+
 		const cursor = this.cursorsSignal[0]()[cursorIndex];
-	
+
 		if (this.content.getText().length === 0) {
-			cursor.moveTo(0, 0, 0, 1); 
+			cursor.moveTo(0, 0, 0, 1);
 		}
-	
-		const globalIndex = this.calculateGlobalIndex(cursor.line, cursor.character);
-	
+
+		const globalIndex = this.calculateGlobalIndex(
+			cursor.line,
+			cursor.character,
+		);
+
 		batch(() => {
 			this.content.insert(text, globalIndex);
 			this.contentSignal[1](this.content.getText());
 			this.lineBreakIndices = this.calculateLineBreaks();
 			this.lineNumbersSignal[1](this.lineBreakIndices.length);
-	
+
 			const selections = this.selectionSignal[0]();
 			selections[0].reset();
 			this.selectionSignal[1](selections);
-	
+
 			cursor.character += text.length;
 			this.cursorsSignal[1](this.cursorsSignal[0]());
 		});
@@ -168,12 +171,16 @@ export class Editor implements IEditor {
 	};
 
 	delete = (cursorIndex: number): void => {
-		if (!this.selections[0].isEmpty()) {
-			this.deleteSelection(0);
+		const cursor = this.cursors[cursorIndex];
+
+		// Check if any text is selected
+		if (this.selections.some((selection) => !selection.isEmpty())) {
+			const selection = this.selections.findIndex(
+				(selection) => !selection.isEmpty(),
+			);
+			this.deleteSelection(selection);
 			return;
 		}
-
-		const cursor = this.cursors[cursorIndex];
 
 		// Check if at beginning of document
 		if (cursor.line === 0 && cursor.character === 0) {
@@ -184,13 +191,14 @@ export class Editor implements IEditor {
 			if (cursor.character === 0) {
 				const prevLineEndIndex = this.lineBreakIndices[cursor.line - 1];
 				this.content.delete(prevLineEndIndex, 1);
-				// Update the cursor's position to the end of the previous line
+
+				// Join current line with previous line
 				cursor.moveTo(
-					prevLineEndIndex,
+					this.lineContent(cursor.line - 1).length,
 					cursor.line - 1,
 					this.lineLength(cursor.line - 1),
-					this.lineBreakIndices.length - 2,
-				); // Adjust totalLines as we removed one line
+					this.lineBreakIndices.length - 1,
+				);
 			} else {
 				const globalIndex = this.calculateGlobalIndex(
 					cursor.line,
@@ -200,6 +208,7 @@ export class Editor implements IEditor {
 				cursor.moveLeft(this.lineContent(cursor.line).length);
 			}
 
+			// Update editor state
 			this.lineBreakIndices = this.calculateLineBreaks();
 			this.contentSignal[1](this.content.getText());
 			this.lineNumbersSignal[1](this.lineBreakIndices.length);
@@ -248,7 +257,7 @@ export class Editor implements IEditor {
 		const cursor = this.cursors[cursorIndex];
 		let currentLine = cursor.line;
 		let currentChar = cursor.character;
-	
+
 		batch(() => {
 			if (!this.selections[0].isEmpty()) {
 				this.deleteSelection(0);
@@ -256,20 +265,19 @@ export class Editor implements IEditor {
 				currentLine = this.cursors[0].line;
 				currentChar = this.cursors[0].character;
 			}
-	
+
 			const globalIndex = this.calculateGlobalIndex(currentLine, currentChar);
-	
+
 			this.content.insert("\n", globalIndex);
 			this.lineBreakIndices = this.calculateLineBreaks();
 			this.contentSignal[1](this.content.getText());
 			this.lineNumbersSignal[1](this.lineBreakIndices.length);
-	
+
 			// Adjust cursor position
 			const newLine = currentLine + 1;
 			cursor.moveTo(0, newLine, 0, this.lineBreakIndices.length - 1);
 		});
 	};
-	
 
 	calculateGlobalIndex = (line: number, column: number): number => {
 		let index = 0;
@@ -293,20 +301,22 @@ export class Editor implements IEditor {
 		this.cursorsSignal[1](newCursors);
 	}
 
-	moveTo = (cursorIndex: number, character: number, line: number): void => {
+	moveTo = (character: number, line: number, cursorIndex = 0): void => {
 		const cursor = this.cursors[cursorIndex];
 		const totalLines = this.lineBreakIndices.length;
+	
 		cursor.moveTo(
 			character,
 			line,
 			this.lineContent(cursor.line).length,
 			totalLines - 1,
 		);
-
+	
+		// Ensure cursor stays within line bounds
 		if (cursor.line === 0) {
-			this.moveToLineStart(cursorIndex);
+			this.moveToLineStart(cursorIndex); // Ensure it's not before line start
 		} else if (cursor.line === totalLines - 1) {
-			this.moveToLineEnd(cursorIndex);
+			this.moveToLineEnd(cursorIndex);   // Ensure it's not past line end
 		}
 	};
 
@@ -376,70 +386,80 @@ export class Editor implements IEditor {
 	// Selection management
 
 	copy = (): string => {
-		const selection = this.getSelection(0);
+		const selection = this.selections.find((selection) => !selection.isEmpty());
+	
 		if (!selection?.isEmpty()) {
 			const text = this.content.getText();
-			return text.substring(selection!.startIndex, selection!.endIndex);
+			const startIndex = this.calculateGlobalIndex(
+				selection!.startLine,
+				selection!.startIndex,
+			);
+			const endIndex = this.calculateGlobalIndex(
+				selection!.endLine,
+				selection!.endIndex,
+			);
+			return text.substring(startIndex, endIndex);
 		}
-		return this.lineContent(this.cursors[0].line);
+	
+		return "";
 	};
 
 	cut(): string {
-		const selection = this.getSelection(0);
-		if (selection && !selection?.isEmpty()) {
-			const text = this.content.getText();
-			const startIndex = this.calculateGlobalIndex(
-				selection.startLine,
-				selection.startIndex,
-			);
-			const endIndex = this.calculateGlobalIndex(
-				selection.endLine,
-				selection.endIndex,
-			);
-			this.content.delete(startIndex, endIndex - startIndex);
+		const selection = this.selections.find((selection) => !selection.isEmpty());
+		const textToCut =
+			selection && !selection.isEmpty()
+				? this.content
+						.getText()
+						.substring(
+							this.calculateGlobalIndex(
+								selection.startLine,
+								selection.startIndex,
+							),
+							this.calculateGlobalIndex(selection.endLine, selection.endIndex),
+						)
+				: this.lineContent(this.cursors[0].line);
 
-			// Update state after cutting the selection
-			this.lineBreakIndices = this.calculateLineBreaks();
-			const totalLines = this.lineBreakIndices.length;
-			batch(() => {
-				this.contentSignal[1](this.content.getText());
-				this.lineNumbersSignal[1](totalLines);
-			});
+		// Delete the text being cut
+		const startIndex = this.calculateGlobalIndex(
+			selection?.startLine ?? this.cursors[0].line,
+			selection?.startIndex ?? this.cursors[0].character,
+		);
+		this.content.delete(startIndex, textToCut.length);
 
-			this.cursors[0].line = selection.startLine;
-			this.cursors[0].character = selection.startIndex;
-
-			return text.substring(startIndex, endIndex);
-		}
-
-		// Handle cutting from the current cursor position
-		const currentLine = this.cursors[0].line;
-		const currentChar = this.cursors[0].character;
-		const text = this.lineContent(currentLine);
-
-		const startIndex = this.calculateGlobalIndex(currentLine, currentChar);
-		this.content.delete(startIndex, text.length);
-
+		// Update editor state
 		this.lineBreakIndices = this.calculateLineBreaks();
 		const totalLines = this.lineBreakIndices.length;
+
 		batch(() => {
 			this.contentSignal[1](this.content.getText());
 			this.lineNumbersSignal[1](totalLines);
 		});
 
-		// Reset the cursor to the beginning of the line
-		this.cursors[0].line = currentLine;
-		this.cursors[0].character = 0;
-		return text;
+		// Reset cursor position
+		if (selection) {
+			this.cursors[0].line = selection.startLine;
+			this.cursors[0].character = selection.startIndex;
+		} else {
+			this.cursors[0].character = 0;
+		}
+
+		return textToCut;
 	}
 
 	paste = (text: string): void => {
 		this.deleteSelectionIfNeeded();
 		const initialLine = this.cursors[0].line;
 		const initialChar = this.cursors[0].character;
+
+		// Check if the cursor is at the end of the line
+		const isAtLineEnd =
+			initialChar === this.lineLength(initialLine) && initialChar !== 0;
+
 		const index = this.calculateGlobalIndex(initialLine, initialChar);
 
-		this.content.insert(text, index);
+		// Adjust insertion index if at the end of a line
+		this.content.insert(text, isAtLineEnd ? index + 1 : index);
+
 		this.lineBreakIndices = this.calculateLineBreaks();
 		const totalLines = this.lineBreakIndices.length;
 

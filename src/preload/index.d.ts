@@ -19,6 +19,7 @@ declare global {
 			sendOpenFileRequest: () => void;
 			copy: (text: string) => void;
 			paste: () => string;
+			sendCutOrCopiedText: (text) => void;
 		};
 	}
 }

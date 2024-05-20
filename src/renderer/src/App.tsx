@@ -28,6 +28,7 @@ EditorStore.setActiveEditor("editor1");
 
 const App: Component = () => {
 	const [scrollSignal, setScrollSignal] = createSignal<boolean>(false);
+	const [fakeClipboard, setFakeClipboard] = createSignal<string>("");
 	let textAreaRef!: HTMLTextAreaElement;
 
 	const commands = [
@@ -37,7 +38,7 @@ const App: Component = () => {
 			action: () => window.api.sendOpenFileRequest(),
 		},
 		{ id: 2, label: "File: Save File", action: () => saveCurrentFile() },
-		{ id: 3, label: "File: New File", action: () => newFile()},
+		{ id: 3, label: "File: New File", action: () => newFile() },
 		{
 			id: 4,
 			label: "View: Show Files",
@@ -87,9 +88,13 @@ const App: Component = () => {
 	};
 
 	const newFile = () => {
-		console.log("new file");
-		TabStore.openTab({ editorId: EditorStore.getActiveEditor()?.id!, id: `Untitled-${TabStore.tabs.length + 1}`, name: `Untitled-${TabStore.tabs.length + 1}`, state: TabState.Untracked });
-    };
+		TabStore.openTab({
+			editorId: EditorStore.getActiveEditor()?.id!,
+			id: `Untitled-${TabStore.tabs.length + 1}`,
+			name: `Untitled-${TabStore.tabs.length + 1}`,
+			state: TabState.Untracked,
+		});
+	};
 
 	const saveCurrentFile = () => {
 		const filepath = TabStore.activeTab?.id;
@@ -131,6 +136,45 @@ const App: Component = () => {
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
 
+		window.addEventListener("open-view", (event) => {
+			switch ((event as any).detail) {
+				case "files":
+					return togglePane(filePane);
+				case "search":
+					return togglePane(searchPane);
+				case "source-control":
+					return togglePane(sourceControlPane);
+				case "run-and-debug":
+					return togglePane(runAndDebugPane);
+				case "extensions":
+					return togglePane(extensionsPane);
+			}
+		});
+
+		window.addEventListener("request-action", (event) => {
+			const { action } = (event as any).detail;
+			const editor = EditorStore.getActiveEditor();
+
+			switch (action) {
+				case "cut":
+					setFakeClipboard(editor!.cut());
+					break;
+				case "copy":
+					setFakeClipboard(editor!.copy());
+					break;
+				case "paste":
+					return editor?.paste(fakeClipboard());
+				case "select-all":
+					return editor?.selectAll();
+			}
+		});
+		window.addEventListener("open-command-palette", () => {
+			setInitWithPrefix(false);
+			setIsOpen(true);
+		});
+		window.addEventListener("reset-editor-layout", () => {
+			setPanes([filePane, searchPane]);
+		});
 		window.addEventListener("save-file-request", saveCurrentFile);
 		window.addEventListener("new-file-request", newFile);
 		window.addEventListener("save-file-as-request", () => {

@@ -114,7 +114,7 @@ const Explorer = () => {
 				api
 					.createFolder(newFolderPath)
 					.then(() => {
-						console.log(`Folder created successfully at ${newFolderPath}`);
+						console.info(`Folder created successfully at ${newFolderPath}`);
 					})
 					.catch((error) => {
 						console.error(`Failed to create folder: ${newFolderPath}`, error);
@@ -139,7 +139,7 @@ const Explorer = () => {
 			api
 				.createFile(newFilePath)
 				.then(() => {
-					console.log(`File created successfully at ${newFilePath}`);
+					console.info(`File created successfully at ${newFilePath}`);
 				})
 				.catch((error) => {
 					console.error(`Failed to create file: ${newFilePath}`, error);
@@ -161,7 +161,7 @@ const Explorer = () => {
 				api
 					.createFile(newFilePath)
 					.then(() => {
-						console.log(`File created successfully at ${newFilePath}`);
+						console.info(`File created successfully at ${newFilePath}`);
 					})
 					.catch((error) => {
 						console.error(`Failed to create file: ${newFilePath}`, error);

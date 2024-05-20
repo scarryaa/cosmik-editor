@@ -33,6 +33,7 @@ const api = {
 	},
 	copy: (text: string) => ipcRenderer.invoke("copy", text),
 	paste: () => ipcRenderer.invoke("paste"),
+	sendCutOrCopiedText: (text) => ipcRenderer.send('copied-or-cut-text', text),
 };
 
 if (process.contextIsolated) {
