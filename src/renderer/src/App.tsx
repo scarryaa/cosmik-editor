@@ -88,9 +88,8 @@ const App: Component = () => {
 	const saveCurrentFile = () => {
 		const filepath = TabStore.activeTab?.id;
 		const fileData = EditorStore.getActiveEditor()?.getText();
-		console.log("called");
-		if (filepath && fileData) {
-			saveFile(filepath, fileData);
+		if (filepath) {
+			saveFile(filepath, fileData ? fileData : "");
 		}
 	};
 
@@ -142,8 +141,8 @@ const App: Component = () => {
 		window.removeEventListener("save-file-as-request", () => {
 			const filepath = TabStore.activeTab?.id;
 			const fileData = EditorStore.getActiveEditor()?.getText();
-			if (filepath && fileData) {
-				saveFileAs(filepath, fileData);
+			if (filepath) {
+				saveFileAs(filepath, fileData ? fileData : "");
 			}
 		});
 	});

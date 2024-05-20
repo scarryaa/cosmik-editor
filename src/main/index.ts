@@ -325,7 +325,7 @@ app.whenReady().then(() => {
 			defaultPath = path.join(app.getPath("documents"), filepath);
 		}
 
-		if (filepath && fileData) {
+		if (filepath) {
 			fs.writeFile(filepath, fileData, (err) => {
 				if (err) {
 					console.error("Error saving file:", err);
