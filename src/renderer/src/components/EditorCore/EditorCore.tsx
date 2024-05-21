@@ -1,7 +1,15 @@
 import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
+import EditorStore from "@renderer/stores/editors";
+import { setParserTree } from "@renderer/stores/parser-tree";
+import TabStore, { TabState } from "@renderer/stores/tabs";
 import { getNumberOfLinesOnScreen } from "@renderer/util/util";
-import type { Accessor, Component, Ref } from "solid-js";
+import {
+	type Accessor,
+	type Component,
+	type Ref,
+	createEffect,
+} from "solid-js";
 import styles from "./EditorCore.module.scss";
 
 interface EditorCoreProps {
@@ -30,208 +38,116 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			"PageDown",
 		];
 
-		e.preventDefault();
-		const cursor = editor.cursorAt(0);
-		const lineContent = editor.lineContent(cursor.line);
-		const prevLineIndex = editor.lineContent(cursor.line === 0 ? 0 : cursor.line - 1).length;
+		const isShortcut = (key: string, ctrl = false, shift = false) =>
+			e.key.toLowerCase() === key.toLowerCase() &&
+			e.ctrlKey === ctrl &&
+			e.shiftKey === shift;
 
-		// @TODO develop a better method for this
-		switch (e.key) {
-			case "P": {
-				if (e.ctrlKey && e.shiftKey) {
-					e.preventDefault();
-				} else if (e.ctrlKey) {
-					e.preventDefault();
-				} else {
-					editor.insert("P", 0);
-				}
-				break;
+		const handleArrowKey = (direction: "Left" | "Right" | "Up" | "Down") => {
+			if (e.shiftKey) {
+				editor
+					.getSelection(0)
+					?.[`handleSelection${direction}`](
+						editor.cursorAt(0),
+						editor.lineContent(editor.cursorAt(0).line).length,
+						editor.lineBreakIndices[Math.max(editor.cursorAt(0).line - 1, 0)],
+						editor.totalLines(),
+					);
+			} else {
+				editor.clearSelection(0);
 			}
-			case "p":
-				{
-					if (e.ctrlKey && e.shiftKey) {
-						e.preventDefault();
-					} else if (e.ctrlKey) {
-						e.preventDefault();
-					} else {
-						editor.insert("p", 0);
-					}
-				}
-				break;
-			case "S":
-				{
-					if (e.ctrlKey && e.shiftKey) {
-						e.preventDefault();
-					} else {
-						editor.insert("S", 0);
-					}
-				}
-				break;
-			case "s":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-					} else {
-						editor.insert("s", 0);
-					}
-				}
-				break;
-			case "a":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-						editor.selectAll();
-					} else {
-						editor.insert("a", 0);
-					}
-				}
-				break;
-			case "A":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-					} else {
-						editor.insert("A", 0);
-					}
-				}
-				break;
-			case "c":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-						const text = editor.copy();
-						window.api.copy(text);
-					} else {
-						editor.insert("c", 0);
-					}
-				}
-				break;
-			case "C":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-					} else {
-						editor.insert("C", 0);
-					}
-				}
-				break;
-			case "v":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-						const text = await window.api.paste();
-						editor.paste(text);
-					} else {
-						editor.insert("v", 0);
-					}
-				}
-				break;
-			case "V":
-				{
-					if (e.ctrlKey) {
-						e.preventDefault();
-						const text = await window.api.paste();
-						editor.paste(text);
-					} else {
-						editor.insert("V", 0);
-					}
-				}
-				break;
-			case "x":
-				{
-					if (e.ctrlKey) {
-                        e.preventDefault();
-                        const text = editor.cut();
-                        editor.delete(0);
-                        window.api.copy(text);
-                    } else {
-                        editor.insert("x", 0);
-                    }
-				}
-				break;
-				case "X":
-					{
-						if (e.ctrlKey) {
-							e.preventDefault();
-							const text = editor.cut();
-							editor.delete(0);
-							window.api.copy(text);
-						} else {
-							editor.insert("X", 0);
-						}
-					}
-					break;
+			editor;
+		};
+
+		switch (e.key) {
 			case "Enter":
 				editor.addLine(0);
 				break;
 			case "Backspace":
-				editor.delete(0);
-				break;
 			case "Delete":
 				editor.delete(0);
 				break;
 			case "Tab":
+				e.preventDefault();
 				editor.tab(0);
 				break;
-			case "ArrowLeft":
-				if (e.shiftKey) {
-					editor
-						.getSelection(0)
-						?.handleSelectionLeft(
-							editor.cursorAt(0),
-							lineContent.length,
-							prevLineIndex,
-							editor.totalLines(),
-						);
+			case "a":
+				if (isShortcut("a", true)) {
+					e.preventDefault();
+					editor.selectAll();
 				} else {
-					editor.clearSelection(0);
+					editor.insert("a", 0);
 				}
-				editor.moveLeft(0);
+				break;
+			case "c":
+				if (isShortcut("c", true)) {
+					e.preventDefault();
+					const text = editor.copy();
+					window.api.copy(text);
+				} else {
+					editor.insert("c", 0);
+				}
+				break;
+			case "v":
+			case "V":
+				if (isShortcut("v", true)) {
+					e.preventDefault();
+					const text = await window.api.paste();
+					editor.paste(text);
+				} else {
+					editor.insert(e.key, 0);
+				}
+				break;
+			case "x":
+			case "X":
+				if (isShortcut("x", true)) {
+					e.preventDefault();
+					const text = editor.cut();
+					window.api.copy(text);
+				} else {
+					editor.insert(e.key, 0);
+				}
+				break;
+			case "n":
+				if (isShortcut("n", true)) {
+					e.preventDefault();
+					TabStore.openTab({
+						editorId: EditorStore.getActiveEditor()?.id!,
+						id: `Untitled-${TabStore.tabs.length + 1}`,
+						name: `Untitled-${TabStore.tabs.length + 1}`,
+						state: TabState.Untracked,
+					});
+				} else {
+					editor.insert(e.key, 0);
+				}
+				break;
+			case "w":
+				if (isShortcut("w", true)) {
+					e.preventDefault();
+					TabStore.closeTab(TabStore.activeTab?.id!);
+				} else {
+					editor.insert(e.key, 0);
+				}
+				break;
+			case "s":
+			case "S":
+				if (isShortcut("s", true)) {
+					e.preventDefault();
+				} else {
+					editor.insert(e.key, 0);
+				}
+				break;
+			case "ArrowLeft":
+				handleArrowKey("Left");
 				break;
 			case "ArrowRight":
-				if (e.shiftKey) {
-					editor
-						.getSelection(0)
-						?.handleSelectionRight(
-							editor.cursorAt(0),
-							lineContent.length,
-							prevLineIndex,
-							editor.totalLines(),
-						);
-				} else {
-					editor.clearSelection(0);
-				}
-				editor.moveRight(0);
+				handleArrowKey("Right");
 				break;
 			case "ArrowUp":
-				if (e.shiftKey) {
-					editor
-						.getSelection(0)
-						?.handleSelectionUp(
-							editor.cursorAt(0),
-							lineContent.length,
-							prevLineIndex,
-							editor.totalLines(),
-						);
-				} else {
-					editor.clearSelection(0);
-				}
-				editor.moveUp(0);
+				handleArrowKey("Up");
 				break;
 			case "ArrowDown":
-				if (e.shiftKey) {
-					editor
-						.getSelection(0)
-						?.handleSelectionDown(
-							editor.cursorAt(0),
-							lineContent.length,
-							prevLineIndex,
-							editor.totalLines(),
-						);
-				} else {
-					editor.clearSelection(0);
-				}
-				editor.moveDown(0);
+				handleArrowKey("Down");
 				break;
 			case "Home":
 				editor.moveToLineStart(0);
@@ -256,14 +172,28 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			default:
 				if (e.key.length === 1) {
 					editor.insert(e.key, 0);
-					break;
 				}
 		}
 
 		if (scrollActions.includes(e.key) || e.key.length === 1) {
 			props.ensureCursorVisible();
 		}
+
+		window.api.parseRequest(editor.getText());
 	};
+
+	createEffect(() => {
+		window.api.onParseResult((_, serializedTree) => {
+			if (serializedTree.error) {
+				console.error("Error parsing text:", serializedTree.error);
+			} else {
+				console.log("Serialized root node:", serializedTree);
+				const rootNode = JSON.parse(serializedTree); // Deserialize the root node
+				console.log("Parsed root node:", rootNode);
+				setParserTree(rootNode);
+			}
+		});
+	});
 
 	return (
 		<div class={styles["editor-core"]}>

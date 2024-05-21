@@ -68,11 +68,11 @@ const EditorView: Component<EditorViewProps> = (props) => {
 			}
 
 			if (scrollTopAdjustment !== 0 || scrollLeftAdjustment !== 0) {
-					contentContainerRef!.scrollTo({
-						top: contentContainerRef!.scrollTop + scrollTopAdjustment,
-						left: contentContainerRef!.scrollLeft + scrollLeftAdjustment,
-						behavior: "auto",
-					});
+				contentContainerRef!.scrollTo({
+					top: contentContainerRef!.scrollTop + scrollTopAdjustment,
+					left: contentContainerRef!.scrollLeft + scrollLeftAdjustment,
+					behavior: "auto",
+				});
 			}
 		});
 	};

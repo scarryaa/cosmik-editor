@@ -24,7 +24,7 @@ const api = {
 	},
 	sendNewFileRequest: () => {
 		ipcRenderer.send("new-file-request");
-    },
+	},
 	sendSaveFileAsRequest: (filepath: string, fileData: string) => {
 		ipcRenderer.send("save-file-as-request", filepath, fileData);
 	},
@@ -33,7 +33,10 @@ const api = {
 	},
 	copy: (text: string) => ipcRenderer.invoke("copy", text),
 	paste: () => ipcRenderer.invoke("paste"),
-	sendCutOrCopiedText: (text) => ipcRenderer.send('copied-or-cut-text', text),
+	sendCutOrCopiedText: (text) => ipcRenderer.send("copied-or-cut-text", text),
+	parseRequest: (text: string) => ipcRenderer.invoke("parse-request", text),
+	onParseResult: (callback: (event: any, data: any) => void) =>
+		ipcRenderer.on("parse-result", callback),
 };
 
 if (process.contextIsolated) {

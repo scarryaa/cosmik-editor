@@ -24,10 +24,11 @@ const PieceTableStore = {
 		setState("pieceTables", new Map([...state.pieceTables, [id, pieceTable]]));
 	},
 	removePieceTable(id: string) {
-		setState(
-			"pieceTables",
-			new Map([...state.pieceTables].filter(([key]) => key !== id)),
-		);
+		setState("pieceTables", (prevPieceTables) => {
+			const newPieceTables = new Map(prevPieceTables);
+			newPieceTables.delete(id);
+			return newPieceTables;
+		});
 	},
 	getPieceTable(id: string) {
 		return state.pieceTables.get(id);

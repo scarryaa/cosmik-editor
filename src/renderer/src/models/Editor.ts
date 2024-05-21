@@ -304,19 +304,19 @@ export class Editor implements IEditor {
 	moveTo = (character: number, line: number, cursorIndex = 0): void => {
 		const cursor = this.cursors[cursorIndex];
 		const totalLines = this.lineBreakIndices.length;
-	
+
 		cursor.moveTo(
 			character,
 			line,
 			this.lineContent(cursor.line).length,
 			totalLines - 1,
 		);
-	
+
 		// Ensure cursor stays within line bounds
 		if (cursor.line === 0) {
 			this.moveToLineStart(cursorIndex); // Ensure it's not before line start
 		} else if (cursor.line === totalLines - 1) {
-			this.moveToLineEnd(cursorIndex);   // Ensure it's not past line end
+			this.moveToLineEnd(cursorIndex); // Ensure it's not past line end
 		}
 	};
 
@@ -387,8 +387,8 @@ export class Editor implements IEditor {
 
 	copy = (): string => {
 		const selection = this.selections.find((selection) => !selection.isEmpty());
-	
-		if (!selection?.isEmpty()) {
+
+		if (selection && !selection?.isEmpty()) {
 			const text = this.content.getText();
 			const startIndex = this.calculateGlobalIndex(
 				selection!.startLine,
@@ -400,8 +400,8 @@ export class Editor implements IEditor {
 			);
 			return text.substring(startIndex, endIndex);
 		}
-	
-		return "";
+
+		return this.lineContent(this.cursors[0].line);
 	};
 
 	cut(): string {
@@ -418,6 +418,7 @@ export class Editor implements IEditor {
 							this.calculateGlobalIndex(selection.endLine, selection.endIndex),
 						)
 				: this.lineContent(this.cursors[0].line);
+		console.log(textToCut);
 
 		// Delete the text being cut
 		const startIndex = this.calculateGlobalIndex(

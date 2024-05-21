@@ -20,6 +20,8 @@ declare global {
 			copy: (text: string) => void;
 			paste: () => string;
 			sendCutOrCopiedText: (text) => void;
+			parseRequest: (text: string) => string;
+			onParseResult: (callback: (event: any, data: any) => void) => void;
 		};
 	}
 }

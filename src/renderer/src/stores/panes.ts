@@ -14,7 +14,7 @@ export const [panes, setPanes] = createSignal([
 			"margin-block": "2px",
 			"border-radius": "4px",
 			display: "flex",
-            overflow: "hidden",
+			overflow: "hidden",
 			"flex-direction": "column",
 			"background-color": "var(--meteor-pane-background)",
 		},
@@ -23,7 +23,7 @@ export const [panes, setPanes] = createSignal([
 		id: 0,
 		collapsed: false,
 		height: "900",
-        contentOverflow: "hidden",
+		contentOverflow: "hidden",
 		previousHeight: "900",
 	},
 	{

@@ -10,10 +10,12 @@ import EditorCore from "./components/EditorCore/EditorCore";
 import EditorView from "./components/EditorView/EditorView";
 import LeftSidebar from "./components/LeftSidebar/LeftSidebar";
 import StatusPane from "./components/StatusPane/StatusPane";
+import { ParserTreeContext } from "./contexts/parser-tree-context";
 import { Editor } from "./models/Editor";
 import { isOpen, setInitWithPrefix, setIsOpen } from "./stores/command-palette";
 import EditorStore from "./stores/editors";
 import { panes, setPanes } from "./stores/panes";
+import { parserTree } from "./stores/parser-tree";
 import TabStore, { TabState } from "./stores/tabs";
 import {
 	extensionsPane,
@@ -23,7 +25,7 @@ import {
 	sourceControlPane,
 } from "./util/panes";
 
-EditorStore.addEditor(new Editor("", "editor1"));
+EditorStore.addEditor(new Editor("hello", "editor1"));
 EditorStore.setActiveEditor("editor1");
 
 const App: Component = () => {
@@ -136,6 +138,13 @@ const App: Component = () => {
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
 
+		window.addEventListener("tabOpened", (event) => {
+			const newTabId = event.detail.tabId;
+			if (newTabId) {
+				textAreaRef.focus();
+			}
+		});
+
 		window.addEventListener("open-view", (event) => {
 			switch ((event as any).detail) {
 				case "files":
@@ -218,28 +227,30 @@ const App: Component = () => {
 	};
 
 	return (
-		<div class="app-container">
-			<CommandPalette
-				commands={commands}
-				isOpen={isOpen()}
-				onClose={() => setIsOpen(false)}
-			/>
-			<LeftSidebar removePane={removePane} addPane={addPane} />
-			{TabStore.tabs.length > 0 && (
-				<EditorView
-					scrollSignal={scrollSignal}
-					click={handleClick}
-					editor={() => EditorStore.getEditor("editor1")!}
+		<ParserTreeContext.Provider value={parserTree}>
+			<div class="app-container">
+				<CommandPalette
+					commands={commands}
+					isOpen={isOpen()}
+					onClose={() => setIsOpen(false)}
 				/>
-			)}
-			<EditorCore
-				ensureCursorVisible={handleEnter}
-				ref={textAreaRef}
-				editor={() => EditorStore.getEditor("editor1")!}
-				language="javascript"
-			/>
-			<StatusPane editor={() => EditorStore.getEditor("editor1")!} />
-		</div>
+				<LeftSidebar removePane={removePane} addPane={addPane} />
+				{TabStore.tabs.length > 0 && (
+					<EditorView
+						scrollSignal={scrollSignal}
+						click={handleClick}
+						editor={() => EditorStore.getEditor("editor1")!}
+					/>
+				)}
+				<EditorCore
+					ensureCursorVisible={handleEnter}
+					ref={textAreaRef}
+					editor={() => EditorStore.getEditor("editor1")!}
+					language="javascript"
+				/>
+				<StatusPane editor={() => EditorStore.getEditor("editor1")!} />
+			</div>
+		</ParserTreeContext.Provider>
 	);
 };
 

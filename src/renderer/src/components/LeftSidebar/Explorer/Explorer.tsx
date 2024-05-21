@@ -196,7 +196,8 @@ const Explorer = () => {
 
 	const updateExplorerHeight = () => {
 		if (explorerRef && headerRef) {
-			const availableHeight = document.querySelector("#Files")?.clientHeight! - 62;
+			const availableHeight =
+				document.querySelector("#Files")?.clientHeight! - 62;
 			setExplorerHeight(availableHeight!);
 		}
 	};
@@ -289,7 +290,7 @@ const Explorer = () => {
 		);
 	};
 
-	return <div style={{width: "100%"}}>{renderExplorerContent()}</div>;
+	return <div style={{ width: "100%" }}>{renderExplorerContent()}</div>;
 };
 
 export default Explorer;

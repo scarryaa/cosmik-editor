@@ -47,8 +47,8 @@ const CommandPalette: Component<CommandPaletteProps> = (props) => {
 	};
 
 	const handleKeyDown = (e: KeyboardEvent) => {
-        if (!props.isOpen) return;
-        
+		if (!props.isOpen) return;
+
 		if (e.key === "ArrowDown") {
 			setSelectedIndex((prev) =>
 				Math.min(prev + 1, filteredCommands().length - 1),

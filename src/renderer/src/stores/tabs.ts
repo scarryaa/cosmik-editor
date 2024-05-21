@@ -1,5 +1,6 @@
 import { PieceTable } from "@renderer/models/PieceTable";
 import type { Tab } from "@renderer/models/Tab";
+import { createEffect } from "solid-js";
 import { createStore } from "solid-js/store";
 import EditorStore from "./editors";
 import PieceTableStore from "./piece-tables";
@@ -72,6 +73,12 @@ const TabStore = {
 		});
 
 		this.setActiveTab(tab.id);
+
+		// Clear the content of the current editor
+		const editor = EditorStore.getActiveEditor();
+		if (editor) {
+			editor.setContent("");
+		}
 	},
 
 	closeTab(tabId: string) {
@@ -109,36 +116,51 @@ const TabStore = {
 	async setActiveTab(tabId: string | null) {
 		if (state.activeTabId !== tabId) {
 			setState("activeTabId", tabId);
+
 			if (tabId) {
 				this.addToLastActiveTabs(tabId);
 
 				const editor = EditorStore.getActiveEditor();
 				if (editor) {
-					// Check for a piece table
-					if (!PieceTableStore.getPieceTable(tabId)) {
-						PieceTableStore.addPieceTable(tabId, new PieceTable(editor.text()));
-					}
-					editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
-
-					// Restore the tab's cursor and scroll positions
 					const activeTab = this.activeTab;
 					if (activeTab) {
+						// Update piece table ONLY if it doesn't exist
+						if (!PieceTableStore.getPieceTable(tabId)) {
+							PieceTableStore.addPieceTable(
+								tabId,
+								new PieceTable(activeTab.content || ""),
+							);
+						}
+						editor.setPieceTable(PieceTableStore.getPieceTable(tabId)!);
+
 						editor
 							.cursorAt(0)
 							.moveTo(
 								activeTab.cursor.character,
 								activeTab.cursor.line,
-								editor.lineLength(0),
+								editor.lineLength(activeTab.cursor.line),
 								editor.totalLines(),
 							);
 					}
 				}
 			}
+
+			window.dispatchEvent(new CustomEvent("tabOpened", { detail: { tabId } }));
 		}
 	},
 
 	getTabContent(tabId: string) {
 		return state.tabs.find((t) => t.id === tabId)?.content || "";
+	},
+
+	updateTabContent() {
+		createEffect(() => {
+			const activeTab = this.activeTab;
+			const editor = EditorStore.getActiveEditor();
+			if (activeTab && editor) {
+				this.updateTab(activeTab.id, { content: editor.getText() });
+			}
+		});
 	},
 
 	updateTab(tabId: string, updates: Partial<Omit<Tab, "id">>) {

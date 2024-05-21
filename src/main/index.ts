@@ -5,7 +5,6 @@ import {
 	BrowserWindow,
 	Menu,
 	app,
-	autoUpdater,
 	clipboard,
 	dialog,
 	ipcMain,
@@ -13,9 +12,20 @@ import {
 } from "electron";
 import { updateElectronApp } from "update-electron-app";
 import icon from "../../resources/icon.png?asset";
+import parser from "./tree-sitter";
 
-let isDev = process.env.NODE_ENV === "development";
 let mainWindow: BrowserWindow | null = null;
+
+function serializeNode(node) {
+	return {
+		type: node.type,
+		startIndex: node.startIndex,
+		endIndex: node.endIndex,
+		isNamed: node.isNamed,
+		children: node.children.map(serializeNode),
+		text: node.text ? node.text.toString() : null,
+	};
+}
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
@@ -535,6 +545,26 @@ app.whenReady().then(() => {
 					console.info("File saved successfully:", result.filePath);
 				}
 			});
+		}
+	});
+
+	ipcMain.handle("parse-request", async (event, text) => {
+		try {
+			console.log("Parsing text:", text);
+			const tree = parser.parse(text);
+			if (!tree || !tree.rootNode) {
+				console.error("Tree or root node is undefined");
+				return { error: "Tree or root node is undefined" };
+			}
+			console.log("Parsed tree:", tree); // Debugging output
+			console.log("Root node:", tree.rootNode); // Debugging output
+
+			const serializedTree = serializeNode(tree.rootNode); // Serialize the root node
+			console.log("Serialized root node:", serializedTree); // Debugging output
+			event.sender.send("parse-result", JSON.stringify(serializedTree)); // Send serialized root node to renderer
+		} catch (error) {
+			console.error("Error parsing text:", error);
+			return { error: error.message };
 		}
 	});
 
