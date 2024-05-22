@@ -1,10 +1,12 @@
 import { lineHeight } from "@renderer/const/const";
 import type { Editor } from "@renderer/models/Editor";
 import { useFileStore } from "@renderer/stores/files";
+import { parserTree } from "@renderer/stores/parser-tree";
 import TabStore from "@renderer/stores/tabs";
 import { getNumberOfLinesOnScreen } from "@renderer/util/util";
 import { For, createEffect, createMemo, createSignal, on } from "solid-js";
-import type { Accessor, Component } from "solid-js";
+import type { Accessor, Component, JSX } from "solid-js";
+import type { SyntaxNode } from "web-tree-sitter";
 import Cursor from "../Cursor/Cursor";
 import EditorLine from "../EditorLine/EditorLine";
 import LineNumbers from "../LineNumbers/LineNumbers";
@@ -22,6 +24,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollLeft, setViewScrollLeft] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
 	const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
+	const [spans, setSpans] = createSignal<Record<number, JSX.Element[]>>({});
 	const windowSize = createMemo(() => getNumberOfLinesOnScreen(lineHeight) + 5);
 	const fileStore = useFileStore();
 
@@ -184,6 +187,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 											startLine: props.editor().selections[0]?.startLine,
 											endLine: props.editor().selections[0]?.endLine,
 										}}
+										highlightedContent={spans()[visibleLinesStart() + index()]}
 									/>
 								)}
 							</For>

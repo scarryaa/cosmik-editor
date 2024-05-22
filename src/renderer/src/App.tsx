@@ -15,7 +15,7 @@ import { Editor } from "./models/Editor";
 import { isOpen, setInitWithPrefix, setIsOpen } from "./stores/command-palette";
 import EditorStore from "./stores/editors";
 import { panes, setPanes } from "./stores/panes";
-import { parserTree } from "./stores/parser-tree";
+import { parserTree, setParserTree } from "./stores/parser-tree";
 import TabStore, { TabState } from "./stores/tabs";
 import {
 	extensionsPane,

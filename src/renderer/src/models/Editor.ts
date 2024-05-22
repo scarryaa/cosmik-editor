@@ -418,7 +418,6 @@ export class Editor implements IEditor {
 							this.calculateGlobalIndex(selection.endLine, selection.endIndex),
 						)
 				: this.lineContent(this.cursors[0].line);
-		console.log(textToCut);
 
 		// Delete the text being cut
 		const startIndex = this.calculateGlobalIndex(

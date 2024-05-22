@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import solid from "vite-plugin-solid";
+import topLevelAwait from "vite-plugin-top-level-await";
+import wasm from "vite-plugin-wasm";
 
 export default defineConfig({
 	main: {
@@ -16,12 +18,13 @@ export default defineConfig({
 					format: "es",
 				},
 			},
+			target: "esnext",
 		},
 		resolve: {
 			alias: {
 				"@renderer": resolve("src/renderer/src"),
 			},
 		},
-		plugins: [solid()],
+		plugins: [solid(), wasm(), topLevelAwait()],
 	},
 });

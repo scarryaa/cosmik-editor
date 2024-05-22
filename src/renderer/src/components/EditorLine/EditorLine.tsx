@@ -8,6 +8,7 @@ import TabStore from "@renderer/stores/tabs";
 import { debounce } from "@renderer/util/util";
 import {
 	type Component,
+	type JSX,
 	createEffect,
 	createMemo,
 	createSignal,
@@ -24,6 +25,7 @@ interface EditorLineProps {
 		startLine: number;
 		endLine: number;
 	};
+	highlightedContent: JSX.Element;
 }
 
 const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
@@ -107,7 +109,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 			}}
 			class={styles.line}
 		>
-			<div class={styles["line-content"]} innerHTML={highlightedContent()} />
+			<div class={styles["line-content"]}>{props.highlightedContent ||  props.content}</div>
 			<div
 				class={styles.selection}
 				style={{

@@ -188,8 +188,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				console.error("Error parsing text:", serializedTree.error);
 			} else {
 				console.log("Serialized root node:", serializedTree);
-				const rootNode = JSON.parse(serializedTree); // Deserialize the root node
-				console.log("Parsed root node:", rootNode);
+				const rootNode = JSON.parse(serializedTree);
 				setParserTree(rootNode);
 			}
 		});

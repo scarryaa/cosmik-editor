@@ -10,7 +10,9 @@
 	},
 	"build": {
 		"win": {
-			"publish": ["github"]
+			"publish": [
+				"github"
+			]
 		}
 	},
 	"electronForge": {
@@ -41,7 +43,10 @@
 			},
 			{
 				"name": "@electron-forge/maker-zip",
-				"platforms": ["darwin", "linux"]
+				"platforms": [
+					"darwin",
+					"linux"
+				]
 			},
 			{
 				"name": "@electron-forge/maker-deb",
@@ -96,7 +101,8 @@
 		"solid-icons": "^1.1.0",
 		"tree-sitter": "^0.21.1",
 		"tree-sitter-typescript": "^0.21.1",
-		"update-electron-app": "^3.0.0"
+		"update-electron-app": "^3.0.0",
+		"web-tree-sitter": "^0.22.6"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.7.3",
@@ -116,6 +122,8 @@
 		"vite": "^5.0.12",
 		"vite-plugin-electron-renderer": "^0.14.5",
 		"vite-plugin-solid": "^2.9.1",
+		"vite-plugin-top-level-await": "^1.4.1",
+		"vite-plugin-wasm": "^3.3.0",
 		"vitest": "^1.6.0"
 	}
 }

@@ -12,7 +12,7 @@ import {
 } from "electron";
 import { updateElectronApp } from "update-electron-app";
 import icon from "../../resources/icon.png?asset";
-import parser from "./tree-sitter";
+import parser from './tree-sitter';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -548,25 +548,21 @@ app.whenReady().then(() => {
 		}
 	});
 
-	ipcMain.handle("parse-request", async (event, text) => {
+	ipcMain.handle('parse-request', async (event, text) => {
 		try {
-			console.log("Parsing text:", text);
-			const tree = parser.parse(text);
-			if (!tree || !tree.rootNode) {
-				console.error("Tree or root node is undefined");
-				return { error: "Tree or root node is undefined" };
-			}
-			console.log("Parsed tree:", tree); // Debugging output
-			console.log("Root node:", tree.rootNode); // Debugging output
-
-			const serializedTree = serializeNode(tree.rootNode); // Serialize the root node
-			console.log("Serialized root node:", serializedTree); // Debugging output
-			event.sender.send("parse-result", JSON.stringify(serializedTree)); // Send serialized root node to renderer
+		  const tree = parser.parse(text);
+		  if (!tree || !tree.rootNode) {
+			console.error('Tree or root node is undefined');
+			return { error: 'Tree or root node is undefined' };
+		  }
+	
+		  const serializedTree = serializeNode(tree.rootNode);
+		  event.sender.send('parse-result', JSON.stringify(serializedTree));
 		} catch (error) {
-			console.error("Error parsing text:", error);
-			return { error: error.message };
+		  console.error('Error parsing text:', error);
+		  return { error: error.message };
 		}
-	});
+	  });
 
 	ipcMain.on("open-file-request", async () => {
 		try {
