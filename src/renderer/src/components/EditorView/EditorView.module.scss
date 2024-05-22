@@ -57,7 +57,7 @@
 
                     .editor-line-padding {
                         position: absolute;
-                        height: 93vh; 
+                        height: 93vh;
                         width: 100%;
                     }
                 }
@@ -67,13 +67,55 @@
 }
 
 .identifier {
-    color: red;
+    color: rgb(138, 213, 223);
 }
 
 .string {
-    color: green;
+    color: rgb(170, 184, 52);
 }
 
 .number {
-    color: blue;
+    color: rgb(80, 124, 189);
+}
+
+.ERROR {
+    color: red !important;
+}
+
+.expression_statement {
+    color: #387081;
+}
+
+.comment {
+    color: #315831;
+}
+
+.const {
+    color: rgb(43, 76, 82);
+}
+
+.import {
+    color: rgb(98, 64, 136);
+}
+
+.from {
+    color: rgb(98, 64, 136);
+}
+
+.new {
+    color: rgb(39, 216, 172);
+}
+
+.left-bracket,
+.right-bracket {
+    color: rgb(138, 146, 21);
+}
+
+.semicolon {
+    color: rgb(255, 255, 255);
+}
+
+.right-parenthesis,
+.left-parenthesis {
+    color: rgb(112, 180, 192);
 }

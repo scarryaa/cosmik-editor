@@ -1,6 +1,5 @@
 :root {
     --selection-color: #0076d72a;
-    --keyword-color: red;
 }
 
 .line {
@@ -22,35 +21,3 @@
     color: transparent;
     position: absolute;
 }
-
-.keyword {
-    color: var(--keyword-color);
-}
-
-.identifier {
-    color: #5a2b66;
-  }
-  
-  .keyword {
-    color: red;
-  }
-
-  .string {
-    color: green;
-  }
-
-  .const {
-    color: blue;
-  }
-
-  .let {
-    color: blue;
-  }
-
-  .number {
-    color: rgb(101, 150, 131);
-  }
-
-  .import {
-    color: red;
-  }

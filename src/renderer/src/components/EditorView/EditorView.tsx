@@ -5,8 +5,7 @@ import { parserTree } from "@renderer/stores/parser-tree";
 import TabStore from "@renderer/stores/tabs";
 import { getNumberOfLinesOnScreen } from "@renderer/util/util";
 import { For, createEffect, createMemo, createSignal, on } from "solid-js";
-import type { Accessor, Component, JSX } from "solid-js";
-import type { SyntaxNode } from "web-tree-sitter";
+import type { Accessor, Component } from "solid-js";
 import Cursor from "../Cursor/Cursor";
 import EditorLine from "../EditorLine/EditorLine";
 import LineNumbers from "../LineNumbers/LineNumbers";
@@ -19,12 +18,21 @@ interface EditorViewProps {
 	scrollSignal: Accessor<boolean>;
 }
 
+interface ASTNode {
+	type: string;
+	startIndex: number;
+	endIndex: number;
+	isNamed: boolean;
+	children: ASTNode[];
+	text: string;
+}
+
 const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollTop, setViewScrollTop] = createSignal(0);
 	const [viewScrollLeft, setViewScrollLeft] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
 	const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
-	const [spans, setSpans] = createSignal<Record<number, JSX.Element[]>>({});
+	const [spans, setSpans] = createSignal<string>();
 	const windowSize = createMemo(() => getNumberOfLinesOnScreen(lineHeight) + 5);
 	const fileStore = useFileStore();
 
@@ -102,6 +110,79 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		});
 	};
 
+	const specialCharacterStyles: { [key: string]: string } = {
+		"{": "left-bracket",
+		"}": "right-bracket",
+		"[": "left-square-bracket",
+		"]": "right-square-bracket",
+		";": "semicolon",
+		":": "colon",
+		"'": "single-quote",
+		'"': "double-quote",
+		"(": "left-parenthesis",
+		")": "right-parenthesis",
+		",": "comma",
+		".": "dot",
+	};
+
+	function parseNode(
+		node: ASTNode,
+		rootText: string,
+		styles: { [key: string]: string },
+	): string {
+		let spans: string[] = [];
+		let current_position = node.startIndex;
+
+		if (!node?.children) return "";
+
+		for (let child of node.children) {
+			if (child.startIndex > current_position) {
+				let text_before =
+					rootText?.slice(current_position, child.startIndex) ?? "";
+				spans.push(text_before.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>"));
+			}
+
+			let childSpan = parseNode(child, rootText, styles);
+			let spanType =
+				styles[specialCharacterStyles[child.type]] ||
+				styles[child.type] ||
+				"default-style";
+			let span = `<span class="${spanType}">${
+				childSpan ||
+				(rootText
+					?.slice(child.startIndex, child.endIndex)
+					?.replace(/ /g, "&nbsp;")
+					.replace(/\n/g, "<br/>") ??
+					"")
+			}</span>`;
+			spans.push(span);
+			current_position = child.endIndex;
+		}
+
+		if (current_position < node.endIndex) {
+			let text_after = rootText?.slice(current_position, node.endIndex) ?? "";
+			spans.push(text_after.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>"));
+		}
+
+		setSpans(spans.join(""));
+		return spans.join("");
+	}
+
+	const memoizedParseNode = createMemo(() => {
+		if (parserTree()) {
+			return parseNode(parserTree(), parserTree().text, styles);
+		}
+		return "";
+	});
+
+	const memoizedTextLines = createMemo(() =>
+		props.editor().getText().split("\n"),
+	);
+
+	const lines = createMemo(() => {
+		return memoizedParseNode()?.split("<br/>");
+	});
+
 	createEffect(
 		on(
 			() => TabStore.activeTab?.id,
@@ -149,9 +230,11 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		),
 	);
 
-	const memoizedTextLines = createMemo(() =>
-		props.editor().getText().split("\n"),
-	);
+	createEffect(() => {
+		if (parserTree()) {
+			parseNode(parserTree(), parserTree().text, styles);
+		}
+	});
 
 	return (
 		<div
@@ -187,7 +270,9 @@ const EditorView: Component<EditorViewProps> = (props) => {
 											startLine: props.editor().selections[0]?.startLine,
 											endLine: props.editor().selections[0]?.endLine,
 										}}
-										highlightedContent={spans()[visibleLinesStart() + index()]}
+										highlightedContent={
+											lines()?.[visibleLinesStart() + index()]
+										}
 									/>
 								)}
 							</For>

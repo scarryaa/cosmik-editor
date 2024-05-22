@@ -25,7 +25,7 @@ interface EditorLineProps {
 		startLine: number;
 		endLine: number;
 	};
-	highlightedContent: JSX.Element;
+	highlightedContent: string;
 }
 
 const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
@@ -109,7 +109,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 			}}
 			class={styles.line}
 		>
-			<div class={styles["line-content"]}>{props.highlightedContent ||  props.content}</div>
+			<div class={styles["line-content"]} innerHTML={props.highlightedContent} />
 			<div
 				class={styles.selection}
 				style={{
