@@ -37,6 +37,9 @@ const api = {
 	parseRequest: (text: string) => ipcRenderer.invoke("parse-request", text),
 	onParseResult: (callback: (event: any, data: any) => void) =>
 		ipcRenderer.on("parse-result", callback),
+	setLanguageRequest: (extension: string) => ipcRenderer.invoke("set-language-request", extension),
+	onLanguageSet: (callback: (event: any, data: any) => void) => ipcRenderer.on("language-set", callback),
+	manualSetLanguageRequest: (language: string) => ipcRenderer.invoke("manual-set-language-request", language),
 };
 
 if (process.contextIsolated) {

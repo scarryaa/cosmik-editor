@@ -8,7 +8,6 @@ import TabStore from "@renderer/stores/tabs";
 import { debounce } from "@renderer/util/util";
 import {
 	type Component,
-	type JSX,
 	createEffect,
 	createMemo,
 	createSignal,
@@ -40,6 +39,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 		if (activeTab) {
 			const extension = activeTab.id.split(".").pop() as ParseType;
 			const parsedContent = await parseBasedOnExtension(extension, content);
+			window.api.setLanguageRequest(activeTab.id);
 			setHighlightedContent(parsedContent);
 		}
 	}, 0);
@@ -109,7 +109,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 			}}
 			class={styles.line}
 		>
-			<div class={styles["line-content"]} innerHTML={props.highlightedContent} />
+			<div class={styles["line-content"]} innerHTML={props.highlightedContent || highlightedContent()} />
 			<div
 				class={styles.selection}
 				style={{

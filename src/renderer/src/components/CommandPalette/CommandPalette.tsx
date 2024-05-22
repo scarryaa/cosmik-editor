@@ -1,4 +1,4 @@
-import { initWithPrefix, isOpen } from "@renderer/stores/command-palette";
+import { contents, initWithPrefix, isOpen } from "@renderer/stores/command-palette";
 import {
 	type Component,
 	For,
@@ -34,14 +34,14 @@ const CommandPalette: Component<CommandPaletteProps> = (props) => {
 		if (queryText.startsWith(">")) {
 			// If query starts with ">", only show prefixed commands
 			const trimmedQuery = queryText.slice(1).trim();
-			return props.commands.filter(
+			return contents().filter(
 				(command) =>
 					command.prefix && command.label.toLowerCase().includes(trimmedQuery),
 			);
 		}
 
 		// Otherwise, show all matching commands (with or without prefix)
-		return props.commands.filter((command) =>
+		return contents().filter((command) =>
 			command.label.toLowerCase().includes(queryText),
 		);
 	};

@@ -47,3 +47,19 @@ export const [panes, setPanes] = createSignal([
 		previousHeight: "900",
 	},
 ]);
+
+export const paneIsOpen = (openPane: any) =>
+	panes().some((pane) => pane.name === openPane.name);
+
+export const addPane = (newPane: any) => {
+	if (!paneIsOpen(newPane)) {
+		setPanes([...panes(), newPane]);
+	}
+};
+
+export const removePane = (paneName: string) =>
+	setPanes(panes().filter((pane) => pane.name !== paneName));
+
+export const togglePane = (pane: any) => {
+	paneIsOpen(pane) ? removePane(pane.name) : addPane(pane);
+};

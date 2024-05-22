@@ -79,8 +79,19 @@
 }
 
 .ERROR {
-    color: red !important;
-}
+    position: relative;
+  
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='3'><path d='M0 0 Q1 3, 2 0 T4 0' stroke='red' fill='none' stroke-width='2'/></svg>");
+      background-repeat: repeat-x;
+    }
+  }
 
 .expression_statement {
     color: #387081;
@@ -118,4 +129,12 @@
 .right-parenthesis,
 .left-parenthesis {
     color: rgb(112, 180, 192);
+}
+
+.class {
+    color: rgb(112, 180, 192);
+}
+
+.type_identifier, .property_identifier {
+    color: #a85f5f;
 }

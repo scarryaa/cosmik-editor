@@ -12,20 +12,9 @@ import {
 } from "electron";
 import { updateElectronApp } from "update-electron-app";
 import icon from "../../resources/icon.png?asset";
-import parser from './tree-sitter';
+import { parser, serializeNode, setLanguageByExtension, setLanguageManually } from "./tree-sitter/parser-utils";
 
 let mainWindow: BrowserWindow | null = null;
-
-function serializeNode(node) {
-	return {
-		type: node.type,
-		startIndex: node.startIndex,
-		endIndex: node.endIndex,
-		isNamed: node.isNamed,
-		children: node.children.map(serializeNode),
-		text: node.text ? node.text.toString() : null,
-	};
-}
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
@@ -548,21 +537,41 @@ app.whenReady().then(() => {
 		}
 	});
 
-	ipcMain.handle('parse-request', async (event, text) => {
+	ipcMain.handle("set-language-request", async (event, extension) => {
 		try {
-		  const tree = parser.parse(text);
-		  if (!tree || !tree.rootNode) {
-			console.error('Tree or root node is undefined');
-			return { error: 'Tree or root node is undefined' };
-		  }
-	
-		  const serializedTree = serializeNode(tree.rootNode);
-		  event.sender.send('parse-result', JSON.stringify(serializedTree));
+			const language = setLanguageByExtension(extension);
+			mainWindow?.webContents.send("language-set", language );
 		} catch (error) {
-		  console.error('Error parsing text:', error);
-		  return { error: error.message };
+			console.error("Error setting parser language: ", error);
+			return { error: error.message };
 		}
-	  });
+	});
+
+	ipcMain.handle("manual-set-language-request", async (event, language) => {
+		try {
+			console.log(language);
+			setLanguageManually(language);
+		} catch (error) {
+			console.error("Error setting language manually:", error);
+			return { error: error.message };
+		}
+	});
+
+	ipcMain.handle("parse-request", async (event, text) => {
+		try {
+			const tree = parser.parse(text);
+			if (!tree || !tree.rootNode) {
+				console.error("Tree or root node is undefined");
+				return { error: "Tree or root node is undefined" };
+			}
+
+			const serializedTree = serializeNode(tree.rootNode);
+			event.sender.send("parse-result", JSON.stringify(serializedTree));
+		} catch (error) {
+			console.error("Error parsing text:", error);
+			return { error: error.message };
+		}
+	});
 
 	ipcMain.on("open-file-request", async () => {
 		try {

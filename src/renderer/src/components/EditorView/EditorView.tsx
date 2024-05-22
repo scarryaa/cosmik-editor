@@ -132,7 +132,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	): string {
 		let spans: string[] = [];
 		let current_position = node.startIndex;
-
+		if (!node) return "";
 		if (!node?.children) return "";
 
 		for (let child of node.children) {
@@ -146,6 +146,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 			let spanType =
 				styles[specialCharacterStyles[child.type]] ||
 				styles[child.type] ||
+				child.type ||
 				"default-style";
 			let span = `<span class="${spanType}">${
 				childSpan ||

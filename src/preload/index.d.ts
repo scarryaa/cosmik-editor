@@ -22,6 +22,9 @@ declare global {
 			sendCutOrCopiedText: (text) => void;
 			parseRequest: (text: string) => string;
 			onParseResult: (callback: (event: any, data: any) => void) => void;
+			setLanguageRequest: (extension: string) => void;
+			onLanguageSet: (callback: (event: any, data: any) => void) => void;
+			manualSetLanguageRequest: (language: string) => void;
 		};
 	}
 }
