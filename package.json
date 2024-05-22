@@ -118,6 +118,7 @@
 		"sass": "^1.77.1",
 		"shiki": "^1.5.2",
 		"solid-js": "^1.8.12",
+		"tree-sitter-cli": "^0.22.6",
 		"typescript": "^5.3.3",
 		"vite": "^5.0.12",
 		"vite-plugin-electron-renderer": "^0.14.5",

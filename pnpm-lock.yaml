@@ -79,6 +79,9 @@ devDependencies:
   solid-js:
     specifier: ^1.8.12
     version: 1.8.17
+  tree-sitter-cli:
+    specifier: ^0.22.6
+    version: 0.22.6
   typescript:
     specifier: ^5.3.3
     version: 5.4.5
@@ -4707,6 +4710,12 @@ packages:
     engines: {node: '>=18'}
     dependencies:
       punycode: 2.3.1
+    dev: true
+
+  /tree-sitter-cli@0.22.6:
+    resolution: {integrity: sha512-s7mYOJXi8sIFkt/nLJSqlYZP96VmKTc3BAwIX0rrrlRxWjWuCwixFqwzxWZBQz4R8Hx01iP7z3cT3ih58BUmZQ==}
+    hasBin: true
+    requiresBuild: true
     dev: true
 
   /tree-sitter-typescript@0.21.1(tree-sitter@0.21.1):
