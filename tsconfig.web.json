@@ -4,14 +4,15 @@
 		"src/renderer/src/env.d.ts",
 		"src/renderer/src/**/*",
 		"src/renderer/src/**/*.tsx",
-		"src/preload/*.d.ts"
-, "src/main/tree-sitter"	],
+		"src/preload/*.d.ts",
+		"src/main/tree-sitter"
+	],
 	"compilerOptions": {
 		"composite": true,
 		"jsxImportSource": "solid-js",
 		"baseUrl": ".",
 		"paths": {
 			"@renderer/*": ["src/renderer/src/*"]
-		},
+		}
 	}
 }
