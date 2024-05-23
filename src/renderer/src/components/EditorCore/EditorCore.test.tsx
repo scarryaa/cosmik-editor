@@ -2,7 +2,7 @@ import { Editor } from "@renderer/models/Editor";
 import EditorStore from "@renderer/stores/editors";
 import TabStore, { TabState } from "@renderer/stores/tabs";
 import { createSignal } from "solid-js";
-import { fireEvent, render, screen } from "solid-testing-library";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import EditorCore from "./EditorCore";
 import "@testing-library/jest-dom";
@@ -21,6 +21,8 @@ describe("EditorCore", () => {
 		window.api = {
 			copy: vi.fn(),
 			paste: vi.fn().mockResolvedValue("Pasted content"),
+			onParseResult: vi.fn().mockResolvedValue(true),
+			parseRequest: vi.fn().mockResolvedValue(true),
 		};
 	});
 
@@ -113,4 +115,90 @@ describe("EditorCore", () => {
 
 		expect(ensureCursorVisible).toHaveBeenCalled();
 	});
+
+	describe("should navigate correctly with the arrow keys", () => {
+		it("should navigate with left arrow", () => {
+			setup();
+			const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+			fireEvent.keyDown(textarea, { key: "ArrowLeft" });
+			expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+			expect(editor.cursors[0].line).toBe(0);
+		});
+
+		it("should navigate with right arrow", () => {
+			setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+			fireEvent.keyDown(textarea, { key: "a" });
+            fireEvent.keyDown(textarea, { key: "ArrowLeft" });
+            fireEvent.keyDown(textarea, { key: "ArrowRight" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(0);
+			expect(editor.cursors[0].character).toBe(1);
+        });
+
+		it("should navigate with up arrow", () => {
+			setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+			fireEvent.keyDown(textarea, { key: "Enter" });
+            fireEvent.keyDown(textarea, { key: "ArrowUp" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(0);
+        });
+
+		it("should navigate with down arrow", () => {
+			setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+            fireEvent.keyDown(textarea, { key: "Enter" });
+            fireEvent.keyDown(textarea, { key: "ArrowUp" });
+            fireEvent.keyDown(textarea, { key: "ArrowDown" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(1);
+        });
+	});
+
+	describe("should navigate correctly with the page up and page down keys", () => {
+		it("should navigate with page up", () => {
+            setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+            fireEvent.keyDown(textarea, { key: "Enter" });
+            fireEvent.keyDown(textarea, { key: "PageUp" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(0);
+        });
+
+		it("should navigate with page down", () => {
+			setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+			fireEvent.keyDown(textarea, { key: "Enter" });
+            fireEvent.keyDown(textarea, { key: "ArrowUp" });
+            fireEvent.keyDown(textarea, { key: "PageDown" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(1);
+        });
+    });
+
+	describe("should navigate correctly with the home and end keys", () => {
+		it("should navigate with home", () => {
+            setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+            fireEvent.keyDown(textarea, { key: "abc" });
+            fireEvent.keyDown(textarea, { key: "Home" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(0);
+            expect(editor.cursors[0].character).toBe(0);
+        });
+
+		it("should navigate with end", () => {
+			setup();
+            const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+            fireEvent.keyDown(textarea, { key: "a" });
+            fireEvent.keyDown(textarea, { key: "b" });
+            fireEvent.keyDown(textarea, { key: "c" });
+            fireEvent.keyDown(textarea, { key: "ArrowLeft" });
+            fireEvent.keyDown(textarea, { key: "End" });
+            expect(editor.getSelection(0)?.isEmpty()).toBe(true);
+            expect(editor.cursors[0].line).toBe(0);
+            expect(editor.cursors[0].character).toBe(18);
+        });
+    });
 });

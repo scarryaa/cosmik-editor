@@ -10,7 +10,9 @@
 	},
 	"build": {
 		"win": {
-			"publish": ["github"]
+			"publish": [
+				"github"
+			]
 		}
 	},
 	"electronForge": {
@@ -41,7 +43,10 @@
 			},
 			{
 				"name": "@electron-forge/maker-zip",
-				"platforms": ["darwin", "linux"]
+				"platforms": [
+					"darwin",
+					"linux"
+				]
 			},
 			{
 				"name": "@electron-forge/maker-deb",
@@ -78,7 +83,7 @@
 		"typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
 		"start": "stream-run electron-vite preview",
 		"test": "vitest",
-		"dev": "steam-run electron-vite dev",
+		"dev": "electron-vite dev",
 		"build": "electron-vite build",
 		"postinstall": "electron-builder install-app-deps",
 		"build:unpack": "pnpm run build && electron-builder --dir",
