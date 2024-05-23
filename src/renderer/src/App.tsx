@@ -131,6 +131,9 @@ const App: Component = () => {
 				case "typescript":
 					setSelectedLanguage(Languages.TypeScript);
 					break;
+				case "tsx":
+					setSelectedLanguage(Languages.TypeScriptTSX);
+					break;
 				default:
 					setSelectedLanguage(Languages.Plaintext);
 					break;

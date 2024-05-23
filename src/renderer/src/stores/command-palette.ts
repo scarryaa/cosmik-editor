@@ -11,34 +11,59 @@ import { Languages, setSelectedLanguage } from "./language-selections";
 import { togglePane } from "./panes";
 
 const languageHelper = (language: Languages) => {
-    setSelectedLanguage(language);
-    window.api.manualSetLanguageRequest(language);
-}
+	setSelectedLanguage(language);
+	window.api.manualSetLanguageRequest(language);
+};
 
 export const languageCommands = [
-    { id: 1, label: "Bash", action: () => languageHelper(Languages.Bash) },
-    { id: 2, label: "C", action: () => languageHelper(Languages.C) },
-    { id: 3, label: "C++", action: () => languageHelper(Languages.CPP) },
-    { id: 4, label: "C#", action: () => languageHelper(Languages.CSharp) },
-    { id: 5, label: "Common Lisp", action: () => languageHelper(Languages.CommonLisp) },
-    { id: 6, label: "CUDA", action: () => languageHelper(Languages.CUDA) },
-    { id: 7, label: "GLSL", action: () => languageHelper(Languages.GLSL) },
-    { id: 8, label: "Go", action: () => languageHelper(Languages.Go) },
-    { id: 9, label: "Haskell", action: () => languageHelper(Languages.Haskell) },
-    { id: 10, label: "HTML", action: () => languageHelper(Languages.HTML) },
-    { id: 11, label: "Java", action: () => languageHelper(Languages.Java) },
-    { id: 12, label: "JavaScript", action: () => languageHelper(Languages.JavaScript) },
-    { id: 13, label: "JSON", action: () => languageHelper(Languages.JSON) },
-    { id: 14, label: "OCaml", action: () => languageHelper(Languages.OCaml) },
-    { id: 15, label: "Odin", action: () => languageHelper(Languages.Odin) },
-    { id: 16, label: "PHP", action: () => languageHelper(Languages.PHP) },
-    { id: 16, label: "Plaintext", action: () => languageHelper(Languages.Plaintext) },
-    { id: 17, label: "Python", action: () => languageHelper(Languages.Python) },
-    { id: 18, label: "Regex", action: () => languageHelper(Languages.Regex) },
-    { id: 19, label: "Ruby", action: () => languageHelper(Languages.Ruby) },
-    { id: 20, label: "Rust", action: () => languageHelper(Languages.Rust) },
-    { id: 21, label: "SystemRDL", action: () => languageHelper(Languages.SystemRDL) },
-    { id: 22, label: "TypeScript", action: () => languageHelper(Languages.TypeScript) },
+	{ id: 1, label: "Bash", action: () => languageHelper(Languages.Bash) },
+	{ id: 2, label: "C", action: () => languageHelper(Languages.C) },
+	{ id: 3, label: "C++", action: () => languageHelper(Languages.CPP) },
+	{ id: 4, label: "C#", action: () => languageHelper(Languages.CSharp) },
+	{
+		id: 5,
+		label: "Common Lisp",
+		action: () => languageHelper(Languages.CommonLisp),
+	},
+	{ id: 6, label: "CUDA", action: () => languageHelper(Languages.CUDA) },
+	{ id: 7, label: "GLSL", action: () => languageHelper(Languages.GLSL) },
+	{ id: 8, label: "Go", action: () => languageHelper(Languages.Go) },
+	{ id: 9, label: "Haskell", action: () => languageHelper(Languages.Haskell) },
+	{ id: 10, label: "HTML", action: () => languageHelper(Languages.HTML) },
+	{ id: 11, label: "Java", action: () => languageHelper(Languages.Java) },
+	{
+		id: 12,
+		label: "JavaScript",
+		action: () => languageHelper(Languages.JavaScript),
+	},
+	{ id: 13, label: "JSON", action: () => languageHelper(Languages.JSON) },
+	{ id: 14, label: "OCaml", action: () => languageHelper(Languages.OCaml) },
+	{ id: 15, label: "Odin", action: () => languageHelper(Languages.Odin) },
+	{ id: 16, label: "PHP", action: () => languageHelper(Languages.PHP) },
+	{
+		id: 16,
+		label: "Plaintext",
+		action: () => languageHelper(Languages.Plaintext),
+	},
+	{ id: 17, label: "Python", action: () => languageHelper(Languages.Python) },
+	{ id: 18, label: "Regex", action: () => languageHelper(Languages.Regex) },
+	{ id: 19, label: "Ruby", action: () => languageHelper(Languages.Ruby) },
+	{ id: 20, label: "Rust", action: () => languageHelper(Languages.Rust) },
+	{
+		id: 21,
+		label: "SystemRDL",
+		action: () => languageHelper(Languages.SystemRDL),
+	},
+	{
+		id: 22,
+		label: "TypeScript",
+		action: () => languageHelper(Languages.TypeScript),
+	},
+	{
+		id: 23,
+		label: "TypeScript TSX",
+		action: () => languageHelper(Languages.TypeScriptTSX),
+	},
 ];
 
 export const commands = [

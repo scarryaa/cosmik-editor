@@ -2,7 +2,9 @@ import { PieceTable } from "@renderer/models/PieceTable";
 import type { Tab } from "@renderer/models/Tab";
 import { createEffect } from "solid-js";
 import { createStore } from "solid-js/store";
+import type { SyntaxNode } from "web-tree-sitter";
 import EditorStore from "./editors";
+import { setParserTree } from "./parser-tree";
 import PieceTableStore from "./piece-tables";
 
 export enum TabState {
@@ -145,6 +147,8 @@ const TabStore = {
 				}
 			}
 
+			setParserTree({} as SyntaxNode);
+			window.api.parseRequest(EditorStore.getActiveEditor()!.getText());
 			window.dispatchEvent(new CustomEvent("tabOpened", { detail: { tabId } }));
 		}
 	},

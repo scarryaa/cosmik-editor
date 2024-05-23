@@ -109,7 +109,10 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 			}}
 			class={styles.line}
 		>
-			<div class={styles["line-content"]} innerHTML={props.highlightedContent || highlightedContent()} />
+			<div
+				class={styles["line-content"]}
+				innerHTML={props.highlightedContent || highlightedContent()}
+			/>
 			<div
 				class={styles.selection}
 				style={{

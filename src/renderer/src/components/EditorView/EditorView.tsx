@@ -123,6 +123,10 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		")": "right-parenthesis",
 		",": "comma",
 		".": "dot",
+		"&&": "double-ampersand",
+		"/>": "closing-greater-than",
+		">": "greater-than",
+		"<": "less-than",
 	};
 
 	function parseNode(
@@ -135,11 +139,25 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		if (!node) return "";
 		if (!node?.children) return "";
 
+		// Function to escape special HTML characters
+		const escapeHtml = (text: string) => {
+			return text
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#039;");
+		};
+
 		for (let child of node.children) {
 			if (child.startIndex > current_position) {
 				let text_before =
 					rootText?.slice(current_position, child.startIndex) ?? "";
-				spans.push(text_before.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>"));
+				spans.push(
+					escapeHtml(text_before)
+						.replace(/ /g, "&nbsp;")
+						.replace(/\n/g, "<br/>"),
+				);
 			}
 
 			let childSpan = parseNode(child, rootText, styles);
@@ -150,8 +168,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				"default-style";
 			let span = `<span class="${spanType}">${
 				childSpan ||
-				(rootText
-					?.slice(child.startIndex, child.endIndex)
+				(escapeHtml(rootText?.slice(child.startIndex, child.endIndex))
 					?.replace(/ /g, "&nbsp;")
 					.replace(/\n/g, "<br/>") ??
 					"")
@@ -162,7 +179,9 @@ const EditorView: Component<EditorViewProps> = (props) => {
 
 		if (current_position < node.endIndex) {
 			let text_after = rootText?.slice(current_position, node.endIndex) ?? "";
-			spans.push(text_after.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>"));
+			spans.push(
+				escapeHtml(text_after).replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>"),
+			);
 		}
 
 		setSpans(spans.join(""));

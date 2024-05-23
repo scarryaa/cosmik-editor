@@ -1,4 +1,8 @@
-import { contents, initWithPrefix, isOpen } from "@renderer/stores/command-palette";
+import {
+	contents,
+	initWithPrefix,
+	isOpen,
+} from "@renderer/stores/command-palette";
 import {
 	type Component,
 	For,

@@ -56,7 +56,20 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			} else {
 				editor.clearSelection(0);
 			}
-			editor;
+			switch (direction) {
+				case "Left":
+					editor.moveLeft(0);
+					break;
+				case "Right":
+					editor.moveRight(0);
+					break;
+				case "Up":
+					editor.moveUp(0);
+					break;
+				case "Down":
+					editor.moveDown(0);
+					break;
+			}
 		};
 
 		switch (e.key) {

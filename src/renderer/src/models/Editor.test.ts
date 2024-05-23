@@ -180,9 +180,7 @@ describe("Editor", () => {
 		expect(editor.cursors[0].character).toBe(0);
 	});
 
-	it("handles undo correctly", () => {
-	});
-	
-	it("handles redo correctly", () => {
-	});
+	it("handles undo correctly", () => {});
+
+	it("handles redo correctly", () => {});
 });

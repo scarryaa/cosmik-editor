@@ -102,12 +102,14 @@ function setLanguageByExtension(filePath: string) {
 			parser.setLanguage(rust);
 			return "rust";
 		case "ts":
-		case "tsx":
 			parser.setLanguage(typescript.typescript);
 			return "typescript";
+		case "tsx":
+			parser.setLanguage(typescript.tsx);
+			return "tsx";
 		default:
 			if (parser.getLanguage() === null) return;
-      
+
 			console.warn(`Unsupported file extension: ${extension}`);
 			parser.setLanguage(null);
 			return "plaintext";
@@ -190,7 +192,6 @@ const setLanguageManually = (language: string) => {
 			break;
 	}
 };
-
 
 function serializeNode(node: any) {
 	return {

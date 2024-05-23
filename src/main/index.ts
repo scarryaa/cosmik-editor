@@ -12,7 +12,12 @@ import {
 } from "electron";
 import { updateElectronApp } from "update-electron-app";
 import icon from "../../resources/icon.png?asset";
-import { parser, serializeNode, setLanguageByExtension, setLanguageManually } from "./tree-sitter/parser-utils";
+import {
+	parser,
+	serializeNode,
+	setLanguageByExtension,
+	setLanguageManually,
+} from "./tree-sitter/parser-utils";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -540,7 +545,7 @@ app.whenReady().then(() => {
 	ipcMain.handle("set-language-request", async (event, extension) => {
 		try {
 			const language = setLanguageByExtension(extension);
-			mainWindow?.webContents.send("language-set", language );
+			mainWindow?.webContents.send("language-set", language);
 		} catch (error) {
 			console.error("Error setting parser language: ", error);
 			return { error: error.message };
