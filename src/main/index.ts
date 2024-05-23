@@ -6,7 +6,7 @@ import { registerIpcHandlers } from "./ipc-handlers";
 import { createMenu } from "./menu";
 import { checkForUpdates } from "./misc";
 
-let mainWindow: BrowserWindow | null = null;
+export let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({

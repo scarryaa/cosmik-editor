@@ -1,4 +1,5 @@
 import { Menu } from "electron";
+import { mainWindow } from ".";
 import {
 	openFile,
 	openFolder,
@@ -24,12 +25,12 @@ const template: Menu = [
 			{
 				label: "Open File",
 				accelerator: "CmdOrCtrl+O",
-				click: openFile,
+				click: () => openFile(mainWindow!),
 			},
 			{
 				label: "Open Folder",
 				accelerator: "CmdOrCtrl+Shift+O",
-				click: openFolder,
+				click: () => openFolder(mainWindow!),
 			},
 			{ type: "separator" },
 			{ label: "Save", accelerator: "CmdOrCtrl+S", click: requestSaveFile },

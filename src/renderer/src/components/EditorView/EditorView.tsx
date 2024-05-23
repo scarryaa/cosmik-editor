@@ -12,6 +12,12 @@ import LineNumbers from "../LineNumbers/LineNumbers";
 import TabsWrapper from "../TabsWrapper/TabsWrapper";
 import styles from "./EditorView.module.scss";
 
+interface FoldRegion {
+    startLine: number;
+    endLine: number;
+    isFolded: boolean;
+}
+
 interface EditorViewProps {
 	editor: Accessor<Editor>;
 	click: () => void;
@@ -31,6 +37,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const [viewScrollTop, setViewScrollTop] = createSignal(0);
 	const [viewScrollLeft, setViewScrollLeft] = createSignal(0);
 	const [cursorRefs, setCursorRefs] = createSignal<HTMLElement[]>([]);
+	const [foldRegions, setFoldRegions] = createSignal<FoldRegion[]>([]);
 	const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
 	const [spans, setSpans] = createSignal<string>();
 	const windowSize = createMemo(() => getNumberOfLinesOnScreen(lineHeight) + 5);
@@ -129,6 +136,12 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		"<": "less-than",
 	};
 
+	function identifyFoldRegions(tree: ASTNode): FoldRegion[] {
+	}
+
+	function toggleFold(line: number): void {
+	}
+
 	function parseNode(
 		node: ASTNode,
 		rootText: string,
@@ -208,6 +221,13 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const lines = createMemo(() => {
 		return memoizedParseNode()?.split("<br/>");
 	});
+
+	createEffect(() => {
+		if (parserTree()) {
+		  const newFoldRegions = identifyFoldRegions(parserTree());
+		  setFoldRegions(newFoldRegions);
+		}
+	  });
 
 	createEffect(
 		on(
