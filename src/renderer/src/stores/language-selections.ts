@@ -119,7 +119,6 @@ export enum Languages {
 	TOML = "TOML",
 	TreeSitterQuery = "TreeSitterQuery",
 	Turtle = "Turtle",
-	Twig = "Twig",
 	TypeScript = "TypeScript",
 	TypeScriptTSX = "TypeScriptTSX",
 	Ungrammar = "Ungrammar",

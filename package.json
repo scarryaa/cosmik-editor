@@ -115,7 +115,6 @@
 		"tree-sitter-regex": "^0.21.0",
 		"tree-sitter-ruby": "^0.21.0",
 		"tree-sitter-rust": "^0.21.0",
-		"tree-sitter-twig": "^0.4.0",
 		"tree-sitter-typescript": "^0.21.1",
 		"update-electron-app": "^3.0.0",
 		"web-tree-sitter": "^0.22.6"

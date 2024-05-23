@@ -89,12 +89,6 @@ dependencies:
   tree-sitter-rust:
     specifier: ^0.21.0
     version: 0.21.0(tree-sitter@0.21.1)
-  tree-sitter-systemrdl:
-    specifier: ^0.8.0
-    version: 0.8.0
-  tree-sitter-twig:
-    specifier: ^0.4.0
-    version: 0.4.0
   tree-sitter-typescript:
     specifier: ^0.21.1
     version: 0.21.1(tree-sitter@0.21.1)
@@ -3980,10 +3974,6 @@ packages:
       msgpackr-extract: 3.0.2
     dev: false
 
-  /nan@2.19.0:
-    resolution: {integrity: sha512-nO1xXxfh/RWNxfd/XPfbIfFk5vgLsAxUR9y5O0cHMJu/AW9U95JLXqthYHjEp+8gQ5p96K9jUp8nbVOxCdRbtw==}
-    dev: false
-
   /nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -5093,19 +5083,6 @@ packages:
       node-addon-api: 7.1.0
       node-gyp-build: 4.8.1
       tree-sitter: 0.21.1
-    dev: false
-
-  /tree-sitter-systemrdl@0.8.0:
-    resolution: {integrity: sha512-QUAcwUFP+BFa8NEDSOoxDgTPOZEkN8BDVHpbJo5AIpoHLPRE2zEwNgzrJiZFKPsZb9P6uD1oI41WlU20kR/AJw==}
-    requiresBuild: true
-    dependencies:
-      nan: 2.19.0
-    dev: false
-
-  /tree-sitter-twig@0.4.0:
-    resolution: {integrity: sha512-t+QKETkexfmi8Aee7STLFMYWLtgJqZew0gpyaSOtAuV0JXHUyt+zLBLGJX+UaDBR9WQxpYVD5NW+authSbJXVQ==}
-    dependencies:
-      nan: 2.19.0
     dev: false
 
   /tree-sitter-typescript@0.21.1(tree-sitter@0.21.1):
