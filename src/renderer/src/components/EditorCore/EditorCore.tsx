@@ -170,16 +170,16 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				break;
 			case "PageUp":
 				editor.moveTo(
-					0,
 					editor.cursorAt(0).character,
 					editor.cursorAt(0).line - getNumberOfLinesOnScreen(lineHeight),
+					0,
 				);
 				break;
 			case "PageDown":
 				editor.moveTo(
-					0,
 					editor.cursorAt(0).character,
 					editor.cursorAt(0).line + getNumberOfLinesOnScreen(lineHeight),
+					0,
 				);
 				break;
 			default:
