@@ -50,11 +50,6 @@ export const languageCommands = [
 	{ id: 19, label: "Ruby", action: () => languageHelper(Languages.Ruby) },
 	{ id: 20, label: "Rust", action: () => languageHelper(Languages.Rust) },
 	{
-		id: 21,
-		label: "SystemRDL",
-		action: () => languageHelper(Languages.SystemRDL),
-	},
-	{
 		id: 22,
 		label: "TypeScript",
 		action: () => languageHelper(Languages.TypeScript),

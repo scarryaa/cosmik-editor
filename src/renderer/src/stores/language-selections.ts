@@ -113,7 +113,6 @@ export enum Languages {
 	Supercollider = "Supercollider",
 	Svelte = "Svelte",
 	Swift = "Swift",
-	SystemRDL = "SystemRDL",
 	Tact = "Tact",
 	Thrift = "Thrift",
 	TODOComments = "TODOComments",
