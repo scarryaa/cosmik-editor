@@ -72,63 +72,84 @@ const App: Component = () => {
 					setSelectedLanguage(Languages.C);
 					break;
 				case "cpp":
+				case "cxx":
+				case "cc":
+				case "h":
+				case "hpp":
 					setSelectedLanguage(Languages.CPP);
 					break;
-				case "csharp":
+				case "cs":
 					setSelectedLanguage(Languages.CSharp);
 					break;
-				case "commonlisp":
+				case "css":
+					setSelectedLanguage(Languages.CSS);
+					break;
+				case "lisp":
+				case "lsp":
 					setSelectedLanguage(Languages.CommonLisp);
 					break;
-				case "cuda":
+				case "cu":
 					setSelectedLanguage(Languages.CUDA);
 					break;
 				case "glsl":
+				case "vert":
+				case "frag":
 					setSelectedLanguage(Languages.GLSL);
 					break;
 				case "go":
 					setSelectedLanguage(Languages.Go);
 					break;
-				case "haskell":
+				case "hs":
 					setSelectedLanguage(Languages.Haskell);
 					break;
 				case "html":
+				case "htm":
 					setSelectedLanguage(Languages.HTML);
 					break;
 				case "java":
 					setSelectedLanguage(Languages.Java);
 					break;
-				case "javascript":
+				case "js":
+				case "jsx":
 					setSelectedLanguage(Languages.JavaScript);
 					break;
 				case "json":
 					setSelectedLanguage(Languages.JSON);
 					break;
-				case "ocaml":
+				case "ml":
+				case "mli":
 					setSelectedLanguage(Languages.OCaml);
 					break;
 				case "odin":
 					setSelectedLanguage(Languages.Odin);
 					break;
-				case "plaintext":
+				case "txt":
+				case "md":
 					setSelectedLanguage(Languages.Plaintext);
 					break;
 				case "php":
 					setSelectedLanguage(Languages.PHP);
 					break;
-				case "python":
+				case "py":
+				case "pyc":
+				case "pyd":
+				case "pyo":
+				case "pyw":
 					setSelectedLanguage(Languages.Python);
 					break;
-				case "regex":
+				case "re":
 					setSelectedLanguage(Languages.Regex);
 					break;
-				case "ruby":
+				case "rb":
 					setSelectedLanguage(Languages.Ruby);
 					break;
-				case "rust":
+				case "rs":
 					setSelectedLanguage(Languages.Rust);
 					break;
-				case "typescript":
+				case "scss":
+					setSelectedLanguage(Languages.SCSS);
+					break;
+				case "ts":
 					setSelectedLanguage(Languages.TypeScript);
 					break;
 				case "tsx":

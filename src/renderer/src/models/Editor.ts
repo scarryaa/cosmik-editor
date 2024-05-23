@@ -458,7 +458,10 @@ export class Editor implements IEditor {
 		const index = this.calculateGlobalIndex(initialLine, initialChar);
 
 		// Adjust insertion index if at the end of a line
-		this.content.insert(text, isAtLineEnd ? index + 1 : index);
+		this.content.insert(
+			this.convertTabsToSpaces(text),
+			isAtLineEnd ? index + 1 : index,
+		);
 
 		this.lineBreakIndices = this.calculateLineBreaks();
 		const totalLines = this.lineBreakIndices.length;

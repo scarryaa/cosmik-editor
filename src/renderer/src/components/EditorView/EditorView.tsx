@@ -146,7 +146,8 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				.replace(/</g, "&lt;")
 				.replace(/>/g, "&gt;")
 				.replace(/"/g, "&quot;")
-				.replace(/'/g, "&#039;");
+				.replace(/'/g, "&#039;")
+				.replace(/\t/g, "    ");
 		};
 
 		for (let child of node.children) {
@@ -156,7 +157,8 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				spans.push(
 					escapeHtml(text_before)
 						.replace(/ /g, "&nbsp;")
-						.replace(/\n/g, "<br/>"),
+						.replace(/\n/g, "<br/>")
+						.replace(/\t/g, "    "),
 				);
 			}
 
@@ -170,7 +172,8 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				childSpan ||
 				(escapeHtml(rootText?.slice(child.startIndex, child.endIndex))
 					?.replace(/ /g, "&nbsp;")
-					.replace(/\n/g, "<br/>") ??
+					.replace(/\n/g, "<br/>")
+					.replace(/\t/g, "    ") ??
 					"")
 			}</span>`;
 			spans.push(span);
@@ -180,7 +183,10 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		if (current_position < node.endIndex) {
 			let text_after = rootText?.slice(current_position, node.endIndex) ?? "";
 			spans.push(
-				escapeHtml(text_after).replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>"),
+				escapeHtml(text_after)
+					.replace(/ /g, "&nbsp;")
+					.replace(/\n/g, "<br/>")
+					.replace(/\t/g, "    "),
 			);
 		}
 

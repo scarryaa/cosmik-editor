@@ -544,7 +544,7 @@ app.whenReady().then(() => {
 
 	ipcMain.handle("set-language-request", async (event, extension) => {
 		try {
-			const language = setLanguageByExtension(extension);
+			const language = await setLanguageByExtension(extension);
 			mainWindow?.webContents.send("language-set", language);
 		} catch (error) {
 			console.error("Error setting parser language: ", error);
@@ -554,7 +554,6 @@ app.whenReady().then(() => {
 
 	ipcMain.handle("manual-set-language-request", async (event, language) => {
 		try {
-			console.log(language);
 			setLanguageManually(language);
 		} catch (error) {
 			console.error("Error setting language manually:", error);

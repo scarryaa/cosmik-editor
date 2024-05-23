@@ -25,6 +25,7 @@ export const languageCommands = [
 		label: "Common Lisp",
 		action: () => languageHelper(Languages.CommonLisp),
 	},
+	{ id: 21, label: "CSS", action: () => languageHelper(Languages.CSS) },
 	{ id: 6, label: "CUDA", action: () => languageHelper(Languages.CUDA) },
 	{ id: 7, label: "GLSL", action: () => languageHelper(Languages.GLSL) },
 	{ id: 8, label: "Go", action: () => languageHelper(Languages.Go) },
@@ -49,6 +50,7 @@ export const languageCommands = [
 	{ id: 18, label: "Regex", action: () => languageHelper(Languages.Regex) },
 	{ id: 19, label: "Ruby", action: () => languageHelper(Languages.Ruby) },
 	{ id: 20, label: "Rust", action: () => languageHelper(Languages.Rust) },
+	{ id: 21, label: "SCSS", action: () => languageHelper(Languages.SCSS) },
 	{
 		id: 22,
 		label: "TypeScript",
