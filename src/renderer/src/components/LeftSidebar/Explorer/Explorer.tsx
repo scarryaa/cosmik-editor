@@ -53,8 +53,10 @@ const Explorer = () => {
 				return;
 			}
 
-			fetchAndSetFolderContents(response);
-			updateExplorerHeight();
+			await fetchAndSetFolderContents(response);
+			setTimeout(() => {
+				updateExplorerHeight();
+			}, 0)
 		});
 	});
 

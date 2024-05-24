@@ -39,6 +39,7 @@
         "config": {
           "language": 1033,
           "manufacturer": "scarryaa"
+          
         }
       },
       {
@@ -51,7 +52,7 @@
       {
         "name": "@electron-forge/maker-deb",
         "config": {
-          "title": "Meteor",
+          "title": "meteor",
           "description": "A simple multi-platform code editor.",
           "publisher": "scarryaa"
         }
@@ -59,7 +60,7 @@
       {
         "name": "@electron-forge/maker-rpm",
         "config": {
-          "title": "Meteor",
+          "title": "meteor",
           "description": "A simple multi-platform code editor.",
           "publisher": "scarryaa"
         }
@@ -67,7 +68,7 @@
       {
         "name": "@electron-forge/maker-dmg",
         "config": {
-          "title": "Meteor",
+          "title": "meteor",
           "description": "A simple multi-platform code editor.",
           "publisher": "scarryaa"
         }

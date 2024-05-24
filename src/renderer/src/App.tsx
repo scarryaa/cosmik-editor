@@ -34,176 +34,134 @@ import { newFile, saveCurrentFile, saveFileAs } from "./util/util";
 EditorStore.addEditor(new Editor("hello", "editor1"));
 EditorStore.setActiveEditor("editor1");
 
+const handleLanguageSet = (language: string): void => {
+	const languageMap: { [key: string]: Languages } = {
+		sh: Languages.Bash,
+		c: Languages.C,
+		cpp: Languages.CPP,
+		cxx: Languages.CPP,
+		cc: Languages.CPP,
+		h: Languages.CPP,
+		hpp: Languages.CPP,
+		cs: Languages.CSharp,
+		css: Languages.CSS,
+		lisp: Languages.CommonLisp,
+		lsp: Languages.CommonLisp,
+		cu: Languages.CUDA,
+		glsl: Languages.GLSL,
+		vert: Languages.GLSL,
+		frag: Languages.GLSL,
+		go: Languages.Go,
+		hs: Languages.Haskell,
+		html: Languages.HTML,
+		htm: Languages.HTML,
+		java: Languages.Java,
+		js: Languages.JavaScript,
+		jsx: Languages.JavaScript,
+		json: Languages.JSON,
+		ml: Languages.OCaml,
+		mli: Languages.OCaml,
+		odin: Languages.Odin,
+		txt: Languages.Plaintext,
+		md: Languages.Plaintext,
+		php: Languages.PHP,
+		py: Languages.Python,
+		pyc: Languages.Python,
+		pyd: Languages.Python,
+		pyo: Languages.Python,
+		pyw: Languages.Python,
+		re: Languages.Regex,
+		rb: Languages.Ruby,
+		rs: Languages.Rust,
+		scss: Languages.SCSS,
+		ts: Languages.TypeScript,
+		tsx: Languages.TypeScriptTSX,
+	};
+
+	setSelectedLanguage(languageMap[language] || Languages.Plaintext);
+};
+
+// Event handlers
+const handleGlobalKeyDown = (e: KeyboardEvent) => {
+	if (e.ctrlKey && e.key === "p") {
+		e.preventDefault();
+		setInitWithPrefix(false);
+		setContentToDefaultCommands();
+		setIsOpen(true);
+	} else if (e.ctrlKey && e.shiftKey && e.key === "P") {
+		e.preventDefault();
+		setInitWithPrefix(true);
+		setContentToDefaultCommands();
+		setIsOpen(true);
+	} else if (e.ctrlKey && e.key === "s") {
+		e.preventDefault();
+		saveCurrentFile();
+	} else if (e.ctrlKey && e.shiftKey && e.key === "S") {
+		e.preventDefault();
+		saveFileAs(
+			TabStore.activeTab?.id!,
+			EditorStore.getActiveEditor()?.getText()!,
+		);
+	}
+};
+
+const handleOpenView = (event: Event) => {
+	switch ((event as CustomEvent).detail) {
+		case "files":
+			return togglePane(filePane);
+		case "search":
+			return togglePane(searchPane);
+		case "source-control":
+			return togglePane(sourceControlPane);
+		case "run-and-debug":
+			return togglePane(runAndDebugPane);
+		case "extensions":
+			return togglePane(extensionsPane);
+	}
+};
+
+const handleSaveFileAsRequest = () => {
+	const filepath = TabStore.activeTab?.id;
+	const fileData = EditorStore.getActiveEditor()?.getText();
+	if (filepath && fileData) {
+		saveFileAs(filepath, fileData);
+	}
+};
+
 const App: Component = () => {
+	const handleRequestAction = (event: Event) => {
+		const { action } = (event as CustomEvent).detail;
+		const editor = EditorStore.getActiveEditor();
+	
+		switch (action) {
+			case "cut":
+				setFakeClipboard(editor!.cut());
+				break;
+			case "copy":
+				setFakeClipboard(editor!.copy());
+				break;
+			case "paste":
+				return editor?.paste(fakeClipboard());
+			case "select-all":
+				return editor?.selectAll();
+		}
+	};
+
 	const [scrollSignal, setScrollSignal] = createSignal<boolean>(false);
 	const [fakeClipboard, setFakeClipboard] = createSignal<string>("");
 	let textAreaRef!: HTMLTextAreaElement;
 
-	const handleGlobalKeyDown = (e: KeyboardEvent) => {
-		if (e.ctrlKey && e.key === "p") {
-			e.preventDefault();
-			setInitWithPrefix(false);
-			setContentToDefaultCommands();
-			setIsOpen(true);
-		} else if (e.ctrlKey && e.shiftKey && e.key === "P") {
-			e.preventDefault();
-			setInitWithPrefix(true);
-			setContentToDefaultCommands();
-			setIsOpen(true);
-		} else if (e.ctrlKey && e.key === "s") {
-			e.preventDefault();
-			saveCurrentFile();
-		} else if (e.ctrlKey && e.shiftKey && e.key === "S") {
-			e.preventDefault();
-			saveFileAs(
-				TabStore.activeTab?.id!,
-				EditorStore.getActiveEditor()?.getText()!,
-			);
-		}
-	};
-
-	createEffect(() => {
-		window.api.onLanguageSet((_, language: string): void => {
-			switch (language) {
-				case "sh":
-					setSelectedLanguage(Languages.Bash);
-					break;
-				case "c":
-					setSelectedLanguage(Languages.C);
-					break;
-				case "cpp":
-				case "cxx":
-				case "cc":
-				case "h":
-				case "hpp":
-					setSelectedLanguage(Languages.CPP);
-					break;
-				case "cs":
-					setSelectedLanguage(Languages.CSharp);
-					break;
-				case "css":
-					setSelectedLanguage(Languages.CSS);
-					break;
-				case "lisp":
-				case "lsp":
-					setSelectedLanguage(Languages.CommonLisp);
-					break;
-				case "cu":
-					setSelectedLanguage(Languages.CUDA);
-					break;
-				case "glsl":
-				case "vert":
-				case "frag":
-					setSelectedLanguage(Languages.GLSL);
-					break;
-				case "go":
-					setSelectedLanguage(Languages.Go);
-					break;
-				case "hs":
-					setSelectedLanguage(Languages.Haskell);
-					break;
-				case "html":
-				case "htm":
-					setSelectedLanguage(Languages.HTML);
-					break;
-				case "java":
-					setSelectedLanguage(Languages.Java);
-					break;
-				case "js":
-				case "jsx":
-					setSelectedLanguage(Languages.JavaScript);
-					break;
-				case "json":
-					setSelectedLanguage(Languages.JSON);
-					break;
-				case "ml":
-				case "mli":
-					setSelectedLanguage(Languages.OCaml);
-					break;
-				case "odin":
-					setSelectedLanguage(Languages.Odin);
-					break;
-				case "txt":
-				case "md":
-					setSelectedLanguage(Languages.Plaintext);
-					break;
-				case "php":
-					setSelectedLanguage(Languages.PHP);
-					break;
-				case "py":
-				case "pyc":
-				case "pyd":
-				case "pyo":
-				case "pyw":
-					setSelectedLanguage(Languages.Python);
-					break;
-				case "re":
-					setSelectedLanguage(Languages.Regex);
-					break;
-				case "rb":
-					setSelectedLanguage(Languages.Ruby);
-					break;
-				case "rs":
-					setSelectedLanguage(Languages.Rust);
-					break;
-				case "scss":
-					setSelectedLanguage(Languages.SCSS);
-					break;
-				case "ts":
-					setSelectedLanguage(Languages.TypeScript);
-					break;
-				case "tsx":
-					setSelectedLanguage(Languages.TypeScriptTSX);
-					break;
-				default:
-					setSelectedLanguage(Languages.Plaintext);
-					break;
-			}
-		});
-	});
-
+	// Lifecycle hooks
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKeyDown);
-
 		window.addEventListener("tabOpened", (event) => {
-			const newTabId = event.detail.tabId;
+			const newTabId = (event as CustomEvent).detail.tabId;
 			if (newTabId) {
 				textAreaRef.focus();
 			}
 		});
-
-		window.addEventListener("open-view", (event) => {
-			switch ((event as any).detail) {
-				case "files":
-					return togglePane(filePane);
-				case "search":
-					return togglePane(searchPane);
-				case "source-control":
-					return togglePane(sourceControlPane);
-				case "run-and-debug":
-					return togglePane(runAndDebugPane);
-				case "extensions":
-					return togglePane(extensionsPane);
-			}
-		});
-
-		window.addEventListener("request-action", (event) => {
-			const { action } = (event as any).detail;
-			const editor = EditorStore.getActiveEditor();
-
-			switch (action) {
-				case "cut":
-					setFakeClipboard(editor!.cut());
-					break;
-				case "copy":
-					setFakeClipboard(editor!.copy());
-					break;
-				case "paste":
-					return editor?.paste(fakeClipboard());
-				case "select-all":
-					return editor?.selectAll();
-			}
-		});
+		window.addEventListener("open-view", handleOpenView);
+		window.addEventListener("request-action", handleRequestAction);
 		window.addEventListener("open-command-palette", () => {
 			setInitWithPrefix(false);
 			setIsOpen(true);
@@ -213,25 +171,15 @@ const App: Component = () => {
 		});
 		window.addEventListener("save-file-request", saveCurrentFile);
 		window.addEventListener("new-file-request", newFile);
-		window.addEventListener("save-file-as-request", () => {
-			const filepath = TabStore.activeTab?.id;
-			const fileData = EditorStore.getActiveEditor()?.getText();
-			if (filepath && fileData) {
-				saveFileAs(filepath, fileData);
-			}
-		});
+		window.addEventListener("save-file-as-request", handleSaveFileAsRequest);
+		window.api.onLanguageSet((_, language: string) => handleLanguageSet(language));
 	});
 
 	onCleanup(() => {
 		document.removeEventListener("keydown", handleGlobalKeyDown);
-		window.removeEventListener("save-file-request", saveCurrentFile);
-		window.removeEventListener("save-file-as-request", () => {
-			const filepath = TabStore.activeTab?.id;
-			const fileData = EditorStore.getActiveEditor()?.getText();
-			if (filepath) {
-				saveFileAs(filepath, fileData ? fileData : "");
-			}
-		});
+		window.removeEventListener("open-view", handleOpenView);
+		window.removeEventListener("request-action", handleRequestAction);
+		window.removeEventListener("save-file-as-request", handleSaveFileAsRequest);
 	});
 
 	createEffect(() => {
