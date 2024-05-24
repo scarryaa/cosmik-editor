@@ -1,152 +1,153 @@
 {
-	"name": "meteor",
-	"version": "1.2.12",
-	"description": "A simple multi-platform code editor.",
-	"main": "./out/main/index.js",
-	"author": "scarryaa",
-	"homepage": "https://github.com/scarryaa/meteor",
-	"repository": {
-		"url": "https://github.com/scarryaa/meteor"
-	},
-	"build": {
-		"win": {
-			"publish": [
-				"github"
-			]
-		}
-	},
-	"electronForge": {
-		"publishers": [
-			{
-				"name": "@electron-forge/publisher-github",
-				"config": {
-					"repository": {
-						"owner": "scarryaa",
-						"name": "meteor"
-					}
-				}
-			}
-		],
-		"makers": [
-			{
-				"name": "@electron-forge/maker-squirrel",
-				"config": {
-					"name": "meteor"
-				}
-			},
-			{
-				"name": "@electron-forge/maker-wix",
-				"config": {
-					"language": 1033,
-					"manufacturer": "scarryaa"
-				}
-			},
-			{
-				"name": "@electron-forge/maker-zip",
-				"platforms": [
-					"darwin",
-					"linux"
-				]
-			},
-			{
-				"name": "@electron-forge/maker-deb",
-				"config": {
-					"title": "Meteor",
-					"description": "A simple multi-platform code editor.",
-					"publisher": "scarryaa"
-				}
-			},
-			{
-				"name": "@electron-forge/maker-rpm",
-				"config": {
-					"title": "Meteor",
-					"description": "A simple multi-platform code editor.",
-					"publisher": "scarryaa"
-				}
-			},
-			{
-				"name": "@electron-forge/maker-dmg",
-				"config": {
-					"title": "Meteor",
-					"description": "A simple multi-platform code editor.",
-					"publisher": "scarryaa"
-				}
-			}
-		]
-	},
-	"scripts": {
-		"biome:format:fix": "pnpm biome format --write ./",
-		"biome:lint:fix": "pnpm biome lint --apply ./",
-		"biome:fix-all": "pnpm biome:lint:fix; pnpm biome:format:fix",
-		"typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
-		"typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
-		"typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
-		"start": "stream-run electron-vite preview",
-		"test": "vitest",
-		"dev": "electron-vite dev",
-		"build": "electron-vite build",
-		"postinstall": "electron-builder install-app-deps",
-		"build:unpack": "pnpm run build && electron-builder --dir",
-		"build:win": "pnpm run build && electron-builder --win",
-		"build:mac": "electron-vite build && electron-builder --mac",
-		"build:linux": "electron-vite build && electron-builder --linux"
-	},
-	"dependencies": {
-		"@electron-toolkit/preload": "^3.0.0",
-		"@electron-toolkit/utils": "^3.0.0",
-		"electron-updater": "^6.1.7",
-		"fast-diff": "^1.3.0",
-		"msgpackr": "^1.10.2",
-		"path-browserify": "^1.0.1",
-		"solid-icons": "^1.1.0",
-		"tree-sitter": "^0.21.1",
-		"tree-sitter-bash": "^0.21.0",
-		"tree-sitter-c": "^0.21.0",
-		"tree-sitter-c-sharp": "^0.21.2",
-		"tree-sitter-commonlisp": "^0.3.3",
-		"tree-sitter-cpp": "^0.22.0",
-		"tree-sitter-css": "^0.21.0",
-		"tree-sitter-cuda": "^0.20.4",
-		"tree-sitter-glsl": "^0.1.8",
-		"tree-sitter-go": "^0.21.0",
-		"tree-sitter-haskell": "^0.21.0",
-		"tree-sitter-html": "^0.20.3",
-		"tree-sitter-java": "^0.21.0",
-		"tree-sitter-javascript": "^0.21.2",
-		"tree-sitter-json": "^0.21.0",
-		"tree-sitter-ocaml": "^0.22.0",
-		"tree-sitter-odin": "^1.2.0",
-		"tree-sitter-php": "^0.22.5",
-		"tree-sitter-python": "^0.21.0",
-		"tree-sitter-regex": "^0.21.0",
-		"tree-sitter-ruby": "^0.21.0",
-		"tree-sitter-rust": "^0.21.0",
-		"tree-sitter-scss": "^1.0.0",
-		"tree-sitter-typescript": "^0.21.1",
-		"update-electron-app": "^3.0.0",
-		"web-tree-sitter": "^0.22.6"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.7.3",
-		"@electron-toolkit/eslint-config-ts": "^1.0.1",
-		"@electron-toolkit/tsconfig": "^1.0.1",
-		"@solidjs/testing-library": "^0.8.8",
-		"@testing-library/jest-dom": "^6.4.5",
-		"@types/node": "^18.19.9",
-		"electron": "^30.0.7",
-		"electron-builder": "^24.9.1",
-		"electron-vite": "^2.0.0",
-		"jsdom": "^24.0.0",
-		"sass": "^1.77.1",
-		"shiki": "^1.5.2",
-		"solid-js": "^1.8.12",
-		"tree-sitter-cli": "^0.22.6",
-		"typescript": "^5.3.3",
-		"vite": "^5.0.12",
-		"vite-plugin-electron-renderer": "^0.14.5",
-		"vite-plugin-solid": "^2.9.1",
-		"vite-plugin-top-level-await": "^1.4.1",
-		"vite-plugin-wasm": "^3.3.0",
-		"vitest": "^1.6.0"
-	}
+  "name": "meteor",
+  "version": "1.2.12",
+  "description": "A simple multi-platform code editor.",
+  "main": "./out/main/index.js",
+  "author": "scarryaa",
+  "homepage": "https://github.com/scarryaa/meteor",
+  "repository": {
+    "url": "https://github.com/scarryaa/meteor"
+  },
+  "build": {
+    "win": {
+      "publish": [
+        "github"
+      ]
+    }
+  },
+  "electronForge": {
+    "publishers": [
+      {
+        "name": "@electron-forge/publisher-github",
+        "config": {
+          "repository": {
+            "owner": "scarryaa",
+            "name": "meteor"
+          }
+        }
+      }
+    ],
+    "makers": [
+      {
+        "name": "@electron-forge/maker-squirrel",
+        "config": {
+          "name": "meteor"
+        }
+      },
+      {
+        "name": "@electron-forge/maker-wix",
+        "config": {
+          "language": 1033,
+          "manufacturer": "scarryaa"
+        }
+      },
+      {
+        "name": "@electron-forge/maker-zip",
+        "platforms": [
+          "darwin",
+          "linux"
+        ]
+      },
+      {
+        "name": "@electron-forge/maker-deb",
+        "config": {
+          "title": "Meteor",
+          "description": "A simple multi-platform code editor.",
+          "publisher": "scarryaa"
+        }
+      },
+      {
+        "name": "@electron-forge/maker-rpm",
+        "config": {
+          "title": "Meteor",
+          "description": "A simple multi-platform code editor.",
+          "publisher": "scarryaa"
+        }
+      },
+      {
+        "name": "@electron-forge/maker-dmg",
+        "config": {
+          "title": "Meteor",
+          "description": "A simple multi-platform code editor.",
+          "publisher": "scarryaa"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "biome:format:fix": "pnpm biome format --write ./",
+    "biome:lint:fix": "pnpm biome lint --apply ./",
+    "biome:fix-all": "pnpm biome:lint:fix; pnpm biome:format:fix",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
+    "start": "stream-run electron-vite preview",
+    "test": "vitest",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "postinstall": "electron-builder install-app-deps",
+    "build:unpack": "pnpm run build && electron-builder --dir",
+    "build:win": "pnpm run build && electron-builder --win",
+    "build:mac": "electron-vite build && electron-builder --mac",
+    "build:linux": "electron-vite build && electron-builder --linux"
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.0",
+    "@electron-toolkit/utils": "^3.0.0",
+    "electron-updater": "^6.1.7",
+    "fast-diff": "^1.3.0",
+    "msgpackr": "^1.10.2",
+    "path-browserify": "^1.0.1",
+    "solid-icons": "^1.1.0",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-bash": "^0.21.0",
+    "tree-sitter-c": "^0.21.0",
+    "tree-sitter-c-sharp": "^0.21.2",
+    "tree-sitter-commonlisp": "^0.3.3",
+    "tree-sitter-cpp": "^0.22.0",
+    "tree-sitter-css": "^0.21.0",
+    "tree-sitter-cuda": "^0.20.4",
+    "tree-sitter-glsl": "^0.1.8",
+    "tree-sitter-go": "^0.21.0",
+    "tree-sitter-haskell": "^0.21.0",
+    "tree-sitter-html": "^0.20.3",
+    "tree-sitter-java": "^0.21.0",
+    "tree-sitter-javascript": "^0.21.2",
+    "tree-sitter-json": "^0.21.0",
+    "tree-sitter-ocaml": "^0.22.0",
+    "tree-sitter-odin": "^1.2.0",
+    "tree-sitter-php": "^0.22.5",
+    "tree-sitter-python": "^0.21.0",
+    "tree-sitter-regex": "^0.21.0",
+    "tree-sitter-ruby": "^0.21.0",
+    "tree-sitter-rust": "^0.21.0",
+    "tree-sitter-scss": "^1.0.0",
+    "tree-sitter-typescript": "^0.21.1",
+    "update-electron-app": "^3.0.0",
+    "web-tree-sitter": "^0.22.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.7.3",
+    "@electron-toolkit/eslint-config-ts": "^1.0.1",
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@playwright/test": "^1.44.1",
+    "@solidjs/testing-library": "^0.8.8",
+    "@testing-library/jest-dom": "^6.4.5",
+    "@types/node": "^18.19.9",
+    "electron": "^30.0.7",
+    "electron-builder": "^24.9.1",
+    "electron-vite": "^2.0.0",
+    "jsdom": "^24.0.0",
+    "sass": "^1.77.1",
+    "shiki": "^1.5.2",
+    "solid-js": "^1.8.12",
+    "tree-sitter-cli": "^0.22.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vite-plugin-solid": "^2.9.1",
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0",
+    "vitest": "^1.6.0"
+  }
 }

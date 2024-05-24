@@ -4,3 +4,7 @@ out
 .DS_Store
 *.log*
 build
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
