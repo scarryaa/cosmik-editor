@@ -1,18 +1,18 @@
 {
-	"compilerOptions": {
-	  "target": "ESNext",
-	  "module": "ESNext",
-	  "moduleResolution": "Node",
-	  "resolveJsonModule": true,
-	  "isolatedModules": true,
-	  "esModuleInterop": true,
-	  "skipLibCheck": true,
-	  "strict": true
-	},
-	"include": ["**/*.ts", "**/*.tsx"],
-	"exclude": ["node_modules"],
-	"references": [
-		{ "path": "./tsconfig.node.json" },
-		{ "path": "./tsconfig.web.json" }
-	]
+    "compilerOptions": {
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "strict": true
+    },
+    "include": ["**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules"],
+    "references": [
+        { "path": "./tsconfig.node.json" },
+        { "path": "./tsconfig.web.json" }
+    ]
 }

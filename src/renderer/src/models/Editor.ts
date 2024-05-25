@@ -91,6 +91,41 @@ export class Editor implements IEditor {
 		return this.contentSignal[0]();
 	}
 
+	shiftTab = (cursorIndex: number): void => {
+		const cursor = this.cursors[cursorIndex];
+		const lineContent = this.lineContent(cursor.line);
+		let newCharacterPos = cursor.character;
+
+		if (lineContent.length === 0) {
+			// If the line is empty, do nothing
+			return;
+		}
+
+		// Determine the number of spaces to delete (up to 4)
+		let spacesToDelete = 0;
+		while (spacesToDelete < 4 && lineContent[spacesToDelete] === " ") {
+			spacesToDelete++;
+		}
+
+		// Delete the determined number of spaces
+		if (spacesToDelete > 0) {
+			this.content.delete(
+				this.calculateGlobalIndex(cursor.line, 0),
+				spacesToDelete,
+			);
+			newCharacterPos = Math.max(0, cursor.character - spacesToDelete);
+		}
+
+		// Update the content signal and cursor position
+		this.contentSignal[1](this.content.getText());
+		cursor.moveTo(
+			newCharacterPos,
+			cursor.line,
+			this.lineContent(cursor.line).length,
+			this.lineBreakIndices.length - 1,
+		);
+	};
+
 	tab = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
 		const globalIndex = this.calculateGlobalIndex(
@@ -175,10 +210,10 @@ export class Editor implements IEditor {
 
 		// Check if any text is selected
 		if (this.selections.some((selection) => !selection.isEmpty())) {
-			const selection = this.selections.findIndex(
+			const selectionIndex = this.selections.findIndex(
 				(selection) => !selection.isEmpty(),
 			);
-			this.deleteSelection(selection);
+			this.deleteSelection(selectionIndex);
 			return;
 		}
 
@@ -188,7 +223,23 @@ export class Editor implements IEditor {
 		}
 
 		batch(() => {
-			if (cursor.character === 0) {
+			const lineContent = this.lineContent(cursor.line);
+			const cursorPos = cursor.character;
+
+			if (
+				cursorPos >= 4 &&
+				lineContent.slice(cursorPos - 4, cursorPos) === "    "
+			) {
+				// Delete 4 spaces if they are behind the cursor
+				const globalIndex = this.calculateGlobalIndex(cursor.line, cursorPos);
+				this.content.delete(globalIndex - 4, 4);
+				cursor.moveTo(
+					cursorPos - 4,
+					cursor.line,
+					this.lineContent(cursor.line).length,
+					this.lineBreakIndices.length - 1,
+				);
+			} else if (cursor.character === 0) {
 				const prevLineEndIndex = this.lineBreakIndices[cursor.line - 1];
 				this.content.delete(prevLineEndIndex, 1);
 
@@ -344,19 +395,47 @@ export class Editor implements IEditor {
 
 	moveRight = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-		const lineLength = this.lineContent(cursor.line).length;
+		const lineContent = this.lineContent(cursor.line);
+		const lineLength = lineContent.length;
 		const totalLines = this.lineBreakIndices.length;
 
-		cursor.moveRight(lineLength, totalLines);
+		// Check if there are 4 spaces ahead
+		if (
+			cursor.character <= lineLength - 4 &&
+			lineContent.slice(cursor.character, cursor.character + 4) === "    "
+		) {
+			cursor.moveTo(
+				cursor.character + 4,
+				cursor.line,
+				lineLength,
+				totalLines - 1,
+			);
+		} else {
+			cursor.moveRight(lineLength, totalLines);
+		}
 	};
 
 	moveLeft = (cursorIndex: number): void => {
 		const cursor = this.cursors[cursorIndex];
-
+		const lineContent = this.lineContent(cursor.line);
 		const prevLineLength = this.lineContent(
 			cursor.line === 0 ? 0 : cursor.line - 1,
 		).length;
-		cursor.moveLeft(prevLineLength);
+
+		// Check if there are 4 spaces behind
+		if (
+			cursor.character >= 4 &&
+			lineContent.slice(cursor.character - 4, cursor.character) === "    "
+		) {
+			cursor.moveTo(
+				cursor.character - 4,
+				cursor.line,
+				lineContent.length,
+				this.lineBreakIndices.length - 1,
+			);
+		} else {
+			cursor.moveLeft(prevLineLength);
+		}
 	};
 
 	moveUp = (cursorIndex: number): void => {
