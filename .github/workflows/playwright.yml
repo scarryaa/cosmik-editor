@@ -20,7 +20,9 @@ jobs:
     - name: Run headless test
       uses: coactions/setup-xvfb@v1
       with:
-        run: pnpm exec playwright test
+        run: pnpm dev
+    - name: Run Playwright tests
+      run: pnpm exec playwright test
     - uses: actions/upload-artifact@v4
       if: always()
       with:
