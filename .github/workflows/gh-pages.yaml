@@ -26,7 +26,7 @@ jobs:
     - name: Move build output to root
       run: |
         mkdir temp-gh-pages
-        mv renderer/* temp-gh-pages/
+        mv out/renderer/* temp-gh-pages/
         mv temp-gh-pages/* .
         rm -rf temp-gh-pages
 
