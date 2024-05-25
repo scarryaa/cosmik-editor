@@ -12083,12 +12083,35 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             ">": "greater-than",
             "<": "less-than"
         };
-        function identifyFoldRegions(tree) {}
+        function identifyFoldRegions(tree) {
+            let foldRegions2 = [];
+            if (!tree) return foldRegions2;
+            if (!tree.children) return foldRegions2;
+            for (let child of tree.children){
+                if (child.type === "comment") {
+                    foldRegions2.push({
+                        startLine: child.startIndex,
+                        endLine: child.endIndex,
+                        isFolded: true
+                    });
+                } else if (child.children) {
+                    foldRegions2 = foldRegions2.concat(identifyFoldRegions(child));
+                }
+            }
+            return foldRegions2;
+        }
         function parseNode(node, rootText, styles2) {
             let spans2 = [];
             let current_position = node.startIndex;
             if (!node) return "";
             if (!node?.children) return "";
+            const extension = TabStore.activeTab.id.split(".").pop();
+            if (!(extension in languageMap) || extension in [
+                "txt",
+                "md"
+            ]) {
+                return "";
+            }
             const escapeHtml = (text)=>{
                 return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\t/g, "    ");
             };
@@ -13272,49 +13295,49 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     var _tmpl$ = template(`<div class=app-container>`);
     EditorStore.addEditor(new Editor("hello", "editor1"));
     EditorStore.setActiveEditor("editor1");
+    const languageMap = {
+        sh: Languages.Bash,
+        c: Languages.C,
+        cpp: Languages.CPP,
+        cxx: Languages.CPP,
+        cc: Languages.CPP,
+        h: Languages.CPP,
+        hpp: Languages.CPP,
+        cs: Languages.CSharp,
+        css: Languages.CSS,
+        lisp: Languages.CommonLisp,
+        lsp: Languages.CommonLisp,
+        cu: Languages.CUDA,
+        glsl: Languages.GLSL,
+        vert: Languages.GLSL,
+        frag: Languages.GLSL,
+        go: Languages.Go,
+        hs: Languages.Haskell,
+        html: Languages.HTML,
+        htm: Languages.HTML,
+        java: Languages.Java,
+        js: Languages.JavaScript,
+        jsx: Languages.JavaScript,
+        json: Languages.JSON,
+        ml: Languages.OCaml,
+        mli: Languages.OCaml,
+        odin: Languages.Odin,
+        txt: Languages.Plaintext,
+        md: Languages.Plaintext,
+        php: Languages.PHP,
+        py: Languages.Python,
+        pyc: Languages.Python,
+        pyd: Languages.Python,
+        pyo: Languages.Python,
+        pyw: Languages.Python,
+        re: Languages.Regex,
+        rb: Languages.Ruby,
+        rs: Languages.Rust,
+        scss: Languages.SCSS,
+        ts: Languages.TypeScript,
+        tsx: Languages.TypeScriptTSX
+    };
     const handleLanguageSet = (language)=>{
-        const languageMap = {
-            sh: Languages.Bash,
-            c: Languages.C,
-            cpp: Languages.CPP,
-            cxx: Languages.CPP,
-            cc: Languages.CPP,
-            h: Languages.CPP,
-            hpp: Languages.CPP,
-            cs: Languages.CSharp,
-            css: Languages.CSS,
-            lisp: Languages.CommonLisp,
-            lsp: Languages.CommonLisp,
-            cu: Languages.CUDA,
-            glsl: Languages.GLSL,
-            vert: Languages.GLSL,
-            frag: Languages.GLSL,
-            go: Languages.Go,
-            hs: Languages.Haskell,
-            html: Languages.HTML,
-            htm: Languages.HTML,
-            java: Languages.Java,
-            js: Languages.JavaScript,
-            jsx: Languages.JavaScript,
-            json: Languages.JSON,
-            ml: Languages.OCaml,
-            mli: Languages.OCaml,
-            odin: Languages.Odin,
-            txt: Languages.Plaintext,
-            md: Languages.Plaintext,
-            php: Languages.PHP,
-            py: Languages.Python,
-            pyc: Languages.Python,
-            pyd: Languages.Python,
-            pyo: Languages.Python,
-            pyw: Languages.Python,
-            re: Languages.Regex,
-            rb: Languages.Ruby,
-            rs: Languages.Rust,
-            scss: Languages.SCSS,
-            ts: Languages.TypeScript,
-            tsx: Languages.TypeScriptTSX
-        };
         setSelectedLanguage(languageMap[language] || Languages.Plaintext);
     };
     const handleGlobalKeyDown = (e)=>{
