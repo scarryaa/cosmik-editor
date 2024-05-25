@@ -1,0 +1,32 @@
+:root {
+    --status-pane-height: 19px;
+}
+
+.status-pane {
+    height: var(--status-pane-height);
+    background-color: var(--meteor-pane-background);
+    line-height: 19px;
+    padding: 0 5px;
+    z-index: 999;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 13px;
+    border-top: 1px solid var(--meteor-border);
+    width: 100%;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: row;
+
+    .left-side {
+        display: flex;
+        flex-direction: row;
+        width: calc(100% - 70px);
+    }
+
+    .right-side {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+}

@@ -1,0 +1,8 @@
+.cursor {
+    position: absolute;
+    width: 1px;
+    height: 19px;
+    z-index: 99;
+    background-color: var(--text-color);
+    pointer-events: none;
+}

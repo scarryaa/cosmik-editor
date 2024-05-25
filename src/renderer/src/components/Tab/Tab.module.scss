@@ -1,0 +1,100 @@
+:root {
+    --tab-modified-color: #FF6347;
+}
+
+.tab {
+    display: flex;
+    height: 32px;
+    padding: 8px;
+    position: relative;
+    font-size: 12px;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--meteor-pane-background);
+    border: 1px solid var(--meteor-border);
+    flex-direction: row;
+    flex-wrap: nowrap;
+    flex-grow: 1;
+    max-width: max-content;
+    cursor: pointer;
+    z-index: 221;
+    border-radius: 4px;
+    margin-block: 4px;
+    margin-inline: 4px;
+
+    .tab-name {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        min-width: 0;
+        padding-right: 22px;
+        margin-top: 3px;
+        font-family: "Droid Sans", sans-serif;
+    }
+
+    &.active {
+        background-color: var(--page-background);
+    }
+
+    .saved-indicator-wrapper {
+        position: absolute;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        z-index: 0;
+        margin-top: 1px;
+        margin-left: 8px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background-color: transparent;
+
+        .saved-indicator {
+            width: 8px;
+            height: 8px;
+            z-index: 0;
+            border-radius: 50%;
+            background-color: #666666;
+        }
+    }
+
+    .modified-indicator-wrapper {
+        position: absolute;
+        right: 24px;
+        width: 20px;
+        height: 20px;
+        z-index: 0;
+        margin-left: 8px;
+        margin-top: 3.5px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background-color: transparent;
+        color: var(--tab-modified-color);
+    }
+
+    button {
+        position: absolute;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        width: 20px;
+        height: 20px;
+        right: 5px;
+        transition: background-color 0.1s ease;
+
+        .close-button-icon {
+            margin-top: 0px;
+        }
+
+        &:hover {
+            background-color: rgb(136, 136, 135);
+        }
+    }
+}

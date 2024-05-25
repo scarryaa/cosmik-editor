@@ -1,0 +1,62 @@
+:root {
+  --page-background: #fff;
+  --page-background: #202020;
+  --text-color: #000;
+  --text-color: #dfdfdf;
+  --text-color-muted: #252525;
+  --text-color-muted: #b9b9b9;
+  --text-color-muted-2:#727272;
+
+  --meteor-border: #fff;
+  --meteor-border: #2b2b2b;
+  --meteor-focus-bar: #007acc;
+  --meteor-pane-background: #e4e4e4;
+  --meteor-pane-background: #1a1a1a;
+  --meteor-pane-background-light: #f5f5f5;
+  --meteor-pane-background-light: #2c2c2c;;
+}
+
+html, body, #root, .app-container {
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Inter" !important;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  background-color: var(--page-background);
+}
+
+@font-face {
+  font-family: "Hack";
+  src: url("../assets/fonts/Hack-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/InterVariable.ttf");
+}
+
+@font-face {
+  font-family: "Ubuntu Mono";
+  src: url("../assets/fonts/UbuntuMono-Regular.ttf");
+}
+
+.app-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.no-button-style {
+  border: none;
+  background-color: inherit;
+  color: inherit;
+  appearance: none;
+  cursor: pointer;
+}

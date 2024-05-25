@@ -1,0 +1,14 @@
+node_modules
+dist
+out
+.DS_Store
+*.log*
+build
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

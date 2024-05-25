@@ -1,0 +1,57 @@
+:root {
+    --line-numbers-width: 70px;
+}
+
+.line-numbers {
+    flex-shrink: 0;
+    width: var(--line-numbers-width);
+    font-size: 14px;
+    font-family: "Hack" !important;
+    text-align: right;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    z-index: 0;
+    line-height: 19px;
+    min-height: 100vh;
+    background-color: var(--page-background);
+    position: absolute;
+
+    &.shift-right {
+        width: calc(var(--line-numbers-width) + 10px);
+    }
+
+    &.shift-right2x {
+        width: calc(var(--line-numbers-width) + 20px);
+    }
+
+    scrollbar,
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    > * {
+        min-height: 19px;
+    }
+
+    .line-numbers-inner {
+        transform: translate3d(-30px, 0px, 0px);
+
+        .line-number {
+            text-align: right;
+            background-color: var(--page-background);
+            color: var(--text-color-muted-2);
+            position: absolute;
+            width: 100%;
+            z-index: 999;
+            height: 19px;
+            padding-top: 5px;
+    
+            &.active {
+                color: var(--text-color);
+            }
+        }
+    }
+}

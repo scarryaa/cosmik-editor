@@ -1,0 +1,18 @@
+.tab-scrollbar {
+    position: absolute;
+    bottom: 2px;
+    width: calc(100% - 52px);
+
+    .tab-scrollbar-track {
+        background-color: var(--page-background);
+        width: 100%;
+        border-radius: 4px;
+    }
+
+    .tab-scrollbar-thumb {
+        position: absolute;
+        background-color: #2c2c2c;
+        height: 4px;
+        width: 50px;
+    }
+}

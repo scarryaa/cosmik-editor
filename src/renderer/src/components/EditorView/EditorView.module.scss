@@ -1,0 +1,159 @@
+.editor-view {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    white-space: pre;
+    contain: strict;
+    transform: translate3d(0, 0, 0);
+
+    .editor-view-inner {
+        flex-grow: 1;
+        display: flex;
+
+        .editor-line-numbers {
+            flex-shrink: 0;
+            width: var(--line-numbers-width);
+            position: relative;
+            z-index: 1;
+        }
+
+        .editor-content-container {
+            flex-grow: 1;
+            contain: strict;
+            overflow: auto;
+            transform: translate3d(0, 0, 0);
+            height: calc(100% - var(--status-pane-height));
+            cursor: text;
+
+            &::-webkit-scrollbar {
+                cursor: default !important;
+                background-color: var(--page-background);
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background-color: #2c2c2c;
+            }
+
+            &::-webkit-scrollbar-corner {
+                background-color: var(--page-background);
+            }
+
+            .editor-lines-padding {
+                position: relative;
+                left: var(--line-numbers-width);
+                width: calc(100% - var(--line-numbers-width));
+
+                .editor-lines {
+                    position: absolute;
+                    left: calc(-1 * var(--line-numbers-width));
+                    box-sizing: border-box;
+                    width: 100%;
+                    overflow: visible;
+                    font-family: "Hack";
+
+                    .editor-line-padding {
+                        position: absolute;
+                        height: 93vh;
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.ERROR {
+    position: relative;
+
+    &::before {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='3'><path d='M0 0 Q1 3, 2 0 T4 0' stroke='red' fill='none' stroke-width='2'/></svg>");
+        background-repeat: repeat-x;
+    }
+}
+
+.identifier {
+    color: rgb(138, 213, 223);
+}
+
+.string,
+.const,
+.let {
+    color: rgb(170, 184, 52);
+}
+
+.number {
+    color: rgb(80, 124, 189);
+}
+
+.expression_statement,
+.double-ampersand,
+.false,
+.true,
+.boolean {
+    color: #387081;
+}
+
+.comment {
+    color: #315831;
+}
+
+.import,
+.from,
+.case,
+.default,
+.break,
+.if,
+.return,
+.switch,
+.type,
+.else,
+.as,
+.export {
+    color: rgb(154, 119, 196);
+}
+
+.new,
+.any {
+    color: rgb(39, 216, 172);
+}
+
+.left-bracket,
+.right-bracket {
+    color: rgb(138, 146, 21);
+}
+
+.array_pattern {
+    color: rgb(248, 201, 47);
+}
+
+.semicolon {
+    color: rgb(255, 255, 255);
+}
+
+.closing-greater-than,
+.greater-than,
+.less-than {
+    color: #929292;
+}
+
+.right-parenthesis,
+.left-parenthesis,
+.class,
+.shorthand_property_identifier_pattern {
+    color: rgb(112, 180, 192);
+}
+
+.type_identifier,
+.property_identifier {
+    color: #a85f5f;
+}

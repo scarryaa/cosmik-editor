@@ -1,0 +1,39 @@
+:root {
+    --action-bar-item-hover-color: var(--text-color);
+    --action-bar-item-color: #646464;
+    --action-bar-item-color: #707070;
+}
+
+.pane-button {
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    border-radius: 4px;
+    border: 1px solid var(--meteor-border);
+    margin-inline: 2px;
+    margin-block: 2px;
+
+    &:hover .pane-button-icon {
+        color: var(--action-bar-item-hover-color);
+    }
+
+    &.active {
+        svg {
+            fill: var(--action-bar-item-hover-color);
+        }
+    }
+
+    .pane-button-icon {
+        color: var(--action-bar-item-color);
+        user-select: none;
+        -webkit-user-select: none;
+        padding: 0;
+        margin: 0;
+        transition: all 0.1s ease-in-out;
+
+        > * {
+            padding: 0px 0px;
+        }
+    }
+}

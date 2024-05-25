@@ -1,0 +1,21 @@
+.tabs-wrapper {
+    display: flex;
+    flex-direction: row;
+    background-color: var(--meteor-pane-background);
+    width: calc(100% - 8px);
+    max-height: 40px;
+    margin-block: 4px;
+    margin-inline: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 99;
+    position: relative;
+    
+    .tabs-container {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+}
