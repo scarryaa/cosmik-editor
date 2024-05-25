@@ -28,8 +28,8 @@ jobs:
     - name: Install Electron
       run: pnpm install electron
 
-    - name: Install Xvfb
-      run: sudo apt-get install xvfb
+    - name: Install Xvfb and D-Bus
+      run: sudo apt-get install -y xvfb dbus
 
     - name: Start Xvfb
       run: Xvfb :99 -ac &
@@ -37,12 +37,17 @@ jobs:
     - name: Set DISPLAY environment variable
       run: echo "DISPLAY=:99" >> $GITHUB_ENV
 
+    - name: Start D-Bus
+      run: |
+        sudo service dbus start
+        export $(dbus-launch)
+
     - name: Build the Electron app
       run: pnpm run build
 
     - name: Start the Electron app
       run: |
-        nohup pnpm exec electron . &
+        nohup pnpm exec electron . --disable-gpu --no-sandbox &
         sleep 10
 
     - name: Run Playwright tests
