@@ -4,6 +4,7 @@
   "description": "A simple multi-platform code editor.",
   "main": "./out/main/index.js",
   "author": "scarryaa",
+  "type": "module",
   "homepage": "https://github.com/scarryaa/meteor",
   "repository": {
     "url": "https://github.com/scarryaa/meteor"

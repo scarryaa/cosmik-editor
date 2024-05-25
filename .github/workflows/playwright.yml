@@ -28,7 +28,7 @@ jobs:
 
     - name: Run Playwright tests
       run: |
-        pnpm exec playwright test --config=playwright.config.ts
+        pnpm test-ct
 
     - name: Upload Playwright report
       if: always()
