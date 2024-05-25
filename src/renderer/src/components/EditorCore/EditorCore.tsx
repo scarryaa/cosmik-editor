@@ -56,6 +56,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			} else {
 				editor.clearSelection(0);
 			}
+			
 			switch (direction) {
 				case "Left":
 					editor.moveLeft(0);
@@ -81,8 +82,13 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 				editor.delete(0);
 				break;
 			case "Tab":
-				e.preventDefault();
-				editor.tab(0);
+				if (e.shiftKey) {
+					e.preventDefault();
+					editor.shiftTab(0);
+				} else {
+					e.preventDefault();
+					editor.tab(0);
+				}
 				break;
 			case "a":
 				if (isShortcut("a", true)) {

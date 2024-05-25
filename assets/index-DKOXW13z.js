@@ -3056,8 +3056,13 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     editor.delete(0);
                     break;
                 case "Tab":
-                    e.preventDefault();
-                    editor.tab(0);
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        editor.shiftTab(0);
+                    } else {
+                        e.preventDefault();
+                        editor.tab(0);
+                    }
                     break;
                 case "a":
                     if (isShortcut("a", true)) {
@@ -13036,6 +13041,24 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         getText() {
             return this.contentSignal[0]();
         }
+        shiftTab = (cursorIndex)=>{
+            const cursor = this.cursors[cursorIndex];
+            const lineContent = this.lineContent(cursor.line);
+            let newCharacterPos = cursor.character;
+            if (lineContent.length === 0) {
+                return;
+            }
+            let spacesToDelete = 0;
+            while(spacesToDelete < 4 && lineContent[spacesToDelete] === " "){
+                spacesToDelete++;
+            }
+            if (spacesToDelete > 0) {
+                this.content.delete(this.calculateGlobalIndex(cursor.line, 0), spacesToDelete);
+                newCharacterPos = Math.max(0, cursor.character - spacesToDelete);
+            }
+            this.contentSignal[1](this.content.getText());
+            cursor.moveTo(newCharacterPos, cursor.line, this.lineContent(cursor.line).length, this.lineBreakIndices.length - 1);
+        };
         tab = (cursorIndex)=>{
             const cursor = this.cursors[cursorIndex];
             const globalIndex = this.calculateGlobalIndex(cursor.line, this.cursorAt(0).character);
@@ -13080,15 +13103,21 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         delete = (cursorIndex)=>{
             const cursor = this.cursors[cursorIndex];
             if (this.selections.some((selection)=>!selection.isEmpty())) {
-                const selection = this.selections.findIndex((selection2)=>!selection2.isEmpty());
-                this.deleteSelection(selection);
+                const selectionIndex = this.selections.findIndex((selection)=>!selection.isEmpty());
+                this.deleteSelection(selectionIndex);
                 return;
             }
             if (cursor.line === 0 && cursor.character === 0) {
                 return;
             }
             batch(()=>{
-                if (cursor.character === 0) {
+                const lineContent = this.lineContent(cursor.line);
+                const cursorPos = cursor.character;
+                if (cursorPos >= 4 && lineContent.slice(cursorPos - 4, cursorPos) === "    ") {
+                    const globalIndex = this.calculateGlobalIndex(cursor.line, cursorPos);
+                    this.content.delete(globalIndex - 4, 4);
+                    cursor.moveTo(cursorPos - 4, cursor.line, this.lineContent(cursor.line).length, this.lineBreakIndices.length - 1);
+                } else if (cursor.character === 0) {
                     const prevLineEndIndex = this.lineBreakIndices[cursor.line - 1];
                     this.content.delete(prevLineEndIndex, 1);
                     cursor.moveTo(this.lineContent(cursor.line - 1).length, cursor.line - 1, this.lineLength(cursor.line - 1), this.lineBreakIndices.length - 1);
@@ -13182,14 +13211,24 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         };
         moveRight = (cursorIndex)=>{
             const cursor = this.cursors[cursorIndex];
-            const lineLength = this.lineContent(cursor.line).length;
+            const lineContent = this.lineContent(cursor.line);
+            const lineLength = lineContent.length;
             const totalLines = this.lineBreakIndices.length;
-            cursor.moveRight(lineLength, totalLines);
+            if (cursor.character <= lineLength - 4 && lineContent.slice(cursor.character, cursor.character + 4) === "    ") {
+                cursor.moveTo(cursor.character + 4, cursor.line, lineLength, totalLines - 1);
+            } else {
+                cursor.moveRight(lineLength, totalLines);
+            }
         };
         moveLeft = (cursorIndex)=>{
             const cursor = this.cursors[cursorIndex];
+            const lineContent = this.lineContent(cursor.line);
             const prevLineLength = this.lineContent(cursor.line === 0 ? 0 : cursor.line - 1).length;
-            cursor.moveLeft(prevLineLength);
+            if (cursor.character >= 4 && lineContent.slice(cursor.character - 4, cursor.character) === "    ") {
+                cursor.moveTo(cursor.character - 4, cursor.line, lineContent.length, this.lineBreakIndices.length - 1);
+            } else {
+                cursor.moveLeft(prevLineLength);
+            }
         };
         moveUp = (cursorIndex)=>{
             const cursor = this.cursors[cursorIndex];
