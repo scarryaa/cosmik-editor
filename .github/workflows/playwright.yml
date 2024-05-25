@@ -54,6 +54,12 @@ jobs:
         nohup pnpm exec electron . --disable-gpu --no-sandbox &
         sleep 10
 
+    - name: Wait for the Web Server to be Ready
+      run: |
+        while ! nc -z localhost 5173; do   
+          sleep 1
+        done
+
     - name: Run Playwright tests
       run: pnpm exec playwright test
 
