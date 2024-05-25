@@ -1,14 +1,15 @@
-name: Playwright Tests for Electron
+name: Playwright Tests
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
   pull_request:
-    branches: [main, master]
+    branches:
+      - main
 
 jobs:
   test:
-    timeout-minutes: 60
     runs-on: ubuntu-latest
 
     steps:
@@ -25,43 +26,9 @@ jobs:
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
 
-    - name: Install Electron
-      run: pnpm install electron
-
-    - name: Install Xvfb and D-Bus
-      run: sudo apt-get install -y xvfb dbus
-
-    - name: Start Xvfb
-      run: |
-        Xvfb :99 -ac &
-        export DISPLAY=:99
-
-    - name: Start D-Bus
-      run: |
-        sudo service dbus start
-        eval $(dbus-launch)
-        echo "DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS" >> $GITHUB_ENV
-        echo "DBUS_SESSION_BUS_PID=$DBUS_SESSION_BUS_PID" >> $GITHUB_ENV
-
-    - name: Set DISPLAY environment variable
-      run: echo "DISPLAY=:99" >> $GITHUB_ENV
-
-    - name: Build the Electron app
-      run: pnpm run build
-
-    - name: Start the Electron app
-      run: |
-        nohup pnpm exec electron . --disable-gpu --no-sandbox &
-        sleep 10
-
-    - name: Wait for the Web Server to be Ready
-      run: |
-        while ! nc -z localhost 5173; do   
-          sleep 1
-        done
-
     - name: Run Playwright tests
-      run: pnpm exec playwright test
+      run: |
+        pnpm exec playwright test --config=playwright.config.ts
 
     - name: Upload Playwright report
       if: always()
