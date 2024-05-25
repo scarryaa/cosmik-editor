@@ -28,12 +28,21 @@ jobs:
     - name: Install Electron
       run: pnpm install electron
 
+    - name: Install Xvfb
+      run: sudo apt-get install xvfb
+
+    - name: Start Xvfb
+      run: Xvfb :99 -ac &
+
+    - name: Set DISPLAY environment variable
+      run: echo "DISPLAY=:99" >> $GITHUB_ENV
+
     - name: Build the Electron app
       run: pnpm run build
 
     - name: Start the Electron app
       run: |
-        nohup pnpm dev &
+        nohup pnpm exec electron . &
         sleep 10
 
     - name: Run Playwright tests
