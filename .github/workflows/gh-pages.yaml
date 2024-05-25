@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # or your default branch
 
 jobs:
   build:
@@ -23,8 +23,15 @@ jobs:
     - name: Build the project
       run: pnpm run build
 
+    - name: Move build output to root
+      run: |
+        mkdir temp-gh-pages
+        mv renderer/* temp-gh-pages/
+        mv temp-gh-pages/* .
+        rm -rf temp-gh-pages
+
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./out
+        publish_dir: ./  # Root directory after moving contents
