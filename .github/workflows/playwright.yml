@@ -17,10 +17,10 @@ jobs:
       run: npm install -g pnpm && pnpm install
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
-    - name: Run Project
-      run: pnpm dev
-    - name: Run Playwright tests
-      run: pnpm exec playwright test
+    - name: Run headless test
+      uses: coactions/setup-xvfb@v1
+      with:
+        run: pnpm exec playwright test
     - uses: actions/upload-artifact@v4
       if: always()
       with:
