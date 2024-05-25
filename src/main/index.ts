@@ -17,7 +17,7 @@ function createWindow(): void {
 		title: "meteor",
 		...(process.platform === "linux" ? { icon } : {}),
 		webPreferences: {
-			preload: join(__dirname, "../preload/index.js"),
+			preload: join(__dirname, "../preload/index.mjs"),
 			sandbox: false,
 			accessibleTitle: "meteor",
 		},

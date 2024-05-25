@@ -11,6 +11,7 @@ import EditorLine from "../EditorLine/EditorLine";
 import LineNumbers from "../LineNumbers/LineNumbers";
 import TabsWrapper from "../TabsWrapper/TabsWrapper";
 import styles from "./EditorView.module.scss";
+import { languageMap } from "@renderer/App";
 
 interface FoldRegion {
     startLine: number;
@@ -137,6 +138,23 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	};
 
 	function identifyFoldRegions(tree: ASTNode): FoldRegion[] {
+		let foldRegions: FoldRegion[] = [];
+        if (!tree) return foldRegions;
+        if (!tree.children) return foldRegions;
+
+        for (let child of tree.children) {
+            if (child.type === "comment") {
+                foldRegions.push({
+                    startLine: child.startIndex,
+                    endLine: child.endIndex,
+                    isFolded: true,
+                });
+            } else if (child.children) {
+                foldRegions = foldRegions.concat(identifyFoldRegions(child));
+            }
+        }
+
+        return foldRegions;
 	}
 
 	function toggleFold(line: number): void {
@@ -151,6 +169,11 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		let current_position = node.startIndex;
 		if (!node) return "";
 		if (!node?.children) return "";
+
+		const extension = TabStore.activeTab!.id.split(".").pop()!;
+		if (!(extension in languageMap) || extension in ["txt", "md"]) {
+			return "";
+		}
 
 		// Function to escape special HTML characters
 		const escapeHtml = (text: string) => {
