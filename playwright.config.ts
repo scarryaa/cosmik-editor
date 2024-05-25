@@ -1,6 +1,6 @@
-// playwright.config.js
-module.exports = {
+export default {
   use: {
+    testDir: './e2e',
     baseURL: 'https://scarryaa.github.io/meteor/',
     headless: true,
     viewport: { width: 1280, height: 720 },
