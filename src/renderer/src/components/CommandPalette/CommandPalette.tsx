@@ -102,6 +102,7 @@ const CommandPalette: Component<CommandPaletteProps> = (props) => {
 			<div class={styles.overlay} onClick={props.onClose}>
 				<div
 					class={styles.commandPalette}
+					data-testid="command-palette"
 					onClick={(e) => e.stopPropagation()}
 					onKeyDown={(e) => e.stopPropagation()}
 				>
@@ -110,6 +111,7 @@ const CommandPalette: Component<CommandPaletteProps> = (props) => {
 						autofocus
 						type="text"
 						class={styles.searchInput}
+						data-testid="command-palette-input"
 						placeholder="Type a command..."
 						value={query()}
 						onInput={(e) => setQuery(e.currentTarget.value)}

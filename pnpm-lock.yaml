@@ -117,6 +117,9 @@ importers:
       '@electron-toolkit/tsconfig':
         specifier: ^1.0.1
         version: 1.0.1(@types/node@18.19.33)
+      '@playwright/experimental-ct-solid':
+        specifier: ^1.44.1
+        version: 1.44.1(@testing-library/jest-dom@6.4.5(vitest@1.6.0(@types/node@18.19.33)(jsdom@24.0.0)(sass@1.77.2)))(@types/node@18.19.33)(sass@1.77.2)(solid-js@1.8.17)(vite@5.2.11(@types/node@18.19.33)(sass@1.77.2))
       '@playwright/test':
         specifier: ^1.44.1
         version: 1.44.1
@@ -785,6 +788,15 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@playwright/experimental-ct-core@1.44.1':
+    resolution: {integrity: sha512-IqeXzfmpHH8yHA0fGQ//l/tDJHzUmg2dQj3t28E1tCshvnYc9fVr53Na9+/B8ME//vw0UFpv+CSKcOTHwWrhQg==}
+    engines: {node: '>=16'}
+
+  '@playwright/experimental-ct-solid@1.44.1':
+    resolution: {integrity: sha512-ACRQva+rmkD9w2DLlVgs52/GG45Bn48dgeq0bvMneeB0sF2HVvAEC8dVXoIqs45vhTxv3x6j0qkp5T/uy+VeiA==}
+    engines: {node: '>=16'}
+    hasBin: true
 
   '@playwright/test@1.44.1':
     resolution: {integrity: sha512-1hZ4TNvD5z9VuhNJ/walIjvMVvYkZKf71axoF/uiAqpntQJXpG64dlXhoDXE3OczPuTuvjf/M5KWFg5VAVUS3Q==}
@@ -3749,6 +3761,37 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@playwright/experimental-ct-core@1.44.1(@types/node@18.19.33)(sass@1.77.2)':
+    dependencies:
+      playwright: 1.44.1
+      playwright-core: 1.44.1
+      vite: 5.2.11(@types/node@18.19.33)(sass@1.77.2)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - terser
+
+  '@playwright/experimental-ct-solid@1.44.1(@testing-library/jest-dom@6.4.5(vitest@1.6.0(@types/node@18.19.33)(jsdom@24.0.0)(sass@1.77.2)))(@types/node@18.19.33)(sass@1.77.2)(solid-js@1.8.17)(vite@5.2.11(@types/node@18.19.33)(sass@1.77.2))':
+    dependencies:
+      '@playwright/experimental-ct-core': 1.44.1(@types/node@18.19.33)(sass@1.77.2)
+      vite-plugin-solid: 2.10.2(@testing-library/jest-dom@6.4.5(vitest@1.6.0(@types/node@18.19.33)(jsdom@24.0.0)(sass@1.77.2)))(solid-js@1.8.17)(vite@5.2.11(@types/node@18.19.33)(sass@1.77.2))
+    transitivePeerDependencies:
+      - '@testing-library/jest-dom'
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - solid-js
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - vite
 
   '@playwright/test@1.44.1':
     dependencies:

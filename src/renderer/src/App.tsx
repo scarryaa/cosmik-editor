@@ -83,12 +83,12 @@ const handleLanguageSet = (language: string): void => {
 
 // Event handlers
 const handleGlobalKeyDown = (e: KeyboardEvent) => {
-	if (e.ctrlKey && e.key === "p") {
+	if (e.ctrlKey && e.key === "p" && !e.altKey) {
 		e.preventDefault();
 		setInitWithPrefix(false);
 		setContentToDefaultCommands();
 		setIsOpen(true);
-	} else if (e.ctrlKey && e.shiftKey && e.key === "P") {
+	} else if (e.ctrlKey && e.shiftKey && e.key === "P" || e.ctrlKey && e.altKey && e.key === "p") {
 		e.preventDefault();
 		setInitWithPrefix(true);
 		setContentToDefaultCommands();

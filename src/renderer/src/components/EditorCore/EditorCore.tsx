@@ -209,6 +209,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 	return (
 		<div class={styles["editor-core"]}>
 			<textarea
+				data-testid="editor-core__textarea"
 				ref={props.ref}
 				class={styles["editor-core__textarea"]}
 				onkeydown={onKeydown}
