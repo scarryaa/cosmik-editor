@@ -3,6 +3,7 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { contextBridge, ipcRenderer } from "electron";
 
 const api = {
+	search: (term) => ipcRenderer.invoke("search", term),
 	onFileOpened: (callback: (event: any, data: any) => void) =>
 		ipcRenderer.on("file-opened", callback),
 	onFileRead: (callback: (event: any, data: any) => void) =>
@@ -11,6 +12,11 @@ const api = {
 		ipcRenderer.on("folder-opened", callback),
 	onFileChanged: (callback: (event: any, data: any) => void) =>
 		ipcRenderer.on("file-changed", callback),
+	onFolderRead: (callback: (event: any, data: any) => void) =>
+		ipcRenderer.on("folder-read", callback),
+	index: (folderPath) => ipcRenderer.invoke("index", folderPath),
+	onIndexResult: (callback: (event: any, data: any) => void) =>
+		ipcRenderer.on("index-result", callback),
 	fsWatch: (filePath) => ipcRenderer.invoke("fs-watch", filePath),
 	joinPath: (...args: string[]) => path.join(...args),
 	relativePath: (...args: string[]) => path.relative(args[0], args[1]),
@@ -39,6 +45,9 @@ const api = {
 	},
 	sendReadFileRequest: (path: string) => {
 		ipcRenderer.send("read-file-request", path);
+	},
+	sendFolderReadRequest: (path: string) => {
+		ipcRenderer.send("read-folder", path);
 	},
 	copy: (text: string) => ipcRenderer.invoke("copy", text),
 	paste: () => ipcRenderer.invoke("paste"),

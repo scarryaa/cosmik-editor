@@ -9,7 +9,7 @@
 		"skipLibCheck": true,
 		"strict": true
 	},
-	"include": ["**/*.ts", "**/*.tsx"],
+	"include": ["**/*.ts", "**/*.tsx", "src/workers/searchWorker.js"],
 	"exclude": ["node_modules"],
 	"references": [
 		{ "path": "./tsconfig.node.json" },

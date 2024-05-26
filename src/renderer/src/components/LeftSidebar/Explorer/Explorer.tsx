@@ -55,7 +55,6 @@ const Explorer = () => {
 		await api.fsWatch(gitignorePath);
 
 		api.onFileChanged(async (_, filename) => {
-			console.log(filename);
 			if (filename === gitignorePath) {
 				const newContent = await readGitignoreFile(gitignorePath);
 				setGitIgnoreContent(newContent);
@@ -96,7 +95,9 @@ const Explorer = () => {
 		watchGitignoreFile(gitignorePath);
 
 		api.onFileRead((_, response) => {
+			if (response.path === gitignorePath) {
 			setGitIgnoreContent(response.data);
+			}
 		});
 	});
 
