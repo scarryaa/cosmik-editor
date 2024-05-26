@@ -9,6 +9,7 @@ interface FileItemProps {
 	file: string;
 	indentLevel: number;
 	classList?: { [k: string]: boolean | undefined };
+	isIgnored: boolean;
 }
 
 const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
@@ -54,7 +55,9 @@ const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
 
 	return (
 		<div
-			class={`${styles["file-container"]} ${selected() ? styles.selected : ""}`}
+			class={`${styles["file-container"]} ${
+				selected() ? styles.selected : ""
+			} ${props.isIgnored ? styles.ignored : ""}`}
 			classList={props.classList}
 			onclick={handleFileClick}
 		>

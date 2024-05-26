@@ -35,9 +35,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 	const [selectedContent, setSelectedContent] = createSignal<string>("");
 	const [selectionLeft, setSelectionLeft] = createSignal<number>(0);
 
-	const isFolded = createMemo(() =>
-		props.foldLines.includes(props.line)
-	);
+	const isFolded = createMemo(() => props.foldLines.includes(props.line));
 
 	const debouncedParse = debounce(async (content: string) => {
 		const activeTab = TabStore.activeTab;

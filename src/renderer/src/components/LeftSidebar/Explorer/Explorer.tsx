@@ -17,6 +17,7 @@ import {
 	useFileStore,
 } from "../../../stores/files";
 import styles from "./Explorer.module.scss";
+import ignore from "ignore";
 
 interface FolderResponse {
 	path: string;
@@ -29,11 +30,75 @@ const Explorer = () => {
 	const [explorerHeight, setExplorerHeight] = createSignal<number | null>(null);
 	const fileStore = useFileStore();
 	const [explorerScroll, setExplorerScroll] = createSignal<number>(0);
+	const [gitIgnoreContent, setGitIgnoreContent] = createSignal<string>("");
+	const [ignoredFiles, setIgnoredFiles] = createSignal<Set<string>>(new Set());
+
 	let explorerRef: HTMLDivElement | undefined;
 	let headerRef: HTMLDivElement | undefined;
 
 	// biome-ignore lint/suspicious/noExplicitAny: Needed here
 	const api = window.api as any;
+	const projectRoot = fileStore.folderContent.root;
+
+	const readGitignoreFile = async (path: string): Promise<string> => {
+		return await api.sendReadFileRequest(path);
+	};
+
+	const parseGitignore = (content: string) => {
+		const ig = ignore();
+		// workaround for paths starting with /
+		ig.add(content.split("\n").map((line) => line.replaceAll("/", "")));
+		return ig;
+	};
+
+	const watchGitignoreFile = async (gitignorePath: string) => {
+		await api.fsWatch(gitignorePath);
+
+		api.onFileChanged(async (_, filename) => {
+			console.log(filename);
+			if (filename === gitignorePath) {
+				const newContent = await readGitignoreFile(gitignorePath);
+				setGitIgnoreContent(newContent);
+			}
+		});
+	};
+
+	createEffect(async () => {
+		if (gitIgnoreContent()) {
+			const ig = parseGitignore(gitIgnoreContent());
+
+			const updateIgnoredFiles = () => {
+				const allFiles = [
+					...fileStore.folderContent.files,
+					...fileStore.folderContent.folders,
+				];
+
+				const ignoredSet = new Set<string>();
+
+				for (const file of allFiles) {
+					const relativePath = api.relativePath(projectRoot, file);
+					if (ig.ignores(relativePath)) {
+						ignoredSet.add(file);
+					}
+				}
+
+				setIgnoredFiles(ignoredSet);
+			};
+
+			updateIgnoredFiles();
+		}
+	});
+
+	createEffect(async () => {
+		const gitignorePath = api.joinPath(projectRoot, ".gitignore");
+		const gitignoreContent = await readGitignoreFile(gitignorePath);
+		setGitIgnoreContent(gitignoreContent);
+		watchGitignoreFile(gitignorePath);
+
+		api.onFileRead((_, response) => {
+			setGitIgnoreContent(response.data);
+		});
+	});
 
 	createEffect(() => {
 		api.onFileOpened((_, response) => {
@@ -56,7 +121,7 @@ const Explorer = () => {
 			await fetchAndSetFolderContents(response);
 			setTimeout(() => {
 				updateExplorerHeight();
-			}, 0)
+			}, 0);
 		});
 	});
 
@@ -235,28 +300,28 @@ const Explorer = () => {
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={(e) => handleNewFileClick(e)}
+								onClick={(e) => handleNewFileClick(e)}
 							>
 								<VsNewFile font-size="16" />
 							</button>
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={(e) => handleNewFolderClick()}
+								onClick={(e) => handleNewFolderClick()}
 							>
 								<VsNewFolder font-size="16" />
 							</button>
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={() => refreshFolders()}
+								onClick={() => refreshFolders()}
 							>
 								<VsRefresh font-size="16" />
 							</button>
 							<button
 								type="button"
 								class={`${styles["explorer-action"]} no-button-style`}
-								onclick={(e) => clearOpenFolders(e)}
+								onClick={(e) => clearOpenFolders(e)}
 							>
 								<VsCollapseAll font-size="16" />
 							</button>
@@ -266,7 +331,7 @@ const Explorer = () => {
 				{rootOpen() && (
 					<div
 						ref={explorerRef}
-						onscroll={(event) => setExplorerScroll(event.target.scrollTop)}
+						onScroll={(event) => setExplorerScroll(event.target.scrollTop)}
 						class={styles.explorer}
 						style={{
 							height: explorerHeight() ? `${explorerHeight()}px` : "auto",
@@ -279,11 +344,23 @@ const Explorer = () => {
 									folder={folder}
 									path={`${fileStore.folderContent.root}/${folder}/`}
 									indentLevel={1}
+									isIgnored={ignoredFiles().has(
+										api.relativePath(
+											projectRoot,
+											api.joinPath(fileStore.folderContent.root, folder),
+										),
+									)}
 								/>
 							)}
 						</For>
 						<For each={fileStore.folderContent.files}>
-							{(file) => <FileItem file={file} indentLevel={1} />}
+							{(file) => (
+								<FileItem
+									isIgnored={ignoredFiles().has(file)}
+									file={file}
+									indentLevel={1}
+								/>
+							)}
 						</For>
 						<div class={styles.spacer} />
 					</div>
