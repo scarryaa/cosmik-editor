@@ -19,6 +19,12 @@
     background-color: var(--page-background);
     position: absolute;
 
+    &:hover {
+        .fold-line-icon {
+            opacity: 1 !important;
+        }
+    }
+
     &.shift-right {
         width: calc(var(--line-numbers-width) + 10px);
     }
@@ -32,11 +38,12 @@
         display: none;
     }
 
-    > * {
+    >* {
         min-height: 19px;
     }
 
     .line-numbers-inner {
+        position: relative;
         transform: translate3d(-30px, 0px, 0px);
 
         .line-number {
@@ -48,9 +55,18 @@
             z-index: 999;
             height: 19px;
             padding-top: 5px;
-    
+
             &.active {
                 color: var(--text-color);
+            }
+
+            .fold-line-icon {
+                position: absolute;
+                top: 7px;
+                left: 77px;
+                z-index: 999;
+                opacity: 0;
+                transition: opacity 0.2s ease-in-out;
             }
         }
     }

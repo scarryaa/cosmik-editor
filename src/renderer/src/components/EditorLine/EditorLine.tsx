@@ -24,6 +24,7 @@ interface EditorLineProps {
 		startLine: number;
 		endLine: number;
 	};
+	foldLines: number[];
 	highlightedContent: string;
 }
 
@@ -33,6 +34,10 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 	);
 	const [selectedContent, setSelectedContent] = createSignal<string>("");
 	const [selectionLeft, setSelectionLeft] = createSignal<number>(0);
+
+	const isFolded = createMemo(() =>
+		props.foldLines.includes(props.line)
+	);
 
 	const debouncedParse = debounce(async (content: string) => {
 		const activeTab = TabStore.activeTab;
@@ -107,7 +112,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 			style={{
 				transform: `translate3D(5px, ${props.line * lineHeight + 25}px, 0px)`,
 			}}
-			class={styles.line}
+			class={isFolded() ? styles["line-folded"] : styles.line}
 		>
 			<div
 				class={styles["line-content"]}

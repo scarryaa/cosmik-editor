@@ -1,6 +1,4 @@
 import { lineHeight } from "@renderer/const/const";
-import type { Editor } from "@renderer/models/Editor";
-import { useFileStore } from "@renderer/stores/files";
 import { parserTree } from "@renderer/stores/parser-tree";
 import TabStore from "@renderer/stores/tabs";
 import { getNumberOfLinesOnScreen } from "@renderer/util/util";
@@ -12,11 +10,13 @@ import LineNumbers from "../LineNumbers/LineNumbers";
 import TabsWrapper from "../TabsWrapper/TabsWrapper";
 import styles from "./EditorView.module.scss";
 import { languageMap } from "@renderer/App";
+import type { Editor } from "@renderer/models/Editor";
+import { useFileStore } from "@renderer/stores/files";
 
-interface FoldRegion {
-    startLine: number;
-    endLine: number;
-    isFolded: boolean;
+export interface FoldRegion {
+	startLine: number;
+	endLine: number;
+	isFolded: boolean;
 }
 
 interface EditorViewProps {
@@ -42,6 +42,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
 	const [spans, setSpans] = createSignal<string>();
 	const windowSize = createMemo(() => getNumberOfLinesOnScreen(lineHeight) + 5);
+
 	const fileStore = useFileStore();
 
 	let contentContainerRef: HTMLDivElement | undefined;
@@ -139,25 +140,40 @@ const EditorView: Component<EditorViewProps> = (props) => {
 
 	function identifyFoldRegions(tree: ASTNode): FoldRegion[] {
 		let foldRegions: FoldRegion[] = [];
-        if (!tree) return foldRegions;
-        if (!tree.children) return foldRegions;
+		if (!tree || !tree.children) return foldRegions;
 
-        for (let child of tree.children) {
-            if (child.type === "comment") {
-                foldRegions.push({
-                    startLine: child.startIndex,
-                    endLine: child.endIndex,
-                    isFolded: true,
-                });
-            } else if (child.children) {
-                foldRegions = foldRegions.concat(identifyFoldRegions(child));
-            }
-        }
+		for (let child of tree.children) {
+			if (shouldFold(child)) {
+				foldRegions.push({
+					startLine: calculateLineNumber(tree.text, child.startIndex),
+					endLine: calculateLineNumber(tree.text, child.endIndex),
+					isFolded: false, // Default to not folded
+				});
+			} else if (child.children) {
+				foldRegions = foldRegions.concat(identifyFoldRegions(child));
+			}
+		}
 
-        return foldRegions;
+		return foldRegions;
+	}
+
+	function shouldFold(node: ASTNode): boolean {
+		const foldableTypes = ["comment", "function", "class", "block"];
+		return foldableTypes.includes(node.type);
+	}
+
+	function calculateLineNumber(text: string, index: number): number {
+		return text.slice(0, index).split("\n").length - 1;
 	}
 
 	function toggleFold(line: number): void {
+		const regions = foldRegions().map((region) => {
+			if (region.startLine <= line && region.endLine >= line) {
+				return { ...region, isFolded: !region.isFolded };
+			}
+			return region;
+		});
+		setFoldRegions(regions);
 	}
 
 	function parseNode(
@@ -168,7 +184,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		let spans: string[] = [];
 		let current_position = node.startIndex;
 		if (!node) return "";
-		if (!node?.children) return "";
+		if (!node?.children || !TabStore.activeTab) return "";
 
 		const extension = TabStore.activeTab!.id.split(".").pop()!;
 		if (!(extension in languageMap) || extension in ["txt", "md"]) {
@@ -245,12 +261,35 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		return memoizedParseNode()?.split("<br/>");
 	});
 
+	const visibleLines = createMemo(() => {
+		const folds = foldRegions();
+		return memoizedTextLines().filter((_, lineIndex) => {
+			return !folds.some(
+				(region) =>
+					region.isFolded &&
+					lineIndex > region.startLine &&
+					lineIndex <= region.endLine,
+			);
+		});
+	});
+
+	const foldLines = createMemo(() => {
+		return foldRegions().reduce((acc, region) => {
+			if (region.isFolded) {
+				for (let i = region.startLine + 1; i <= region.endLine; i++) {
+					acc.push(i);
+				}
+			}
+			return acc;
+		}, [] as number[]);
+	});
+
 	createEffect(() => {
-		if (parserTree()) {
-		  const newFoldRegions = identifyFoldRegions(parserTree());
-		  setFoldRegions(newFoldRegions);
+		if (parserTree() && TabStore.activeTab) {
+			const newFoldRegions = identifyFoldRegions(parserTree());
+			setFoldRegions(newFoldRegions);
 		}
-	  });
+	});
 
 	createEffect(
 		on(
@@ -314,7 +353,12 @@ const EditorView: Component<EditorViewProps> = (props) => {
 			<TabsWrapper />
 			<div class={styles["editor-view-inner"]}>
 				<div class={styles["editor-line-numbers"]}>
-					<LineNumbers scrollTop={viewScrollTop} editor={props.editor} />
+					<LineNumbers
+						toggleFold={toggleFold}
+						foldRegions={foldRegions()}
+						scrollTop={viewScrollTop}
+						editor={props.editor}
+					/>
 				</div>
 				<div
 					ref={contentContainerRef}
@@ -324,13 +368,14 @@ const EditorView: Component<EditorViewProps> = (props) => {
 					<div class={styles["editor-lines-padding"]}>
 						<div class={styles["editor-lines"]}>
 							<For
-								each={memoizedTextLines().slice(
+								each={visibleLines().slice(
 									visibleLinesStart(),
 									visibleLinesStart() + windowSize() + 1,
 								)}
 							>
 								{(text, index) => (
 									<EditorLine
+										foldLines={foldLines()}
 										content={text}
 										line={visibleLinesStart() + index() - 1}
 										selection={{
