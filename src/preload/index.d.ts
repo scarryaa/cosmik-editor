@@ -5,8 +5,12 @@ declare global {
 		electron: ElectronAPI;
 		api: {
 			onFileOpened: (callback: (event: any, data: any) => void) => void;
+			onFileRead: (callback: (event: any, data: any) => void) => void;
 			onFolderOpened: (callback: (event: any, data: any) => void) => void;
+			onFileChanged: (callback: (event: any, data: any) => void) => void;
+			fsWatch: (filePath) => void;
 			joinPath: (...args: string[]) => string;
+			relativePath: (...args: string[]) => string;
 			isDirectory: (fullPath: string) => boolean;
 			getFolderContents: (folderPath: string) => string[];
 			createFolder: (folderPath: string) => void;
@@ -25,6 +29,7 @@ declare global {
 			setLanguageRequest: (extension: string) => void;
 			onLanguageSet: (callback: (event: any, data: any) => void) => void;
 			manualSetLanguageRequest: (language: string) => void;
+			sendReadFileRequest: (path: string) => string;
 		};
 	}
 }

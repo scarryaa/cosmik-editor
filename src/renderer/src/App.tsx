@@ -78,7 +78,6 @@ export const languageMap: { [key: string]: Languages } = {
 };
 
 const handleLanguageSet = (language: string): void => {
-
 	setSelectedLanguage(languageMap[language] || Languages.Plaintext);
 };
 
@@ -89,7 +88,10 @@ const handleGlobalKeyDown = (e: KeyboardEvent) => {
 		setInitWithPrefix(false);
 		setContentToDefaultCommands();
 		setIsOpen(true);
-	} else if (e.ctrlKey && e.shiftKey && e.key === "P" || e.ctrlKey && e.altKey && e.key === "p") {
+	} else if (
+		(e.ctrlKey && e.shiftKey && e.key === "P") ||
+		(e.ctrlKey && e.altKey && e.key === "p")
+	) {
 		e.preventDefault();
 		setInitWithPrefix(true);
 		setContentToDefaultCommands();
@@ -133,7 +135,7 @@ const App: Component = () => {
 	const handleRequestAction = (event: Event) => {
 		const { action } = (event as CustomEvent).detail;
 		const editor = EditorStore.getActiveEditor();
-	
+
 		switch (action) {
 			case "cut":
 				setFakeClipboard(editor!.cut());
@@ -173,7 +175,9 @@ const App: Component = () => {
 		window.addEventListener("save-file-request", saveCurrentFile);
 		window.addEventListener("new-file-request", newFile);
 		window.addEventListener("save-file-as-request", handleSaveFileAsRequest);
-		window.api.onLanguageSet((_, language: string) => handleLanguageSet(language));
+		window.api.onLanguageSet((_, language: string) =>
+			handleLanguageSet(language),
+		);
 	});
 
 	onCleanup(() => {

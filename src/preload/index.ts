@@ -5,9 +5,15 @@ import { contextBridge, ipcRenderer } from "electron";
 const api = {
 	onFileOpened: (callback: (event: any, data: any) => void) =>
 		ipcRenderer.on("file-opened", callback),
+	onFileRead: (callback: (event: any, data: any) => void) =>
+		ipcRenderer.on("file-read", callback),
 	onFolderOpened: (callback: (event: any, data: any) => void) =>
 		ipcRenderer.on("folder-opened", callback),
+	onFileChanged: (callback: (event: any, data: any) => void) =>
+		ipcRenderer.on("file-changed", callback),
+	fsWatch: (filePath) => ipcRenderer.invoke("fs-watch", filePath),
 	joinPath: (...args: string[]) => path.join(...args),
+	relativePath: (...args: string[]) => path.relative(args[0], args[1]),
 	isDirectory: (fullPath: string) =>
 		ipcRenderer.invoke("check-if-directory", fullPath),
 	getFolderContents: (folderPath: string) =>
@@ -30,6 +36,9 @@ const api = {
 	},
 	sendOpenFileRequest: () => {
 		ipcRenderer.send("open-file-request");
+	},
+	sendReadFileRequest: (path: string) => {
+		ipcRenderer.send("read-file-request", path);
 	},
 	copy: (text: string) => ipcRenderer.invoke("copy", text),
 	paste: () => ipcRenderer.invoke("paste"),

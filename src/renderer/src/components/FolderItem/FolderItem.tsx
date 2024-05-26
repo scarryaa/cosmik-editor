@@ -14,6 +14,7 @@ interface FolderItemProps {
 	folder: string;
 	path: string;
 	indentLevel: number;
+	isIgnored: boolean;
 }
 
 interface FolderContents {
@@ -110,10 +111,12 @@ const FolderItem: Component<FolderItemProps> = (props: FolderItemProps) => {
 	});
 
 	return (
-		<div class={`${styles["folder-container"]}`}>
+		<div class={`${styles["folder-container"]}`} data-path={props.folder}>
 			<div
 				onclick={handleFolderClick}
-				class={`${styles.folder} ${selected() ? styles.selected : ""}`}
+				class={`${styles.folder} ${selected() ? styles.selected : ""} ${
+					props.isIgnored ? styles.ignored : ""
+				}`}
 				style={{ "padding-left": `${currentIndent}px` }}
 			>
 				<span>
@@ -130,6 +133,7 @@ const FolderItem: Component<FolderItemProps> = (props: FolderItemProps) => {
 					<For each={contents().folders}>
 						{(folder) => (
 							<FolderItem
+								isIgnored={props.isIgnored}
 								folder={folder.name}
 								path={`${props.path}/${folder.name}`}
 								indentLevel={props.indentLevel + 1}
@@ -138,7 +142,11 @@ const FolderItem: Component<FolderItemProps> = (props: FolderItemProps) => {
 					</For>
 					<For each={contents().files}>
 						{(file) => (
-							<FileItem file={file} indentLevel={props.indentLevel + 1} />
+							<FileItem
+								isIgnored={props.isIgnored}
+								file={file}
+								indentLevel={props.indentLevel + 1}
+							/>
 						)}
 					</For>
 				</div>

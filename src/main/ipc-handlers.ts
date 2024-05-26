@@ -237,6 +237,26 @@ const registerIpcHandlers = (mainWindow: BrowserWindow) => {
 			console.error("Failed to open file:", error);
 		}
 	});
+
+	ipcMain.on("read-file-request", async (event, path) => {
+		try {
+			const data = await readFile(path);
+			mainWindow?.webContents.send("file-read", { data, path });
+		} catch (error) {
+			console.error("Failed to read file:", error);
+		}
+	});
+
+	ipcMain.handle("fs-watch", async (event, filePath) => {
+		const watcher = fs.watch(filePath);
+		for await (const event of watcher) {
+			if (event.eventType === "change") {
+				const data = await readFile(filePath);
+				console.log(data);
+				mainWindow?.webContents.send("file-read", { data, path: filePath });
+			}
+		}
+	});
 };
 
 export { registerIpcHandlers };

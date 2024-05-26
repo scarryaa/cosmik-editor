@@ -56,7 +56,7 @@ const EditorCore: Component<EditorCoreProps> = (props) => {
 			} else {
 				editor.clearSelection(0);
 			}
-			
+
 			switch (direction) {
 				case "Left":
 					editor.moveLeft(0);

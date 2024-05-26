@@ -1820,15 +1820,17 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             c: '<path d="M21.007 8.222A3.738 3.738 0 0 0 15.045 5.2a3.737 3.737 0 0 0 1.156 6.583 2.988 2.988 0 0 1-2.668 1.67h-2.99a4.456 4.456 0 0 0-2.989 1.165V7.4a3.737 3.737 0 1 0-1.494 0v9.117a3.776 3.776 0 1 0 1.816.099 2.99 2.99 0 0 1 2.668-1.667h2.99a4.484 4.484 0 0 0 4.223-3.039 3.736 3.736 0 0 0 3.25-3.687zM4.565 3.738a2.242 2.242 0 1 1 4.484 0 2.242 2.242 0 0 1-4.484 0zm4.484 16.441a2.242 2.242 0 1 1-4.484 0 2.242 2.242 0 0 1 4.484 0zm8.221-9.715a2.242 2.242 0 1 1 0-4.485 2.242 2.242 0 0 1 0 4.485z"/>'
         }, props);
     }
-    const indent$1 = "_indent_16l0s_5";
-    const file = "_file_16l0s_1";
-    const selected$1 = "_selected_16l0s_44";
+    const indent$1 = "_indent_wfw31_5";
+    const file = "_file_wfw31_1";
+    const selected$1 = "_selected_wfw31_44";
+    const ignored$1 = "_ignored_wfw31_48";
     const styles$f = {
-        "file-container": "_file-container_16l0s_1",
+        "file-container": "_file-container_wfw31_1",
         indent: indent$1,
         file: file,
-        "file-name": "_file-name_16l0s_30",
-        selected: selected$1
+        "file-name": "_file-name_wfw31_30",
+        selected: selected$1,
+        ignored: ignored$1
     };
     var _tmpl$$j = template(`<div><div><span>`);
     const FileItem = (props)=>{
@@ -1877,7 +1879,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             insert(_el$2, createComponent(VsFile, {}), _el$3);
             insert(_el$3, fileName);
             createRenderEffect((_p$)=>{
-                var _v$ = `${styles$f["file-container"]} ${selected() ? styles$f.selected : ""}`, _v$2 = props.classList, _v$3 = styles$f.file, _v$4 = styles$f["file-name"];
+                var _v$ = `${styles$f["file-container"]} ${selected() ? styles$f.selected : ""} ${props.isIgnored ? styles$f.ignored : ""}`, _v$2 = props.classList, _v$3 = styles$f.file, _v$4 = styles$f["file-name"];
                 _v$ !== _p$.e && className(_el$, _p$.e = _v$);
                 _p$.t = classList(_el$, _v$2, _p$.t);
                 _v$3 !== _p$.a && className(_el$2, _p$.a = _v$3);
@@ -1895,14 +1897,16 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     delegateEvents([
         "click"
     ]);
-    const indent = "_indent_1nw9n_5";
-    const folder = "_folder_1nw9n_1";
-    const selected = "_selected_1nw9n_44";
+    const ignored = "_ignored_1w1py_5";
+    const indent = "_indent_1w1py_8";
+    const folder = "_folder_1w1py_1";
+    const selected = "_selected_1w1py_47";
     const styles$e = {
-        "folder-container": "_folder-container_1nw9n_1",
+        "folder-container": "_folder-container_1w1py_1",
+        ignored: ignored,
         indent: indent,
         folder: folder,
-        "folder-name": "_folder-name_1nw9n_30",
+        "folder-name": "_folder-name_1w1py_33",
         selected: selected
     };
     var _tmpl$$i = template(`<div><div><span></span><span>`), _tmpl$2$7 = template(`<div>`);
@@ -2013,6 +2017,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                 return contents().folders;
                             },
                             children: (folder)=>createComponent(FolderItem, {
+                                    get isIgnored () {
+                                        return props.isIgnored;
+                                    },
                                     get folder () {
                                         return folder.name;
                                     },
@@ -2029,6 +2036,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                 return contents().files;
                             },
                             children: (file)=>createComponent(FileItem, {
+                                    get isIgnored () {
+                                        return props.isIgnored;
+                                    },
                                     file,
                                     get indentLevel () {
                                         return props.indentLevel + 1;
@@ -2039,15 +2049,17 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     })();
             })(), null);
             createRenderEffect((_p$)=>{
-                var _v$ = `${styles$e["folder-container"]}`, _v$2 = `${styles$e.folder} ${selected() ? styles$e.selected : ""}`, _v$3 = styles$e["folder-name"];
+                var _v$ = `${styles$e["folder-container"]}`, _v$2 = props.folder, _v$3 = `${styles$e.folder} ${selected() ? styles$e.selected : ""} ${props.isIgnored ? styles$e.ignored : ""}`, _v$4 = styles$e["folder-name"];
                 _v$ !== _p$.e && className(_el$, _p$.e = _v$);
-                _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
-                _v$3 !== _p$.a && className(_el$4, _p$.a = _v$3);
+                _v$2 !== _p$.t && setAttribute(_el$, "data-path", _p$.t = _v$2);
+                _v$3 !== _p$.a && className(_el$2, _p$.a = _v$3);
+                _v$4 !== _p$.o && className(_el$4, _p$.o = _v$4);
                 return _p$;
             }, {
                 e: void 0,
                 t: void 0,
-                a: void 0
+                a: void 0,
+                o: void 0
             });
             return _el$;
         })();
@@ -2072,15 +2084,321 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         "header-gradient": "_header-gradient_psqxo_85",
         "explorer-action": "_explorer-action_psqxo_18"
     };
+    function getDefaultExportFromCjs(x) {
+        return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+    }
+    var define_process_env_default = {};
+    function makeArray(subject) {
+        return Array.isArray(subject) ? subject : [
+            subject
+        ];
+    }
+    const EMPTY = "";
+    const SPACE = " ";
+    const ESCAPE = "\\";
+    const REGEX_TEST_BLANK_LINE = /^\s+$/;
+    const REGEX_INVALID_TRAILING_BACKSLASH = /(?:[^\\]|^)\\$/;
+    const REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\\!/;
+    const REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\\#/;
+    const REGEX_SPLITALL_CRLF = /\r?\n/g;
+    const REGEX_TEST_INVALID_PATH = /^\.*\/|^\.+$/;
+    const SLASH = "/";
+    let TMP_KEY_IGNORE = "node-ignore";
+    if (typeof Symbol !== "undefined") {
+        TMP_KEY_IGNORE = Symbol.for("node-ignore");
+    }
+    const KEY_IGNORE = TMP_KEY_IGNORE;
+    const define = (object, key, value)=>Object.defineProperty(object, key, {
+            value
+        });
+    const REGEX_REGEXP_RANGE = /([0-z])-([0-z])/g;
+    const RETURN_FALSE = ()=>false;
+    const sanitizeRange = (range)=>range.replace(REGEX_REGEXP_RANGE, (match, from, to)=>from.charCodeAt(0) <= to.charCodeAt(0) ? match : EMPTY);
+    const cleanRangeBackSlash = (slashes)=>{
+        const { length } = slashes;
+        return slashes.slice(0, length - length % 2);
+    };
+    const REPLACERS = [
+        [
+            /^\uFEFF/,
+            ()=>EMPTY
+        ],
+        [
+            /\\?\s+$/,
+            (match)=>match.indexOf("\\") === 0 ? SPACE : EMPTY
+        ],
+        [
+            /\\\s/g,
+            ()=>SPACE
+        ],
+        [
+            /[\\$.|*+(){^]/g,
+            (match)=>`\\${match}`
+        ],
+        [
+            /(?!\\)\?/g,
+            ()=>"[^/]"
+        ],
+        [
+            /^\//,
+            ()=>"^"
+        ],
+        [
+            /\//g,
+            ()=>"\\/"
+        ],
+        [
+            /^\^*\\\*\\\*\\\//,
+            ()=>"^(?:.*\\/)?"
+        ],
+        [
+            /^(?=[^^])/,
+            function startingReplacer() {
+                return !/\/(?!$)/.test(this) ? "(?:^|\\/)" : "^";
+            }
+        ],
+        [
+            /\\\/\\\*\\\*(?=\\\/|$)/g,
+            (_, index, str)=>index + 6 < str.length ? "(?:\\/[^\\/]+)*" : "\\/.+"
+        ],
+        [
+            /(^|[^\\]+)(\\\*)+(?=.+)/g,
+            (_, p1, p2)=>{
+                const unescaped = p2.replace(/\\\*/g, "[^\\/]*");
+                return p1 + unescaped;
+            }
+        ],
+        [
+            /\\\\\\(?=[$.|*+(){^])/g,
+            ()=>ESCAPE
+        ],
+        [
+            /\\\\/g,
+            ()=>ESCAPE
+        ],
+        [
+            /(\\)?\[([^\]/]*?)(\\*)($|\])/g,
+            (match, leadEscape, range, endEscape, close)=>leadEscape === ESCAPE ? `\\[${range}${cleanRangeBackSlash(endEscape)}${close}` : close === "]" ? endEscape.length % 2 === 0 ? `[${sanitizeRange(range)}${endEscape}]` : "[]" : "[]"
+        ],
+        [
+            /(?:[^*])$/,
+            (match)=>/\/$/.test(match) ? `${match}$` : `${match}(?=$|\\/$)`
+        ],
+        [
+            /(\^|\\\/)?\\\*$/,
+            (_, p1)=>{
+                const prefix = p1 ? `${p1}[^/]+` : "[^/]*";
+                return `${prefix}(?=$|\\/$)`;
+            }
+        ]
+    ];
+    const regexCache = Object.create(null);
+    const makeRegex = (pattern, ignoreCase)=>{
+        let source = regexCache[pattern];
+        if (!source) {
+            source = REPLACERS.reduce((prev, current)=>prev.replace(current[0], current[1].bind(pattern)), pattern);
+            regexCache[pattern] = source;
+        }
+        return ignoreCase ? new RegExp(source, "i") : new RegExp(source);
+    };
+    const isString = (subject)=>typeof subject === "string";
+    const checkPattern = (pattern)=>pattern && isString(pattern) && !REGEX_TEST_BLANK_LINE.test(pattern) && !REGEX_INVALID_TRAILING_BACKSLASH.test(pattern) && pattern.indexOf("#") !== 0;
+    const splitPattern = (pattern)=>pattern.split(REGEX_SPLITALL_CRLF);
+    class IgnoreRule {
+        constructor(origin, pattern, negative, regex){
+            this.origin = origin;
+            this.pattern = pattern;
+            this.negative = negative;
+            this.regex = regex;
+        }
+    }
+    const createRule = (pattern, ignoreCase)=>{
+        const origin = pattern;
+        let negative = false;
+        if (pattern.indexOf("!") === 0) {
+            negative = true;
+            pattern = pattern.substr(1);
+        }
+        pattern = pattern.replace(REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION, "!").replace(REGEX_REPLACE_LEADING_EXCAPED_HASH, "#");
+        const regex = makeRegex(pattern, ignoreCase);
+        return new IgnoreRule(origin, pattern, negative, regex);
+    };
+    const throwError = (message, Ctor)=>{
+        throw new Ctor(message);
+    };
+    const checkPath = (path, originalPath, doThrow)=>{
+        if (!isString(path)) {
+            return doThrow(`path must be a string, but got \`${originalPath}\``, TypeError);
+        }
+        if (!path) {
+            return doThrow(`path must not be empty`, TypeError);
+        }
+        if (checkPath.isNotRelative(path)) {
+            const r = "`path.relative()`d";
+            return doThrow(`path should be a ${r} string, but got "${originalPath}"`, RangeError);
+        }
+        return true;
+    };
+    const isNotRelative = (path)=>REGEX_TEST_INVALID_PATH.test(path);
+    checkPath.isNotRelative = isNotRelative;
+    checkPath.convert = (p)=>p;
+    class Ignore {
+        constructor({ ignorecase = true, ignoreCase = ignorecase, allowRelativePaths = false } = {}){
+            define(this, KEY_IGNORE, true);
+            this._rules = [];
+            this._ignoreCase = ignoreCase;
+            this._allowRelativePaths = allowRelativePaths;
+            this._initCache();
+        }
+        _initCache() {
+            this._ignoreCache = Object.create(null);
+            this._testCache = Object.create(null);
+        }
+        _addPattern(pattern) {
+            if (pattern && pattern[KEY_IGNORE]) {
+                this._rules = this._rules.concat(pattern._rules);
+                this._added = true;
+                return;
+            }
+            if (checkPattern(pattern)) {
+                const rule = createRule(pattern, this._ignoreCase);
+                this._added = true;
+                this._rules.push(rule);
+            }
+        }
+        add(pattern) {
+            this._added = false;
+            makeArray(isString(pattern) ? splitPattern(pattern) : pattern).forEach(this._addPattern, this);
+            if (this._added) {
+                this._initCache();
+            }
+            return this;
+        }
+        addPattern(pattern) {
+            return this.add(pattern);
+        }
+        _testOne(path, checkUnignored) {
+            let ignored = false;
+            let unignored = false;
+            this._rules.forEach((rule)=>{
+                const { negative } = rule;
+                if (unignored === negative && ignored !== unignored || negative && !ignored && !unignored && !checkUnignored) {
+                    return;
+                }
+                const matched = rule.regex.test(path);
+                if (matched) {
+                    ignored = !negative;
+                    unignored = negative;
+                }
+            });
+            return {
+                ignored,
+                unignored
+            };
+        }
+        _test(originalPath, cache, checkUnignored, slices) {
+            const path = originalPath && checkPath.convert(originalPath);
+            checkPath(path, originalPath, this._allowRelativePaths ? RETURN_FALSE : throwError);
+            return this._t(path, cache, checkUnignored, slices);
+        }
+        _t(path, cache, checkUnignored, slices) {
+            if (path in cache) {
+                return cache[path];
+            }
+            if (!slices) {
+                slices = path.split(SLASH);
+            }
+            slices.pop();
+            if (!slices.length) {
+                return cache[path] = this._testOne(path, checkUnignored);
+            }
+            const parent = this._t(slices.join(SLASH) + SLASH, cache, checkUnignored, slices);
+            return cache[path] = parent.ignored ? parent : this._testOne(path, checkUnignored);
+        }
+        ignores(path) {
+            return this._test(path, this._ignoreCache, false).ignored;
+        }
+        createFilter() {
+            return (path)=>!this.ignores(path);
+        }
+        filter(paths) {
+            return makeArray(paths).filter(this.createFilter());
+        }
+        test(path) {
+            return this._test(path, this._testCache, true);
+        }
+    }
+    const factory = (options)=>new Ignore(options);
+    const isPathValid = (path)=>checkPath(path && checkPath.convert(path), path, RETURN_FALSE);
+    factory.isPathValid = isPathValid;
+    factory.default = factory;
+    var ignore = factory;
+    if (typeof process !== "undefined" && (define_process_env_default && define_process_env_default.IGNORE_TEST_WIN32 || process.platform === "win32")) {
+        const makePosix = (str)=>/^\\\\\?\\/.test(str) || /["<>|\u0000-\u001F]+/u.test(str) ? str : str.replace(/\\/g, "/");
+        checkPath.convert = makePosix;
+        const REGIX_IS_WINDOWS_PATH_ABSOLUTE = /^[a-z]:\//i;
+        checkPath.isNotRelative = (path)=>REGIX_IS_WINDOWS_PATH_ABSOLUTE.test(path) || isNotRelative(path);
+    }
+    const ignore$1 = getDefaultExportFromCjs(ignore);
     var _tmpl$$h = template(`<div>`), _tmpl$2$6 = template(`<div><div><h3></h3></div><div><button type=button></button><button type=button></button><button type=button></button><button type=button>`), _tmpl$3$1 = template(`<div><div>`);
     const Explorer = ()=>{
         const [rootOpen, setRootOpen] = createSignal(true);
         const [explorerHeight, setExplorerHeight] = createSignal(null);
         const fileStore = useFileStore();
         const [explorerScroll, setExplorerScroll] = createSignal(0);
+        const [gitIgnoreContent, setGitIgnoreContent] = createSignal("");
+        const [ignoredFiles, setIgnoredFiles] = createSignal(new Set());
         let explorerRef;
         let headerRef;
         const api = window.api;
+        const projectRoot = fileStore.folderContent.root;
+        const readGitignoreFile = async (path)=>{
+            return await api.sendReadFileRequest(path);
+        };
+        const parseGitignore = (content)=>{
+            const ig = ignore$1();
+            ig.add(content.split("\n").map((line)=>line.replaceAll("/", "")));
+            return ig;
+        };
+        const watchGitignoreFile = async (gitignorePath)=>{
+            await api.fsWatch(gitignorePath);
+            api.onFileChanged(async (_, filename)=>{
+                console.log(filename);
+                if (filename === gitignorePath) {
+                    const newContent = await readGitignoreFile(gitignorePath);
+                    setGitIgnoreContent(newContent);
+                }
+            });
+        };
+        createEffect(async ()=>{
+            if (gitIgnoreContent()) {
+                const ig = parseGitignore(gitIgnoreContent());
+                const updateIgnoredFiles = ()=>{
+                    const allFiles = [
+                        ...fileStore.folderContent.files,
+                        ...fileStore.folderContent.folders
+                    ];
+                    const ignoredSet = new Set();
+                    for (const file of allFiles){
+                        const relativePath = api.relativePath(projectRoot, file);
+                        if (ig.ignores(relativePath)) {
+                            ignoredSet.add(file);
+                        }
+                    }
+                    setIgnoredFiles(ignoredSet);
+                };
+                updateIgnoredFiles();
+            }
+        });
+        createEffect(async ()=>{
+            const gitignorePath = api.joinPath(projectRoot, ".gitignore");
+            const gitignoreContent = await readGitignoreFile(gitignorePath);
+            setGitIgnoreContent(gitignoreContent);
+            watchGitignoreFile(gitignorePath);
+            api.onFileRead((_, response)=>{
+                setGitIgnoreContent(response.data);
+            });
+        });
         createEffect(()=>{
             api.onFileOpened((_, response)=>{
                 setFileContent(response.data);
@@ -2283,7 +2601,10 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                         get path () {
                                             return `${fileStore.folderContent.root}/${folder}/`;
                                         },
-                                        indentLevel: 1
+                                        indentLevel: 1,
+                                        get isIgnored () {
+                                            return ignoredFiles().has(api.relativePath(projectRoot, api.joinPath(fileStore.folderContent.root, folder)));
+                                        }
                                     })
                             }), _el$11);
                             insert(_el$10, createComponent(For, {
@@ -2291,6 +2612,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                     return fileStore.folderContent.files;
                                 },
                                 children: (file)=>createComponent(FileItem, {
+                                        get isIgnored () {
+                                            return ignoredFiles().has(file);
+                                        },
                                         file,
                                         indentLevel: 1
                                     })
@@ -11553,18 +11877,20 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             structure: "inline"
         });
     };
-    const line = "_line_48soc_5";
-    const selection = "_selection_48soc_19";
+    const line = "_line_17f71_5";
+    const selection = "_selection_17f71_20";
     const styles$8 = {
         line: line,
-        "empty-selection-placeholder": "_empty-selection-placeholder_48soc_11",
-        selection: selection
+        "empty-selection-placeholder": "_empty-selection-placeholder_17f71_12",
+        selection: selection,
+        "line-folded": "_line-folded_17f71_26"
     };
     var _tmpl$$9 = template(`<div><div></div><div>`), _tmpl$2$4 = template(`<div>`);
     const EditorLine = (props)=>{
         const [highlightedContent, setHighlightedContent] = createSignal(props.content);
         const [selectedContent, setSelectedContent] = createSignal("");
         const [selectionLeft, setSelectionLeft] = createSignal(0);
+        const isFolded = createMemo(()=>props.foldLines.includes(props.line));
         const debouncedParse = debounce(async (content2)=>{
             const activeTab = TabStore.activeTab;
             if (activeTab) {
@@ -11619,7 +11945,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     })();
             })());
             createRenderEffect((_p$)=>{
-                var _v$ = props.line + 1, _v$2 = `translate3D(5px, ${props.line * lineHeight + 25}px, 0px)`, _v$3 = styles$8.line, _v$4 = styles$8["line-content"], _v$5 = props.highlightedContent || highlightedContent(), _v$6 = styles$8.selection, _v$7 = `translate3D(${selectionLeft()}px, -20px, 0px)`;
+                var _v$ = props.line + 1, _v$2 = `translate3D(5px, ${props.line * lineHeight + 25}px, 0px)`, _v$3 = isFolded() ? styles$8["line-folded"] : styles$8.line, _v$4 = styles$8["line-content"], _v$5 = props.highlightedContent || highlightedContent(), _v$6 = styles$8.selection, _v$7 = `translate3D(${selectionLeft()}px, -20px, 0px)`;
                 _v$ !== _p$.e && setAttribute(_el$, "data-line-number", _p$.e = _v$);
                 _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("transform", _v$2) : _el$.style.removeProperty("transform"));
                 _v$3 !== _p$.a && className(_el$, _p$.a = _v$3);
@@ -11640,15 +11966,50 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             return _el$;
         })();
     };
-    const active$1 = "_active_wo9cl_48";
+    const active$1 = "_active_rmvki_52";
     const styles$7 = {
-        "line-numbers": "_line-numbers_wo9cl_5",
-        "shift-right": "_shift-right_wo9cl_22",
-        "shift-right2x": "_shift-right2x_wo9cl_25",
-        "line-numbers-inner": "_line-numbers-inner_wo9cl_35",
-        "line-number": "_line-number_wo9cl_5",
+        "line-numbers": "_line-numbers_rmvki_5",
+        "fold-line-icon": "_fold-line-icon_rmvki_22",
+        "shift-right": "_shift-right_rmvki_25",
+        "shift-right2x": "_shift-right2x_rmvki_28",
+        "line-numbers-inner": "_line-numbers-inner_rmvki_38",
+        "line-number": "_line-number_rmvki_5",
         active: active$1
     };
+    function TbChevronDown(props) {
+        return IconTemplate({
+            a: {
+                "xmlns": "http://www.w3.org/2000/svg",
+                "class": "icon icon-tabler icon-tabler-chevron-down",
+                "width": "24",
+                "height": "24",
+                "viewBox": "0 0 24 24",
+                "stroke-width": "2",
+                "stroke": "currentColor",
+                "fill": "none",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round"
+            },
+            c: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 9l6 6l6 -6"/>'
+        }, props);
+    }
+    function TbPlus(props) {
+        return IconTemplate({
+            a: {
+                "xmlns": "http://www.w3.org/2000/svg",
+                "class": "icon icon-tabler icon-tabler-plus",
+                "width": "24",
+                "height": "24",
+                "viewBox": "0 0 24 24",
+                "stroke-width": "2",
+                "stroke": "currentColor",
+                "fill": "none",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round"
+            },
+            c: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14"/><path d="M5 12l14 0"/>'
+        }, props);
+    }
     var _tmpl$$8 = template(`<div><div>`), _tmpl$2$3 = template(`<div>`);
     const LineNumbers = (props)=>{
         const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
@@ -11699,7 +12060,21 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                         },
                         get children () {
                             var _el$3 = _tmpl$2$3();
-                            insert(_el$3, ()=>visibleLinesStart() + index() + 1);
+                            insert(_el$3, createComponent(Show, {
+                                get when () {
+                                    return props.foldRegions.map((f)=>f.startLine).includes(visibleLinesStart() + index());
+                                },
+                                get children () {
+                                    var _el$4 = _tmpl$2$3();
+                                    _el$4.$$mousedown = ()=>props.toggleFold(visibleLinesStart() + index() + 1);
+                                    insert(_el$4, createComponent(TbChevronDown, {
+                                        "font-size": "15"
+                                    }));
+                                    createRenderEffect(()=>className(_el$4, styles$7["fold-line-icon"]));
+                                    return _el$4;
+                                }
+                            }), null);
+                            insert(_el$3, ()=>visibleLinesStart() + index() + 1, null);
                             createRenderEffect((_p$)=>{
                                 var _v$4 = styles$7["line-number"] + (activeLine() === visibleLinesStart() + index() ? ` ${styles$7.active}` : ""), _v$5 = getTransformForLine(visibleLinesStart() + index());
                                 _v$4 !== _p$.e && className(_el$3, _p$.e = _v$4);
@@ -11728,6 +12103,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             return _el$;
         })();
     };
+    delegateEvents([
+        "mousedown"
+    ]);
     const tab = "_tab_i7bll_5";
     const active = "_active_i7bll_34";
     const styles$6 = {
@@ -12090,14 +12468,13 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         };
         function identifyFoldRegions(tree) {
             let foldRegions2 = [];
-            if (!tree) return foldRegions2;
-            if (!tree.children) return foldRegions2;
+            if (!tree || !tree.children) return foldRegions2;
             for (let child of tree.children){
-                if (child.type === "comment") {
+                if (shouldFold(child)) {
                     foldRegions2.push({
-                        startLine: child.startIndex,
-                        endLine: child.endIndex,
-                        isFolded: true
+                        startLine: calculateLineNumber(tree.text, child.startIndex),
+                        endLine: calculateLineNumber(tree.text, child.endIndex),
+                        isFolded: false
                     });
                 } else if (child.children) {
                     foldRegions2 = foldRegions2.concat(identifyFoldRegions(child));
@@ -12105,11 +12482,35 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
             return foldRegions2;
         }
+        function shouldFold(node) {
+            const foldableTypes = [
+                "comment",
+                "function",
+                "class",
+                "block"
+            ];
+            return foldableTypes.includes(node.type);
+        }
+        function calculateLineNumber(text, index) {
+            return text.slice(0, index).split("\n").length - 1;
+        }
+        function toggleFold(line) {
+            const regions = foldRegions().map((region)=>{
+                if (region.startLine <= line && region.endLine >= line) {
+                    return {
+                        ...region,
+                        isFolded: !region.isFolded
+                    };
+                }
+                return region;
+            });
+            setFoldRegions(regions);
+        }
         function parseNode(node, rootText, styles2) {
             let spans2 = [];
             let current_position = node.startIndex;
             if (!node) return "";
-            if (!node?.children) return "";
+            if (!node?.children || !TabStore.activeTab) return "";
             const extension = TabStore.activeTab.id.split(".").pop();
             if (!(extension in languageMap) || extension in [
                 "txt",
@@ -12148,8 +12549,24 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         const lines = createMemo(()=>{
             return memoizedParseNode()?.split("<br/>");
         });
+        const visibleLines = createMemo(()=>{
+            const folds = foldRegions();
+            return memoizedTextLines().filter((_, lineIndex)=>{
+                return !folds.some((region)=>region.isFolded && lineIndex > region.startLine && lineIndex <= region.endLine);
+            });
+        });
+        const foldLines = createMemo(()=>{
+            return foldRegions().reduce((acc, region)=>{
+                if (region.isFolded) {
+                    for(let i = region.startLine + 1; i <= region.endLine; i++){
+                        acc.push(i);
+                    }
+                }
+                return acc;
+            }, []);
+        });
         createEffect(()=>{
-            if (parserTree()) {
+            if (parserTree() && TabStore.activeTab) {
                 const newFoldRegions = identifyFoldRegions(parserTree());
                 setFoldRegions(newFoldRegions);
             }
@@ -12192,6 +12609,10 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             addEventListener(_el$, "click", props.click, true);
             insert(_el$, createComponent(TabsWrapper, {}), _el$2);
             insert(_el$3, createComponent(LineNumbers, {
+                toggleFold,
+                get foldRegions () {
+                    return foldRegions();
+                },
                 scrollTop: viewScrollTop,
                 get editor () {
                     return props.editor;
@@ -12202,9 +12623,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             typeof _ref$ === "function" ? use(_ref$, _el$4) : contentContainerRef = _el$4;
             insert(_el$6, createComponent(For, {
                 get each () {
-                    return memoizedTextLines().slice(visibleLinesStart(), visibleLinesStart() + windowSize() + 1);
+                    return visibleLines().slice(visibleLinesStart(), visibleLinesStart() + windowSize() + 1);
                 },
                 children: (text, index)=>createComponent(EditorLine, {
+                        get foldLines () {
+                            return foldLines();
+                        },
                         content: text,
                         get line () {
                             return visibleLinesStart() + index() - 1;
@@ -12265,23 +12689,6 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     delegateEvents([
         "click"
     ]);
-    function TbPlus(props) {
-        return IconTemplate({
-            a: {
-                "xmlns": "http://www.w3.org/2000/svg",
-                "class": "icon icon-tabler icon-tabler-plus",
-                "width": "24",
-                "height": "24",
-                "viewBox": "0 0 24 24",
-                "stroke-width": "2",
-                "stroke": "currentColor",
-                "fill": "none",
-                "stroke-linecap": "round",
-                "stroke-linejoin": "round"
-            },
-            c: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14"/><path d="M5 12l14 0"/>'
-        }, props);
-    }
     const expanded = "_expanded_1nqey_12";
     const styles$3 = {
         "pane-container": "_pane-container_1nqey_1",

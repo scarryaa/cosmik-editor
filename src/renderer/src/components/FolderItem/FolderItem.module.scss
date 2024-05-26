@@ -2,6 +2,10 @@
     position: relative;
     align-items: center;
 
+    .ignored {
+        color: #777777;
+    }
+
     .indent {
         height: 100%;
         position: absolute;
