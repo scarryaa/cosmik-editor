@@ -242,8 +242,8 @@ const EditorView: Component<EditorViewProps> = (props) => {
 			);
 		}
 
-		setSpans(spans.join(""));
-		return spans.join("");
+		// setSpans(spans.join(""));
+		// return spans.join("");
 	}
 
 	const memoizedParseNode = createMemo(() => {

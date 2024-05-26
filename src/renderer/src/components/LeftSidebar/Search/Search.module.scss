@@ -34,6 +34,7 @@
         align-items: center;
         justify-content: flex-start;
         margin-top: 8px;
+        margin-bottom: 8px;
 
         &::-webkit-scrollbar {
             cursor: default !important;
@@ -50,14 +51,64 @@
             flex-direction: row;
             align-items: center;
             font-size: 13px;
-            padding: 4px;
-            padding-left: 30px;
+            padding-bottom: 2px;
             white-space: nowrap;
             text-overflow: ellipsis;
             min-width: 0;
+            cursor: pointer;
+            line-height: 18px;
 
-            &:hover {
-                background-color: var(--meteor-pane-background-light);
+            .result-ref-chevron {
+                margin-right: 4px;
+                align-items: flex-start;
+                justify-content: center;
+            }
+
+            .result-ref {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+
+                .result-ref-container {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    width: 100%;
+                }
+
+                .result-ref-name {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .result-match-count {
+                    min-width: 10%;
+                    margin-top: 2px;
+                    margin-right: 2px;
+                    color: var(--text-color-muted);
+                    font-size: 12px;
+                    align-self: center;
+                }
+            }
+
+            .match-context,
+            .result-ref {
+                padding-block: 2px;
+                padding-left: 10px;
+
+                &:hover {
+                    background-color: var(--meteor-pane-background-light);
+                }
+            }
+
+            .match-context {
+                color: #979797;
+                padding-left: 28px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     }

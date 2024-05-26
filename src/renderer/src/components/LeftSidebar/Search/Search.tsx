@@ -10,14 +10,88 @@ import { debounce } from "lodash";
 import { useFileStore } from "@renderer/stores/files";
 import TabStore, { TabState } from "@renderer/stores/tabs";
 import EditorStore from "@renderer/stores/editors";
+import { VsChevronDown, VsChevronRight } from "solid-icons/vs";
 
 const workerUrl = new URL(
 	"../../../../../workers/searchWorker.ts",
 	import.meta.url,
 );
 
+const SearchResult = (props: {
+	result: { ref: string; matchData: { matches: Array<{ context: string }> } };
+}) => {
+	const [collapsed, setCollapsed] = createSignal(false);
+
+	const handleResultClick = async (file: string) => {
+		TabStore.openTab({
+			id: file,
+			name: file.split("/").pop()!,
+			state: TabState.Untracked,
+			editorId: EditorStore.getActiveEditorId()!,
+		});
+		const contents = await window.api.getFileContents(file);
+		EditorStore.setEditorContent("editor1", contents);
+		TabStore.updateTab(file, { content: contents });
+	};
+
+	return (
+		<div class={styles["search-result"]}>
+			<div
+				class={styles["result-ref"]}
+				onKeyPress={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						setCollapsed(!collapsed());
+					}
+				}}
+				onClick={() => setCollapsed(!collapsed())}
+			>
+				<div class={styles["result-ref-container"]}>
+				<div class={styles["result-match-count"]}>
+					{props.result.matchData.matches.length}
+				</div>
+					{collapsed() ? (
+						<VsChevronRight
+							font-size="14"
+							class={styles["result-ref-chevron"]}
+						/>
+					) : (
+						<VsChevronDown
+							font-size="14"
+							class={styles["result-ref-chevron"]}
+						/>
+					)}
+					<div class={styles["result-ref-name"]}>
+						{props.result.ref.split("/").pop()}
+					</div>
+				</div>
+			</div>
+			{!collapsed() ? (
+				<div class={styles["result-match-data"]}>
+					<For each={props.result.matchData.matches}>
+						{(match) => (
+							<div
+								class={styles["match-context"]}
+								onKeyPress={async (e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										handleResultClick(props.result.ref);
+									}
+								}}
+								onClick={async () => {
+									handleResultClick(props.result.ref);
+								}}
+								title={match.context}
+							>
+								{match.context}
+							</div>
+						)}
+					</For>
+				</div>
+			) : null}
+		</div>
+	);
+};
+
 const Search: Component = () => {
-	const [documents, setDocuments] = createSignal<string[]>([]);
 	const [searchTerm, setSearchTerm] = createSignal("");
 	const [searchResults, setSearchResults] = createSignal([]);
 	const fileStore = useFileStore();
@@ -48,18 +122,6 @@ const Search: Component = () => {
 		worker.postMessage({ type: "SEARCH", payload: term.trim() });
 	}, 300);
 
-	const handleResultClick = async (file: string) => {
-		TabStore.openTab({
-            id: file,
-            name: file.split("/").pop()!,
-            state: TabState.Untracked,
-            editorId: EditorStore.getActiveEditorId()!,
-        });
-		const contents = await window.api.getFileContents(file);
-		EditorStore.setEditorContent("editor1", contents);
-		TabStore.updateTab(file, { content: contents });
-    };
-
 	createEffect(() => {
 		handleSearch(searchTerm());
 	});
@@ -72,7 +134,6 @@ const Search: Component = () => {
 
 	createEffect(() => {
 		window.api.onIndexResult((_, documents) => {
-			setDocuments((docs) => [...docs, ...documents]);
 			worker.postMessage({ type: "INDEX", payload: documents });
 		});
 	});
@@ -98,24 +159,7 @@ const Search: Component = () => {
 			</div>
 			<div class={styles["search-results"]}>
 				<For each={searchResults()}>
-					{(result: any) => (
-						<div class={styles["search-result"]}>
-							<div
-								class={styles["result-ref"]}
-								onKeyPress={async (e) => {
-									if (e.key === "Enter" || e.key === " ") {
-										handleResultClick(result.ref);
-                                    }
-								}}
-								onClick={async () => {
-									handleResultClick(result.ref);
-								}}
-								title={result.ref}
-							>
-								{result.ref}
-							</div>
-						</div>
-					)}
+					{(result) => <SearchResult result={result} />}
 				</For>
 			</div>
 		</div>
