@@ -1,7 +1,12 @@
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import { type BrowserWindow, app, clipboard, dialog, ipcMain } from "electron";
-import { readFile, readFolder } from "./file-operations";
+import {
+	readDirectoryRecursive,
+	readFile,
+	readFolder,
+	searchIndex,
+} from "./file-operations";
 import {
 	parser,
 	serializeNode,
@@ -247,12 +252,33 @@ const registerIpcHandlers = (mainWindow: BrowserWindow) => {
 		}
 	});
 
+	ipcMain.on("read-folder", async (event, folderPath) => {
+		try {
+			const results = await readDirectoryRecursive(folderPath);
+			mainWindow?.webContents.send("folder-read", results);
+			return results;
+		} catch (error) {
+			console.error("Error reading folder:", error);
+		}
+	});
+
+	ipcMain.handle("search", async (event, term) => {
+		const results = searchIndex(term);
+		return results;
+	});
+
+	ipcMain.handle("index", (event, folderPath) => {
+		readDirectoryRecursive(folderPath).then((results) => {
+			mainWindow?.webContents.send("index-result", results);
+			return results;
+		});
+	});
+
 	ipcMain.handle("fs-watch", async (event, filePath) => {
 		const watcher = fs.watch(filePath);
 		for await (const event of watcher) {
 			if (event.eventType === "change") {
 				const data = await readFile(filePath);
-				console.log(data);
 				mainWindow?.webContents.send("file-read", { data, path: filePath });
 			}
 		}

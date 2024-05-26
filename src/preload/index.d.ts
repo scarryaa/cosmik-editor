@@ -4,10 +4,14 @@ declare global {
 	interface Window {
 		electron: ElectronAPI;
 		api: {
+			search: (term: string) => string[];
 			onFileOpened: (callback: (event: any, data: any) => void) => void;
 			onFileRead: (callback: (event: any, data: any) => void) => void;
 			onFolderOpened: (callback: (event: any, data: any) => void) => void;
 			onFileChanged: (callback: (event: any, data: any) => void) => void;
+			onFolderRead: (callback: (event: any, data: any) => void) => void;
+			index: (folderPath: string) => void;
+			onIndexResult: (callback: (event: any, data: any) => void) => void;
 			fsWatch: (filePath) => void;
 			joinPath: (...args: string[]) => string;
 			relativePath: (...args: string[]) => string;
@@ -30,6 +34,7 @@ declare global {
 			onLanguageSet: (callback: (event: any, data: any) => void) => void;
 			manualSetLanguageRequest: (language: string) => void;
 			sendReadFileRequest: (path: string) => string;
+			sendFolderReadRequest: (path: string) => string[];
 		};
 	}
 }
