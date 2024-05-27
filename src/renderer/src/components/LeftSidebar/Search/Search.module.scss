@@ -4,6 +4,7 @@
     align-items: center;
     justify-content: flex-start;
     margin-block: 4px;
+    margin-bottom: 0;
     width: 100%;
 
     .search-bar {
@@ -35,6 +36,13 @@
         justify-content: flex-start;
         margin-top: 8px;
         margin-bottom: 8px;
+
+        .no-results {
+            margin-top: 4px;
+            margin-left: 14px;
+            align-self: flex-start;
+            font-size: 13px;
+        }
 
         &::-webkit-scrollbar {
             cursor: default !important;
@@ -74,7 +82,6 @@
                     display: flex;
                     flex-direction: row;
                     align-items: center;
-                    width: 100%;
                 }
 
                 .result-ref-name {

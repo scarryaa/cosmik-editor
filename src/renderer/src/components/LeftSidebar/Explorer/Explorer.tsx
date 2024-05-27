@@ -96,7 +96,7 @@ const Explorer = () => {
 
 		api.onFileRead((_, response) => {
 			if (response.path === gitignorePath) {
-			setGitIgnoreContent(response.data);
+				setGitIgnoreContent(response.data);
 			}
 		});
 	});

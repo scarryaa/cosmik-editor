@@ -338,6 +338,21 @@ export class Editor implements IEditor {
 		return index + column;
 	};
 
+	calculateLocalIndex(globalIndex: number): { line: number, column: number } {
+		let remainingIndex = globalIndex;
+		let line = 0;
+
+		while (line < this.totalLines() && remainingIndex >= this.lineContent(line).length + 1) {
+			remainingIndex -= this.lineContent(line).length + 1;
+			line++;
+		}
+
+		return {
+			line: line,
+			column: remainingIndex
+		};
+	}
+
 	// Cursor Management
 
 	cursorAt(index: number): Cursor {
