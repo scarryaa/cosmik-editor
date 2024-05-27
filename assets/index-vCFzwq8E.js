@@ -1467,6 +1467,20 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 return newPieceTables;
             });
         },
+        removeAllExcept (id) {
+            setState$2("pieceTables", (prevPieceTables)=>{
+                const newPieceTables = new Map(prevPieceTables);
+                newPieceTables.forEach((pieceTable, key)=>{
+                    if (key !== id) {
+                        newPieceTables.delete(key);
+                    }
+                });
+                return newPieceTables;
+            });
+        },
+        removeAll () {
+            setState$2("pieceTables", new Map());
+        },
         getPieceTable (id) {
             return state$2.pieceTables.get(id);
         }
@@ -1540,6 +1554,22 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 this.setActiveTab(lastActiveTabId);
                 PieceTableStore.removePieceTable(tabId);
             }
+        },
+        closeOtherTabs (tabId) {
+            setState$1("tabs", (tabs)=>tabs.filter((tab)=>tab.id === tabId));
+            if (state$1.activeTabId !== tabId) {
+                this.setActiveTab(tabId);
+            }
+            setState$1("lastActiveTabs", [
+                tabId
+            ]);
+            PieceTableStore.removeAllExcept(tabId);
+        },
+        closeAllTabs () {
+            setState$1("tabs", []);
+            setState$1("activeTabId", null);
+            setState$1("lastActiveTabs", []);
+            PieceTableStore.removeAll();
         },
         activateTab (tabId) {
             const currentTab = this.activeTab;
@@ -1705,7 +1735,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         setStore("selectedItems", folders);
     };
     const useFileStore = ()=>store;
-    var _tmpl$$l = template(`<svg stroke-width=0>`);
+    var _tmpl$$m = template(`<svg stroke-width=0>`);
     function IconTemplate(iconSrc, props) {
         const mergedProps = mergeProps(iconSrc.a, props);
         const [_, svgProps] = splitProps(mergedProps, [
@@ -1718,7 +1748,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             setContent("");
         });
         return (()=>{
-            var _el$ = _tmpl$$l();
+            var _el$ = _tmpl$$m();
             spread(_el$, mergeProps({
                 get stroke () {
                     return iconSrc.a?.stroke;
@@ -1881,7 +1911,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     const file = "_file_wfw31_1";
     const selected$1 = "_selected_wfw31_44";
     const ignored$1 = "_ignored_wfw31_48";
-    const styles$g = {
+    const styles$h = {
         "file-container": "_file-container_wfw31_1",
         indent: indent$1,
         file: file,
@@ -1891,11 +1921,11 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     };
     const tooltip = "_tooltip_1q8ek_1";
     const hidden = "_hidden_1q8ek_19";
-    const styles$f = {
+    const styles$g = {
         tooltip: tooltip,
         hidden: hidden
     };
-    var _tmpl$$k = template(`<div>`);
+    var _tmpl$$l = template(`<div>`);
     const Tooltip = (props)=>{
         const [visible, setVisible] = createSignal(false);
         const [position, setPosition] = createSignal({
@@ -1940,7 +1970,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             clearTimeout(hideTimeoutId);
         });
         return ((()=>{
-            var _el$ = _tmpl$$k();
+            var _el$ = _tmpl$$l();
             _el$.addEventListener("blur", hideTooltip);
             _el$.$$click = handleClick;
             _el$.$$mousemove = updatePosition;
@@ -1950,11 +1980,11 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             insert(_el$, ()=>props.children, null);
             insert(_el$, createComponent(Portal, {
                 get children () {
-                    var _el$2 = _tmpl$$k();
+                    var _el$2 = _tmpl$$l();
                     _el$2.style.setProperty("position", "fixed");
                     insert(_el$2, ()=>props.content);
                     createRenderEffect((_p$)=>{
-                        var _v$ = `${styles$f.tooltip} ${!visible() ? styles$f.hidden : ""}`, _v$2 = `${position().top}px`, _v$3 = `${position().left}px`;
+                        var _v$ = `${styles$g.tooltip} ${!visible() ? styles$g.hidden : ""}`, _v$2 = `${position().top}px`, _v$3 = `${position().left}px`;
                         _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
                         _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$2.style.setProperty("top", _v$2) : _el$2.style.removeProperty("top"));
                         _v$3 !== _p$.a && ((_p$.a = _v$3) != null ? _el$2.style.setProperty("left", _v$3) : _el$2.style.removeProperty("left"));
@@ -1974,7 +2004,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         "mousemove",
         "click"
     ]);
-    var _tmpl$$j = template(`<div><span>`), _tmpl$2$9 = template(`<div>`);
+    var _tmpl$$k = template(`<div><span>`), _tmpl$2$a = template(`<div>`);
     const FileItem = (props)=>{
         const fileStore = useFileStore();
         const indentSize = 8;
@@ -2015,7 +2045,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         };
         return (()=>{
-            var _el$ = _tmpl$2$9();
+            var _el$ = _tmpl$2$a();
             _el$.$$click = handleFileClick;
             insert(_el$, createComponent(Tooltip, {
                 get content () {
@@ -2023,12 +2053,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 },
                 showDelay: 500,
                 get children () {
-                    var _el$2 = _tmpl$$j(), _el$3 = _el$2.firstChild;
+                    var _el$2 = _tmpl$$k(), _el$3 = _el$2.firstChild;
                     `${currentIndent}px` != null ? _el$2.style.setProperty("padding-left", `${currentIndent}px`) : _el$2.style.removeProperty("padding-left");
                     insert(_el$2, createComponent(VsFile, {}), _el$3);
                     insert(_el$3, fileName);
                     createRenderEffect((_p$)=>{
-                        var _v$ = styles$g.file, _v$2 = styles$g["file-name"];
+                        var _v$ = styles$h.file, _v$2 = styles$h["file-name"];
                         _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
                         _v$2 !== _p$.t && className(_el$3, _p$.t = _v$2);
                         return _p$;
@@ -2040,7 +2070,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 }
             }));
             createRenderEffect((_p$)=>{
-                var _v$3 = `${styles$g["file-container"]} ${selected() ? styles$g.selected : ""} ${props.isIgnored ? styles$g.ignored : ""}`, _v$4 = props.classList;
+                var _v$3 = `${styles$h["file-container"]} ${selected() ? styles$h.selected : ""} ${props.isIgnored ? styles$h.ignored : ""}`, _v$4 = props.classList;
                 _v$3 !== _p$.e && className(_el$, _p$.e = _v$3);
                 _p$.t = classList(_el$, _v$4, _p$.t);
                 return _p$;
@@ -2058,7 +2088,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     const indent = "_indent_1w1py_8";
     const folder = "_folder_1w1py_1";
     const selected = "_selected_1w1py_47";
-    const styles$e = {
+    const styles$f = {
         "folder-container": "_folder-container_1w1py_1",
         ignored: ignored,
         indent: indent,
@@ -2066,7 +2096,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         "folder-name": "_folder-name_1w1py_33",
         selected: selected
     };
-    var _tmpl$$i = template(`<div><span></span><span>`), _tmpl$2$8 = template(`<div>`);
+    var _tmpl$$j = template(`<div><span></span><span>`), _tmpl$2$9 = template(`<div>`);
     const FolderItem = (props)=>{
         const indentSize = 8;
         const currentIndent = props.indentLevel * indentSize;
@@ -2147,14 +2177,14 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         });
         return (()=>{
-            var _el$ = _tmpl$2$8();
+            var _el$ = _tmpl$2$9();
             insert(_el$, createComponent(Tooltip, {
                 get content () {
                     return props.path;
                 },
                 showDelay: 500,
                 get children () {
-                    var _el$2 = _tmpl$$i(), _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling;
+                    var _el$2 = _tmpl$$j(), _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling;
                     _el$2.$$click = handleFolderClick;
                     `${currentIndent}px` != null ? _el$2.style.setProperty("padding-left", `${currentIndent}px`) : _el$2.style.removeProperty("padding-left");
                     insert(_el$3, (()=>{
@@ -2173,7 +2203,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     })());
                     insert(_el$4, ()=>props.folder);
                     createRenderEffect((_p$)=>{
-                        var _v$ = `${styles$e.folder} ${selected() ? styles$e.selected : ""} ${props.isIgnored ? styles$e.ignored : ""}`, _v$2 = styles$e["folder-name"];
+                        var _v$ = `${styles$f.folder} ${selected() ? styles$f.selected : ""} ${props.isIgnored ? styles$f.ignored : ""}`, _v$2 = styles$f["folder-name"];
                         _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
                         _v$2 !== _p$.t && className(_el$4, _p$.t = _v$2);
                         return _p$;
@@ -2187,7 +2217,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             insert(_el$, (()=>{
                 var _c$2 = createMemo(()=>!!isOpen());
                 return ()=>_c$2() && (()=>{
-                        var _el$5 = _tmpl$2$8();
+                        var _el$5 = _tmpl$2$9();
                         insert(_el$5, createComponent(For, {
                             get each () {
                                 return contents().folders;
@@ -2225,7 +2255,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     })();
             })(), null);
             createRenderEffect((_p$)=>{
-                var _v$3 = `${styles$e["folder-container"]}`, _v$4 = props.folder;
+                var _v$3 = `${styles$f["folder-container"]}`, _v$4 = props.folder;
                 _v$3 !== _p$.e && className(_el$, _p$.e = _v$3);
                 _v$4 !== _p$.t && setAttribute(_el$, "data-path", _p$.t = _v$4);
                 return _p$;
@@ -2243,7 +2273,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     const rotateDown = "_rotateDown_psqxo_72";
     const rotateRight = "_rotateRight_psqxo_76";
     const spacer = "_spacer_psqxo_80";
-    const styles$d = {
+    const styles$e = {
         "explorer-container": "_explorer-container_psqxo_1",
         "explorer-content": "_explorer-content_psqxo_13",
         "explorer-actions": "_explorer-actions_psqxo_18",
@@ -2513,7 +2543,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         checkPath.isNotRelative = (path)=>REGIX_IS_WINDOWS_PATH_ABSOLUTE.test(path) || isNotRelative(path);
     }
     const ignore$1 = getDefaultExportFromCjs(ignore);
-    var _tmpl$$h = template(`<div>`), _tmpl$2$7 = template(`<div><div><h3></h3></div><div><button type=button></button><button type=button></button><button type=button></button><button type=button>`), _tmpl$3$2 = template(`<div><div>`);
+    var _tmpl$$i = template(`<div>`), _tmpl$2$8 = template(`<div><div><h3></h3></div><div><button type=button></button><button type=button></button><button type=button></button><button type=button>`), _tmpl$3$2 = template(`<div><div>`);
     const Explorer = ()=>{
         const [rootOpen, setRootOpen] = createSignal(true);
         const [explorerHeight, setExplorerHeight] = createSignal(null);
@@ -2706,17 +2736,17 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         });
         const renderExplorerContent = ()=>{
             return (()=>{
-                var _el$ = _tmpl$$h();
+                var _el$ = _tmpl$$i();
                 insert(_el$, (()=>{
                     var _c$ = createMemo(()=>fileStore.folderContent.root.length !== 0);
                     return ()=>_c$() && (()=>{
-                            var _el$2 = _tmpl$2$7(), _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling, _el$6 = _el$5.firstChild, _el$7 = _el$6.nextSibling, _el$8 = _el$7.nextSibling, _el$9 = _el$8.nextSibling;
+                            var _el$2 = _tmpl$2$8(), _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling, _el$6 = _el$5.firstChild, _el$7 = _el$6.nextSibling, _el$8 = _el$7.nextSibling, _el$9 = _el$8.nextSibling;
                             var _ref$ = headerRef;
                             typeof _ref$ === "function" ? use(_ref$, _el$2) : headerRef = _el$2;
                             _el$2.$$click = toggleRootOpen;
                             insert(_el$2, createComponent(VsChevronDown, {
                                 get ["class"] () {
-                                    return rootOpen() ? styles$d.rotateDown : styles$d.rotateRight;
+                                    return rootOpen() ? styles$e.rotateDown : styles$e.rotateRight;
                                 }
                             }), _el$3);
                             insert(_el$4, ()=>fileStore.folderContent.root.split("/").pop());
@@ -2737,7 +2767,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                 "font-size": "16"
                             }));
                             createRenderEffect((_p$)=>{
-                                var _v$ = `${styles$d["explorer-content-header"]} ${explorerScroll() !== 0 && rootOpen() ? styles$d["header-gradient"] : ""}`, _v$2 = styles$d["explorer-content-title"], _v$3 = styles$d["explorer-actions"], _v$4 = `${styles$d["explorer-action"]} no-button-style`, _v$5 = `${styles$d["explorer-action"]} no-button-style`, _v$6 = `${styles$d["explorer-action"]} no-button-style`, _v$7 = `${styles$d["explorer-action"]} no-button-style`;
+                                var _v$ = `${styles$e["explorer-content-header"]} ${explorerScroll() !== 0 && rootOpen() ? styles$e["header-gradient"] : ""}`, _v$2 = styles$e["explorer-content-title"], _v$3 = styles$e["explorer-actions"], _v$4 = `${styles$e["explorer-action"]} no-button-style`, _v$5 = `${styles$e["explorer-action"]} no-button-style`, _v$6 = `${styles$e["explorer-action"]} no-button-style`, _v$7 = `${styles$e["explorer-action"]} no-button-style`;
                                 _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
                                 _v$2 !== _p$.t && className(_el$3, _p$.t = _v$2);
                                 _v$3 !== _p$.a && className(_el$5, _p$.a = _v$3);
@@ -2794,7 +2824,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                     })
                             }), _el$11);
                             createRenderEffect((_p$)=>{
-                                var _v$8 = styles$d.explorer, _v$9 = explorerHeight() ? `${explorerHeight()}px` : "auto", _v$10 = styles$d.spacer;
+                                var _v$8 = styles$e.explorer, _v$9 = explorerHeight() ? `${explorerHeight()}px` : "auto", _v$10 = styles$e.spacer;
                                 _v$8 !== _p$.e && className(_el$10, _p$.e = _v$8);
                                 _v$9 !== _p$.t && ((_p$.t = _v$9) != null ? _el$10.style.setProperty("height", _v$9) : _el$10.style.removeProperty("height"));
                                 _v$10 !== _p$.a && className(_el$11, _p$.a = _v$10);
@@ -2807,12 +2837,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                             return _el$10;
                         })();
                 })(), null);
-                createRenderEffect(()=>className(_el$, styles$d["explorer-content"]));
+                createRenderEffect(()=>className(_el$, styles$e["explorer-content"]));
                 return _el$;
             })();
         };
         return (()=>{
-            var _el$12 = _tmpl$$h();
+            var _el$12 = _tmpl$$i();
             _el$12.style.setProperty("width", "100%");
             insert(_el$12, renderExplorerContent);
             return _el$12;
@@ -2821,15 +2851,15 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     delegateEvents([
         "click"
     ]);
-    var _tmpl$$g = template(`<h2>Extensions`);
+    var _tmpl$$h = template(`<h2>Extensions`);
     const Extensions = ()=>{
+        return _tmpl$$h();
+    };
+    var _tmpl$$g = template(`<h2>Run And Debug`);
+    const RunAndDebug = ()=>{
         return _tmpl$$g();
     };
-    var _tmpl$$f = template(`<h2>Run And Debug`);
-    const RunAndDebug = ()=>{
-        return _tmpl$$f();
-    };
-    const styles$c = {
+    const styles$d = {
         "search-container": "_search-container_jl6en_1",
         "search-bar": "_search-bar_jl6en_10",
         "search-input": "_search-input_jl6en_14",
@@ -8405,7 +8435,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         searchResults: [],
         searchPerformed: false
     });
-    var _tmpl$$e = template(`<div><div><div><div></div><div>`), _tmpl$2$6 = template(`<div>`), _tmpl$3$1 = template(`<div><div><input type=text placeholder=Search></div><div>`), _tmpl$4 = template(`<div>No results found`);
+    var _tmpl$$f = template(`<div><div><div><div></div><div>`), _tmpl$2$7 = template(`<div>`), _tmpl$3$1 = template(`<div><div><input type=text placeholder=Search></div><div>`), _tmpl$4 = template(`<div>No results found`);
     const workerUrl = new URL("data:video/mp2t;base64,bGV0IGRvY3VtZW50cyA9IFtdOwoKc2VsZi5vbm1lc3NhZ2UgPSAoZSkgPT4gewoJY29uc3QgeyB0eXBlLCBwYXlsb2FkIH0gPSBlLmRhdGE7Cglzd2l0Y2ggKHR5cGUpIHsKCQljYXNlICJJTkRFWCI6CgkJCWRvY3VtZW50cyA9IHBheWxvYWQ7CgkJCWJyZWFrOwoJCWNhc2UgIlNFQVJDSCI6IHsKCQkJY29uc3QgdGVybSA9IHBheWxvYWQudHJpbSgpLnRvTG93ZXJDYXNlKCk7CgkJCWNvbnN0IHJlc3VsdHMgPSBzZWFyY2hEb2N1bWVudHModGVybSk7CgkJCXJlc3VsdHMuc29ydCgoYSwgYikgPT4gYi5zY29yZSAtIGEuc2NvcmUpOwoJCQlzZWxmLnBvc3RNZXNzYWdlKHJlc3VsdHMpOwoJCQlicmVhazsKICAgICAgICB9Cgl9Cn07CgpmdW5jdGlvbiBzZWFyY2hEb2N1bWVudHModGVybSkgewoJY29uc3QgcmVzdWx0cyA9IFtdOwoKCWRvY3VtZW50cy5mb3JFYWNoKChkb2MpID0+IHsKCQljb25zdCBjb250ZW50ID0gZG9jLmNvbnRlbnQudG9Mb3dlckNhc2UoKTsKCQljb25zdCBwYXRoID0gZG9jLnBhdGg7CgkJY29uc3QgbWF0Y2hlcyA9IFtdOwoJCWxldCBpbmRleCA9IGNvbnRlbnQuaW5kZXhPZih0ZXJtKTsKCgkJd2hpbGUgKGluZGV4ICE9PSAtMSkgewoJCQljb25zdCBzdGFydCA9IE1hdGgubWF4KDAsIGluZGV4IC0gMzApOwoJCQljb25zdCBlbmQgPSBNYXRoLm1pbihjb250ZW50Lmxlbmd0aCwgaW5kZXggKyB0ZXJtLmxlbmd0aCArIDMwKTsKCQkJY29uc3QgY29udGV4dCA9IGRvYy5jb250ZW50LnN1YnN0cmluZyhzdGFydCwgZW5kKTsKCQkJbWF0Y2hlcy5wdXNoKHsgaW5kZXgsIGNvbnRleHQgfSk7CgkJCWluZGV4ID0gY29udGVudC5pbmRleE9mKHRlcm0sIGluZGV4ICsgMSk7CgkJfQoKCQlpZiAobWF0Y2hlcy5sZW5ndGggPiAwKSB7CgkJCXJlc3VsdHMucHVzaCh7CgkJCQlyZWY6IHBhdGgsCgkJCQlzY29yZTogbWF0Y2hlcy5sZW5ndGgsCgkJCQltYXRjaERhdGE6IHsgdGVybSwgbWF0Y2hlcyB9LAoJCQl9KTsKCQl9Cgl9KTsKCglyZXR1cm4gcmVzdWx0czsKfQo=", import.meta.url);
     const SearchResult = (props)=>{
         const [collapsed, setCollapsed] = createSignal(false);
@@ -8425,7 +8455,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             EditorStore.getActiveEditor()?.moveTo(column, line, 0);
         };
         return (()=>{
-            var _el$ = _tmpl$$e(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling;
+            var _el$ = _tmpl$$f(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling;
             _el$2.$$click = ()=>setCollapsed(!collapsed());
             _el$2.addEventListener("keypress", (e)=>{
                 if (e.key === "Enter" || e.key === " ") {
@@ -8438,12 +8468,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 return ()=>_c$() ? createComponent(VsChevronRight, {
                         "font-size": "14",
                         get ["class"] () {
-                            return styles$c["result-ref-chevron"];
+                            return styles$d["result-ref-chevron"];
                         }
                     }) : createComponent(VsChevronDown, {
                         "font-size": "14",
                         get ["class"] () {
-                            return styles$c["result-ref-chevron"];
+                            return styles$d["result-ref-chevron"];
                         }
                     });
             })(), _el$5);
@@ -8451,7 +8481,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             insert(_el$, (()=>{
                 var _c$2 = createMemo(()=>!!!collapsed());
                 return ()=>_c$2() ? (()=>{
-                        var _el$6 = _tmpl$2$6();
+                        var _el$6 = _tmpl$2$7();
                         insert(_el$6, createComponent(For, {
                             get each () {
                                 return props.result.matchData.matches;
@@ -8463,7 +8493,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                     position: "right",
                                     showDelay: 500,
                                     get children () {
-                                        var _el$7 = _tmpl$2$6();
+                                        var _el$7 = _tmpl$2$7();
                                         _el$7.$$click = async ()=>{
                                             handleResultClick(props.result.ref, match.index);
                                         };
@@ -8473,17 +8503,17 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                             }
                                         });
                                         insert(_el$7, ()=>match.context);
-                                        createRenderEffect(()=>className(_el$7, styles$c["match-context"]));
+                                        createRenderEffect(()=>className(_el$7, styles$d["match-context"]));
                                         return _el$7;
                                     }
                                 })
                         }));
-                        createRenderEffect(()=>className(_el$6, styles$c["result-match-data"]));
+                        createRenderEffect(()=>className(_el$6, styles$d["result-match-data"]));
                         return _el$6;
                     })() : null;
             })(), null);
             createRenderEffect((_p$)=>{
-                var _v$ = styles$c["search-result"], _v$2 = styles$c["result-ref"], _v$3 = styles$c["result-ref-container"], _v$4 = styles$c["result-match-count"], _v$5 = styles$c["result-ref-name"];
+                var _v$ = styles$d["search-result"], _v$2 = styles$d["result-ref"], _v$3 = styles$d["result-ref-container"], _v$4 = styles$d["result-match-count"], _v$5 = styles$d["result-ref-name"];
                 _v$ !== _p$.e && className(_el$, _p$.e = _v$);
                 _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
                 _v$3 !== _p$.a && className(_el$3, _p$.a = _v$3);
@@ -8562,7 +8592,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 var _c$3 = createMemo(()=>!!(searchStore.searchPerformed && searchStore.searchResults.length === 0));
                 return ()=>_c$3() && (()=>{
                         var _el$12 = _tmpl$4();
-                        createRenderEffect(()=>className(_el$12, styles$c["no-results"]));
+                        createRenderEffect(()=>className(_el$12, styles$d["no-results"]));
                         return _el$12;
                     })();
             })(), null);
@@ -8575,7 +8605,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     })
             }), null);
             createRenderEffect((_p$)=>{
-                var _v$6 = styles$c["search-container"], _v$7 = styles$c["search-bar"], _v$8 = styles$c["search-input"], _v$9 = styles$c["search-results"];
+                var _v$6 = styles$d["search-container"], _v$7 = styles$d["search-bar"], _v$8 = styles$d["search-input"], _v$9 = styles$d["search-results"];
                 _v$6 !== _p$.e && className(_el$8, _p$.e = _v$6);
                 _v$7 !== _p$.t && className(_el$9, _p$.t = _v$7);
                 _v$8 !== _p$.a && className(_el$10, _p$.a = _v$8);
@@ -8595,9 +8625,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         "click",
         "input"
     ]);
-    var _tmpl$$d = template(`<h2>Source Control`);
+    var _tmpl$$e = template(`<h2>Source Control`);
     const SourceControl = ()=>{
-        return _tmpl$$d();
+        return _tmpl$$e();
     };
     const filePane = {
         name: "Files",
@@ -9139,14 +9169,14 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     const searchInput = "_searchInput_l2bdr_24";
     const commandList = "_commandList_l2bdr_37";
     const selectedCommand = "_selectedCommand_l2bdr_52";
-    const styles$b = {
+    const styles$c = {
         overlay: overlay,
         commandPalette: commandPalette,
         searchInput: searchInput,
         commandList: commandList,
         selectedCommand: selectedCommand
     };
-    var _tmpl$$c = template(`<div><div data-testid=command-palette><input autofocus type=text data-testid=command-palette-input placeholder="Type a command..."><ul>`), _tmpl$2$5 = template(`<li>`);
+    var _tmpl$$d = template(`<div><div data-testid=command-palette><input autofocus type=text data-testid=command-palette-input placeholder="Type a command..."><ul>`), _tmpl$2$6 = template(`<li>`);
     const CommandPalette = (props)=>{
         const [query, setQuery] = createSignal("");
         const [selectedIndex, setSelectedIndex] = createSignal(0);
@@ -9202,7 +9232,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 return props.isOpen;
             },
             get children () {
-                var _el$ = _tmpl$$c(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling;
+                var _el$ = _tmpl$$d(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling;
                 addEventListener(_el$, "click", props.onClose, true);
                 _el$2.$$keydown = (e)=>e.stopPropagation();
                 _el$2.$$click = (e)=>e.stopPropagation();
@@ -9214,7 +9244,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                         return filteredCommands();
                     },
                     children: (command, index)=>(()=>{
-                            var _el$5 = _tmpl$2$5();
+                            var _el$5 = _tmpl$2$6();
                             _el$5.addEventListener("keypress", (e)=>{
                                 if ((e.key === "Enter" || e.key === " ") && props.isOpen) {
                                     command.action();
@@ -9226,12 +9256,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                                 props.onClose();
                             };
                             insert(_el$5, ()=>command.label);
-                            createRenderEffect(()=>className(_el$5, index() === selectedIndex() ? styles$b.selectedCommand : ""));
+                            createRenderEffect(()=>className(_el$5, index() === selectedIndex() ? styles$c.selectedCommand : ""));
                             return _el$5;
                         })()
                 }));
                 createRenderEffect((_p$)=>{
-                    var _v$ = styles$b.overlay, _v$2 = styles$b.commandPalette, _v$3 = styles$b.searchInput, _v$4 = styles$b.commandList;
+                    var _v$ = styles$c.overlay, _v$2 = styles$c.commandPalette, _v$3 = styles$c.searchInput, _v$4 = styles$c.commandList;
                     _v$ !== _p$.e && className(_el$, _p$.e = _v$);
                     _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
                     _v$3 !== _p$.a && className(_el$3, _p$.a = _v$3);
@@ -9256,11 +9286,11 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     const lineHeight = 19;
     const cursorHorizontalOffset = 5;
     const cursorVerticalOffset = 2;
-    const styles$a = {
+    const styles$b = {
         "editor-core": "_editor-core_1lpjj_6",
         "editor-core__textarea": "_editor-core__textarea_1lpjj_6"
     };
-    var _tmpl$$b = template(`<div><textarea data-testid=editor-core__textarea>`);
+    var _tmpl$$c = template(`<div><textarea data-testid=editor-core__textarea>`);
     const EditorCore = (props)=>{
         const editor = props.editor();
         const onKeydown = async (e)=>{
@@ -9428,12 +9458,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             });
         });
         return (()=>{
-            var _el$ = _tmpl$$b(), _el$2 = _el$.firstChild;
+            var _el$ = _tmpl$$c(), _el$2 = _el$.firstChild;
             _el$2.$$keydown = onKeydown;
             var _ref$ = props.ref;
             typeof _ref$ === "function" ? use(_ref$, _el$2) : props.ref = _el$2;
             createRenderEffect((_p$)=>{
-                var _v$ = styles$a["editor-core"], _v$2 = styles$a["editor-core__textarea"];
+                var _v$ = styles$b["editor-core"], _v$2 = styles$b["editor-core__textarea"];
                 _v$ !== _p$.e && className(_el$, _p$.e = _v$);
                 _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
                 return _p$;
@@ -9467,10 +9497,10 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         }
     };
     const cursor = "_cursor_10c6o_1";
-    const styles$9 = {
+    const styles$a = {
         cursor: cursor
     };
-    var _tmpl$$a = template(`<div>`);
+    var _tmpl$$b = template(`<div>`);
     const Cursor$1 = (props)=>{
         const line = createMemo(()=>props.cursor().line);
         const character = createMemo(()=>props.cursor().character);
@@ -9484,11 +9514,11 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         const horizontalPosition = createMemo(()=>calculateHorizontalPosition(character()));
         const verticalPosition = createMemo(()=>calculateVerticalPosition(line()));
         return (()=>{
-            var _el$ = _tmpl$$a();
+            var _el$ = _tmpl$$b();
             var _ref$ = props.ref;
             typeof _ref$ === "function" ? use(_ref$, _el$) : props.ref = _el$;
             createRenderEffect((_p$)=>{
-                var _v$ = styles$9.cursor, _v$2 = `translateX(${horizontalPosition()}px) translateY(${verticalPosition()}px)`;
+                var _v$ = styles$a.cursor, _v$2 = `translateX(${horizontalPosition()}px) translateY(${verticalPosition()}px)`;
                 _v$ !== _p$.e && className(_el$, _p$.e = _v$);
                 _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("transform", _v$2) : _el$.style.removeProperty("transform"));
                 return _p$;
@@ -17808,13 +17838,13 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     };
     const line = "_line_17f71_5";
     const selection = "_selection_17f71_20";
-    const styles$8 = {
+    const styles$9 = {
         line: line,
         "empty-selection-placeholder": "_empty-selection-placeholder_17f71_12",
         selection: selection,
         "line-folded": "_line-folded_17f71_26"
     };
-    var _tmpl$$9 = template(`<div><div></div><div>`), _tmpl$2$4 = template(`<div>`);
+    var _tmpl$$a = template(`<div><div></div><div>`), _tmpl$2$5 = template(`<div>`);
     const EditorLine = (props)=>{
         const [highlightedContent, setHighlightedContent] = createSignal(props.content);
         const [selectedContent, setSelectedContent] = createSignal("");
@@ -17861,20 +17891,20 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             debouncedParse(content());
         });
         return (()=>{
-            var _el$ = _tmpl$$9(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling;
+            var _el$ = _tmpl$$a(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling;
             var _ref$ = props.ref;
             typeof _ref$ === "function" ? use(_ref$, _el$) : props.ref = _el$;
             `${lineHeight}px` != null ? _el$3.style.setProperty("height", `${lineHeight}px`) : _el$3.style.removeProperty("height");
             insert(_el$3, (()=>{
                 var _c$ = createMemo(()=>selectedContent() !== "");
                 return ()=>_c$() && (()=>{
-                        var _el$4 = _tmpl$2$4();
+                        var _el$4 = _tmpl$2$5();
                         insert(_el$4, selectedContent);
                         return _el$4;
                     })();
             })());
             createRenderEffect((_p$)=>{
-                var _v$ = props.line + 1, _v$2 = `translate3D(5px, ${props.line * lineHeight + 25}px, 0px)`, _v$3 = isFolded() ? styles$8["line-folded"] : styles$8.line, _v$4 = styles$8["line-content"], _v$5 = props.highlightedContent || highlightedContent(), _v$6 = styles$8.selection, _v$7 = `translate3D(${selectionLeft()}px, -20px, 0px)`;
+                var _v$ = props.line + 1, _v$2 = `translate3D(5px, ${props.line * lineHeight + 25}px, 0px)`, _v$3 = isFolded() ? styles$9["line-folded"] : styles$9.line, _v$4 = styles$9["line-content"], _v$5 = props.highlightedContent || highlightedContent(), _v$6 = styles$9.selection, _v$7 = `translate3D(${selectionLeft()}px, -20px, 0px)`;
                 _v$ !== _p$.e && setAttribute(_el$, "data-line-number", _p$.e = _v$);
                 _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("transform", _v$2) : _el$.style.removeProperty("transform"));
                 _v$3 !== _p$.a && className(_el$, _p$.a = _v$3);
@@ -17894,16 +17924,6 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             });
             return _el$;
         })();
-    };
-    const active$1 = "_active_rmvki_52";
-    const styles$7 = {
-        "line-numbers": "_line-numbers_rmvki_5",
-        "fold-line-icon": "_fold-line-icon_rmvki_22",
-        "shift-right": "_shift-right_rmvki_25",
-        "shift-right2x": "_shift-right2x_rmvki_28",
-        "line-numbers-inner": "_line-numbers-inner_rmvki_38",
-        "line-number": "_line-number_rmvki_5",
-        active: active$1
     };
     function TbChevronDown(props) {
         return IconTemplate({
@@ -17939,7 +17959,17 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             c: '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14"/><path d="M5 12l14 0"/>'
         }, props);
     }
-    var _tmpl$$8 = template(`<div><div>`), _tmpl$2$3 = template(`<div>`);
+    const active$1 = "_active_rmvki_52";
+    const styles$8 = {
+        "line-numbers": "_line-numbers_rmvki_5",
+        "fold-line-icon": "_fold-line-icon_rmvki_22",
+        "shift-right": "_shift-right_rmvki_25",
+        "shift-right2x": "_shift-right2x_rmvki_28",
+        "line-numbers-inner": "_line-numbers-inner_rmvki_38",
+        "line-number": "_line-number_rmvki_5",
+        active: active$1
+    };
+    var _tmpl$$9 = template(`<div><div>`), _tmpl$2$4 = template(`<div>`);
     const LineNumbers = (props)=>{
         const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
         const [visibleLinesEnd, setVisibleLinesEnd] = createSignal(0);
@@ -17974,8 +18004,13 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         const getTransformForLine = (index)=>{
             return `translateY(${index * lineHeight}px)`;
         };
+        const handleScroll = (e)=>{
+            const target = e.currentTarget;
+            props.syncScroll(target.scrollTop);
+        };
         return (()=>{
-            var _el$ = _tmpl$$8(), _el$2 = _el$.firstChild;
+            var _el$ = _tmpl$$9(), _el$2 = _el$.firstChild;
+            _el$.addEventListener("scroll", handleScroll);
             insert(_el$2, createComponent(For, {
                 get each () {
                     return Array.from({
@@ -17988,24 +18023,24 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                             return visibleLinesStart() + index() + 1 < props.editor().totalLines() + 1;
                         },
                         get children () {
-                            var _el$3 = _tmpl$2$3();
+                            var _el$3 = _tmpl$2$4();
                             insert(_el$3, createComponent(Show, {
                                 get when () {
                                     return props.foldRegions.map((f)=>f.startLine).includes(visibleLinesStart() + index());
                                 },
                                 get children () {
-                                    var _el$4 = _tmpl$2$3();
+                                    var _el$4 = _tmpl$2$4();
                                     _el$4.$$mousedown = ()=>props.toggleFold(visibleLinesStart() + index() + 1);
                                     insert(_el$4, createComponent(TbChevronDown, {
                                         "font-size": "15"
                                     }));
-                                    createRenderEffect(()=>className(_el$4, styles$7["fold-line-icon"]));
+                                    createRenderEffect(()=>className(_el$4, styles$8["fold-line-icon"]));
                                     return _el$4;
                                 }
                             }), null);
                             insert(_el$3, ()=>visibleLinesStart() + index() + 1, null);
                             createRenderEffect((_p$)=>{
-                                var _v$4 = styles$7["line-number"] + (activeLine() === visibleLinesStart() + index() ? ` ${styles$7.active}` : ""), _v$5 = getTransformForLine(visibleLinesStart() + index());
+                                var _v$4 = styles$8["line-number"] + (activeLine() === visibleLinesStart() + index() ? ` ${styles$8.active}` : ""), _v$5 = getTransformForLine(visibleLinesStart() + index());
                                 _v$4 !== _p$.e && className(_el$3, _p$.e = _v$4);
                                 _v$5 !== _p$.t && ((_p$.t = _v$5) != null ? _el$3.style.setProperty("transform", _v$5) : _el$3.style.removeProperty("transform"));
                                 return _p$;
@@ -18019,7 +18054,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 }
             }));
             createRenderEffect((_p$)=>{
-                var _v$ = styles$7["line-numbers"], _v$2 = `translateY(${-props.scrollTop()}px)`, _v$3 = styles$7["line-numbers-inner"];
+                var _v$ = styles$8["line-numbers"], _v$2 = `translateY(${-props.scrollTop()}px)`, _v$3 = styles$8["line-numbers-inner"];
                 _v$ !== _p$.e && className(_el$, _p$.e = _v$);
                 _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("transform", _v$2) : _el$.style.removeProperty("transform"));
                 _v$3 !== _p$.a && className(_el$2, _p$.a = _v$3);
@@ -18037,7 +18072,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     ]);
     const tab = "_tab_i7bll_5";
     const active = "_active_i7bll_34";
-    const styles$6 = {
+    const styles$7 = {
         tab: tab,
         "tab-name": "_tab-name_i7bll_25",
         active: active,
@@ -18046,95 +18081,322 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         "modified-indicator-wrapper": "_modified-indicator-wrapper_i7bll_57",
         "close-button-icon": "_close-button-icon_i7bll_87"
     };
+    const contextMenuWrapper = "_contextMenuWrapper_1wnd1_1";
+    const contextMenu = "_contextMenu_1wnd1_1";
+    const contextMenuItem = "_contextMenuItem_1wnd1_16";
+    const subMenuArrow = "_subMenuArrow_1wnd1_25";
+    const styles$6 = {
+        contextMenuWrapper: contextMenuWrapper,
+        contextMenu: contextMenu,
+        contextMenuItem: contextMenuItem,
+        subMenuArrow: subMenuArrow
+    };
+    var _tmpl$$8 = template(`<div>`), _tmpl$2$3 = template(`<span>▶`);
+    const ContextMenu = (props)=>{
+        const [isVisible, setIsVisible] = createSignal(false);
+        const [position, setPosition] = createSignal({
+            x: 0,
+            y: 0
+        });
+        const [subMenuPosition, setSubMenuPosition] = createSignal({
+            x: 0,
+            y: 0
+        });
+        const [activeSubMenu, setActiveSubMenu] = createSignal(null);
+        const [focusedIndex, setFocusedIndex] = createSignal(null);
+        const [subMenuFocusedIndex, setSubMenuFocusedIndex] = createSignal(null);
+        let menuRef;
+        let subMenuRef;
+        const handleContextMenu = (e)=>{
+            e.preventDefault();
+            setPosition({
+                x: e.pageX,
+                y: e.pageY
+            });
+            setIsVisible(true);
+            setFocusedIndex(0);
+            document.addEventListener("click", handleClickOutside);
+        };
+        const handleClickOutside = ()=>{
+            setIsVisible(false);
+            setActiveSubMenu(null);
+            document.removeEventListener("click", handleClickOutside);
+        };
+        const handleMouseEnter = (e, item)=>{
+            if (item.subItems) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setSubMenuPosition({
+                    x: rect.right,
+                    y: rect.top
+                });
+                setActiveSubMenu(item);
+                setSubMenuFocusedIndex(0);
+            } else {
+                setActiveSubMenu(null);
+                setSubMenuFocusedIndex(null);
+            }
+        };
+        const handleKeyDown = (e)=>{
+            if (!isVisible()) return;
+            switch(e.key){
+                case "ArrowDown":
+                    e.preventDefault();
+                    if (activeSubMenu()) {
+                        setSubMenuFocusedIndex((i)=>i === null || i >= activeSubMenu().subItems.length - 1 ? 0 : i + 1);
+                    } else {
+                        setFocusedIndex((i)=>i === null || i >= props.items.length - 1 ? 0 : i + 1);
+                    }
+                    break;
+                case "ArrowUp":
+                    e.preventDefault();
+                    if (activeSubMenu()) {
+                        setSubMenuFocusedIndex((i)=>i === null || i <= 0 ? activeSubMenu().subItems.length - 1 : i - 1);
+                    } else {
+                        setFocusedIndex((i)=>i === null || i <= 0 ? props.items.length - 1 : i - 1);
+                    }
+                    break;
+                case "ArrowRight":
+                    if (focusedIndex() !== null && props.items[focusedIndex()].subItems) {
+                        setActiveSubMenu(props.items[focusedIndex()]);
+                        setSubMenuFocusedIndex(0);
+                    }
+                    break;
+                case "ArrowLeft":
+                    if (activeSubMenu()) {
+                        setActiveSubMenu(null);
+                        setFocusedIndex(focusedIndex());
+                    }
+                    break;
+                case "Enter":
+                    if (activeSubMenu()) {
+                        const subItem = activeSubMenu().subItems[subMenuFocusedIndex()];
+                        subItem.action?.();
+                        setIsVisible(false);
+                    } else if (focusedIndex() !== null) {
+                        const item = props.items[focusedIndex()];
+                        if (item.subItems) {
+                            setActiveSubMenu(item);
+                            setSubMenuFocusedIndex(0);
+                        } else {
+                            item.action?.();
+                            setIsVisible(false);
+                        }
+                    }
+                    break;
+                case "Escape":
+                    setIsVisible(false);
+                    setActiveSubMenu(null);
+                    break;
+            }
+        };
+        onCleanup(()=>{
+            document.removeEventListener("click", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
+        });
+        onMount(()=>{
+            document.addEventListener("keydown", handleKeyDown);
+        });
+        return [
+            (()=>{
+                var _el$ = _tmpl$$8();
+                _el$.$$contextmenu = handleContextMenu;
+                insert(_el$, ()=>props.children);
+                createRenderEffect(()=>className(_el$, styles$6.contextMenuWrapper));
+                return _el$;
+            })(),
+            createComponent(Portal, {
+                get children () {
+                    return [
+                        createComponent(Show, {
+                            get when () {
+                                return isVisible();
+                            },
+                            get children () {
+                                var _el$2 = _tmpl$$8();
+                                var _ref$ = menuRef;
+                                typeof _ref$ === "function" ? use(_ref$, _el$2) : menuRef = _el$2;
+                                insert(_el$2, ()=>props.items.map((item, index)=>(()=>{
+                                            var _el$4 = _tmpl$$8();
+                                            _el$4.addEventListener("mouseenter", (e)=>handleMouseEnter(e, item));
+                                            _el$4.$$click = ()=>{
+                                                item.action?.();
+                                                setIsVisible(false);
+                                            };
+                                            insert(_el$4, ()=>item.label, null);
+                                            insert(_el$4, createComponent(Show, {
+                                                get when () {
+                                                    return item.subItems;
+                                                },
+                                                get children () {
+                                                    var _el$5 = _tmpl$2$3();
+                                                    createRenderEffect(()=>className(_el$5, styles$6.subMenuArrow));
+                                                    return _el$5;
+                                                }
+                                            }), null);
+                                            createRenderEffect(()=>className(_el$4, `${styles$6.contextMenuItem} ${focusedIndex() === index ? styles$6.focused : ""}`));
+                                            return _el$4;
+                                        })()));
+                                createRenderEffect((_p$)=>{
+                                    var _v$ = styles$6.contextMenu, _v$2 = `${position().y}px`, _v$3 = `${position().x}px`;
+                                    _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
+                                    _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$2.style.setProperty("top", _v$2) : _el$2.style.removeProperty("top"));
+                                    _v$3 !== _p$.a && ((_p$.a = _v$3) != null ? _el$2.style.setProperty("left", _v$3) : _el$2.style.removeProperty("left"));
+                                    return _p$;
+                                }, {
+                                    e: void 0,
+                                    t: void 0,
+                                    a: void 0
+                                });
+                                return _el$2;
+                            }
+                        }),
+                        createComponent(Show, {
+                            get when () {
+                                return activeSubMenu();
+                            },
+                            get children () {
+                                var _el$3 = _tmpl$$8();
+                                var _ref$2 = subMenuRef;
+                                typeof _ref$2 === "function" ? use(_ref$2, _el$3) : subMenuRef = _el$3;
+                                insert(_el$3, ()=>activeSubMenu().subItems.map((subItem, index)=>(()=>{
+                                            var _el$6 = _tmpl$$8();
+                                            _el$6.$$click = ()=>{
+                                                subItem.action?.();
+                                                setIsVisible(false);
+                                            };
+                                            insert(_el$6, ()=>subItem.label);
+                                            createRenderEffect(()=>className(_el$6, `${styles$6.contextMenuItem} ${subMenuFocusedIndex() === index ? styles$6.focused : ""}`));
+                                            return _el$6;
+                                        })()));
+                                createRenderEffect((_p$)=>{
+                                    var _v$4 = styles$6.contextMenu, _v$5 = `${subMenuPosition().y}px`, _v$6 = `${subMenuPosition().x}px`;
+                                    _v$4 !== _p$.e && className(_el$3, _p$.e = _v$4);
+                                    _v$5 !== _p$.t && ((_p$.t = _v$5) != null ? _el$3.style.setProperty("top", _v$5) : _el$3.style.removeProperty("top"));
+                                    _v$6 !== _p$.a && ((_p$.a = _v$6) != null ? _el$3.style.setProperty("left", _v$6) : _el$3.style.removeProperty("left"));
+                                    return _p$;
+                                }, {
+                                    e: void 0,
+                                    t: void 0,
+                                    a: void 0
+                                });
+                                return _el$3;
+                            }
+                        })
+                    ];
+                }
+            })
+        ];
+    };
+    delegateEvents([
+        "contextmenu",
+        "click"
+    ]);
     var _tmpl$$7 = template(`<div><button type=button><div></div><div></div><div><span>`), _tmpl$2$2 = template(`<div><span>M`), _tmpl$3 = template(`<button type=button>`);
     const Tab = (props)=>{
         const [hovered, setHovered] = createSignal(false);
         const [buttonHovered, setButtonHovered] = createSignal(false);
         const [savedIconHovered, setSavedIconHovered] = createSignal(false);
-        return (()=>{
-            var _el$ = _tmpl$$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.nextSibling, _el$6 = _el$5.firstChild;
-            _el$.$$mousedown = (e)=>{
-                if (e.button === 1) props.oncloseclick?.(e);
-            };
-            _el$.addEventListener("mouseleave", ()=>setHovered(false));
-            _el$.addEventListener("mouseenter", ()=>setHovered(true));
-            addEventListener(_el$, "click", props.onclick, true);
-            insert(_el$3, ()=>props.icon);
-            insert(_el$4, ()=>props.name);
-            _el$5.addEventListener("mouseleave", ()=>setSavedIconHovered(false));
-            _el$5.addEventListener("mouseenter", ()=>setSavedIconHovered(true));
-            insert(_el$2, (()=>{
-                var _c$ = createMemo(()=>props.state === TabState.Modified);
-                return ()=>_c$() && (()=>{
-                        var _el$7 = _tmpl$2$2(), _el$8 = _el$7.firstChild;
-                        createRenderEffect((_p$)=>{
-                            var _v$10 = styles$6["modified-indicator-wrapper"], _v$11 = styles$6["modified-indicator"];
-                            _v$10 !== _p$.e && className(_el$7, _p$.e = _v$10);
-                            _v$11 !== _p$.t && className(_el$8, _p$.t = _v$11);
-                            return _p$;
-                        }, {
-                            e: void 0,
-                            t: void 0
-                        });
-                        return _el$7;
-                    })();
-            })(), null);
-            insert(_el$2, (()=>{
-                var _c$2 = createMemo(()=>!!(props.saved && hovered() || savedIconHovered() || buttonHovered() || props.active && props.saved));
-                return ()=>_c$2() && (()=>{
-                        var _el$9 = _tmpl$3();
-                        addEventListener(_el$9, "click", props.oncloseclick, true);
-                        _el$9.addEventListener("mouseleave", ()=>setButtonHovered(false));
-                        _el$9.addEventListener("mouseenter", ()=>setButtonHovered(true));
-                        insert(_el$9, createComponent(VsClose, {
-                            "font-size": "14",
-                            get ["class"] () {
-                                return styles$6["close-button-icon"];
-                            }
-                        }));
-                        createRenderEffect(()=>className(_el$9, `${styles$6["close-button"]} no-button-style`));
-                        return _el$9;
-                    })();
-            })(), null);
-            createRenderEffect((_p$)=>{
-                var _v$ = `${styles$6["tab-container"]}`, _v$2 = `${styles$6.tab} no-button-style ${props.active ? styles$6.active : ""}`, _v$3 = !props.saved ? {
-                    "padding-right": "22px"
-                } : {}, _v$4 = styles$6["tab-icon"], _v$5 = styles$6["tab-name"], _v$6 = props.state === TabState.Modified ? {
-                    color: "var(--tab-modified-color)"
-                } : {}, _v$7 = styles$6["saved-indicator-wrapper"], _v$8 = styles$6["saved-indicator"], _v$9 = props.saved ? {
-                    opacity: 0
-                } : "";
-                _v$ !== _p$.e && className(_el$, _p$.e = _v$);
-                _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
-                _p$.a = style(_el$2, _v$3, _p$.a);
-                _v$4 !== _p$.o && className(_el$3, _p$.o = _v$4);
-                _v$5 !== _p$.i && className(_el$4, _p$.i = _v$5);
-                _p$.n = style(_el$4, _v$6, _p$.n);
-                _v$7 !== _p$.s && className(_el$5, _p$.s = _v$7);
-                _v$8 !== _p$.h && className(_el$6, _p$.h = _v$8);
-                _p$.r = style(_el$6, _v$9, _p$.r);
-                return _p$;
-            }, {
-                e: void 0,
-                t: void 0,
-                a: void 0,
-                o: void 0,
-                i: void 0,
-                n: void 0,
-                s: void 0,
-                h: void 0,
-                r: void 0
-            });
-            return _el$;
-        })();
+        const items = [
+            {
+                label: "Close",
+                action: ()=>props.oncloseclick?.(new MouseEvent("click"))
+            },
+            {
+                label: "Close Others",
+                action: ()=>TabStore.closeOtherTabs(props.id)
+            },
+            {
+                label: "Close All",
+                action: ()=>TabStore.closeAllTabs()
+            }
+        ];
+        return createComponent(ContextMenu, {
+            items,
+            get children () {
+                var _el$ = _tmpl$$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.nextSibling, _el$6 = _el$5.firstChild;
+                _el$.$$mousedown = (e)=>{
+                    if (e.button === 1) props.oncloseclick?.(e);
+                };
+                _el$.addEventListener("mouseleave", ()=>setHovered(false));
+                _el$.addEventListener("mouseenter", ()=>setHovered(true));
+                addEventListener(_el$, "click", props.onclick, true);
+                insert(_el$3, ()=>props.icon);
+                insert(_el$4, ()=>props.name);
+                _el$5.addEventListener("mouseleave", ()=>setSavedIconHovered(false));
+                _el$5.addEventListener("mouseenter", ()=>setSavedIconHovered(true));
+                insert(_el$2, (()=>{
+                    var _c$ = createMemo(()=>props.state === TabState.Modified);
+                    return ()=>_c$() && (()=>{
+                            var _el$7 = _tmpl$2$2(), _el$8 = _el$7.firstChild;
+                            createRenderEffect((_p$)=>{
+                                var _v$10 = styles$7["modified-indicator-wrapper"], _v$11 = styles$7["modified-indicator"];
+                                _v$10 !== _p$.e && className(_el$7, _p$.e = _v$10);
+                                _v$11 !== _p$.t && className(_el$8, _p$.t = _v$11);
+                                return _p$;
+                            }, {
+                                e: void 0,
+                                t: void 0
+                            });
+                            return _el$7;
+                        })();
+                })(), null);
+                insert(_el$2, (()=>{
+                    var _c$2 = createMemo(()=>!!(props.saved && hovered() || savedIconHovered() || buttonHovered() || props.active && props.saved));
+                    return ()=>_c$2() && (()=>{
+                            var _el$9 = _tmpl$3();
+                            addEventListener(_el$9, "click", props.oncloseclick, true);
+                            _el$9.addEventListener("mouseleave", ()=>setButtonHovered(false));
+                            _el$9.addEventListener("mouseenter", ()=>setButtonHovered(true));
+                            insert(_el$9, createComponent(VsClose, {
+                                "font-size": "14",
+                                get ["class"] () {
+                                    return styles$7["close-button-icon"];
+                                }
+                            }));
+                            createRenderEffect(()=>className(_el$9, `${styles$7["close-button"]} no-button-style`));
+                            return _el$9;
+                        })();
+                })(), null);
+                createRenderEffect((_p$)=>{
+                    var _v$ = `${styles$7["tab-container"]}`, _v$2 = `${styles$7.tab} no-button-style ${props.active ? styles$7.active : ""}`, _v$3 = !props.saved ? {
+                        "padding-right": "22px"
+                    } : {}, _v$4 = styles$7["tab-icon"], _v$5 = styles$7["tab-name"], _v$6 = props.state === TabState.Modified ? {
+                        color: "var(--tab-modified-color)"
+                    } : {}, _v$7 = styles$7["saved-indicator-wrapper"], _v$8 = styles$7["saved-indicator"], _v$9 = props.saved ? {
+                        opacity: 0
+                    } : "";
+                    _v$ !== _p$.e && className(_el$, _p$.e = _v$);
+                    _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
+                    _p$.a = style(_el$2, _v$3, _p$.a);
+                    _v$4 !== _p$.o && className(_el$3, _p$.o = _v$4);
+                    _v$5 !== _p$.i && className(_el$4, _p$.i = _v$5);
+                    _p$.n = style(_el$4, _v$6, _p$.n);
+                    _v$7 !== _p$.s && className(_el$5, _p$.s = _v$7);
+                    _v$8 !== _p$.h && className(_el$6, _p$.h = _v$8);
+                    _p$.r = style(_el$6, _v$9, _p$.r);
+                    return _p$;
+                }, {
+                    e: void 0,
+                    t: void 0,
+                    a: void 0,
+                    o: void 0,
+                    i: void 0,
+                    n: void 0,
+                    s: void 0,
+                    h: void 0,
+                    r: void 0
+                });
+                return _el$;
+            }
+        });
     };
     delegateEvents([
         "click",
         "mousedown"
     ]);
     const styles$5 = {
-        "tabs-wrapper": "_tabs-wrapper_mqrwl_1",
-        "tabs-container": "_tabs-container_mqrwl_14"
+        "tabs-wrapper": "_tabs-wrapper_175sg_1",
+        "tabs-container": "_tabs-container_175sg_13"
     };
     const tabStyles = {
         "tab-scrollbar": "_tab-scrollbar_kkdbd_1",
@@ -18215,6 +18477,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     return TabStore.tabs;
                 },
                 children: (tab)=>createComponent(Tab, {
+                        get id () {
+                            return tab.id;
+                        },
                         get name () {
                             return tab.name;
                         },
@@ -18329,6 +18594,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         const windowSize = createMemo(()=>getNumberOfLinesOnScreen(lineHeight) + 5);
         const fileStore = useFileStore();
         let contentContainerRef;
+        let isSyncingScroll = false;
         const ensureCursorVisible = ()=>{
             const cursorElement = cursorRefs()[0];
             if (cursorElement && contentContainerRef) {
@@ -18367,14 +18633,16 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             const scrollTop = container.scrollTop;
             const scrollLeft = container.scrollLeft;
             requestAnimationFrame(()=>{
-                setViewScrollTop(scrollTop);
-                setViewScrollLeft(scrollLeft);
-                const visibleLinesStart2 = Math.max(Math.floor(scrollTop / lineHeight) - 5, 0);
-                setVisibleLinesStart(visibleLinesStart2);
-                TabStore.updateTab(TabStore.activeTab.id, {
-                    scrollX: scrollLeft,
-                    scrollY: scrollTop
-                });
+                if (!isSyncingScroll) {
+                    setViewScrollTop(scrollTop);
+                    setViewScrollLeft(scrollLeft);
+                    const visibleLinesStart2 = Math.max(Math.floor(scrollTop / lineHeight) - 5, 0);
+                    setVisibleLinesStart(visibleLinesStart2);
+                    TabStore.updateTab(TabStore.activeTab.id, {
+                        scrollX: scrollLeft,
+                        scrollY: scrollTop
+                    });
+                }
             });
         };
         const specialCharacterStyles = {
@@ -18398,7 +18666,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         function identifyFoldRegions(tree) {
             let foldRegions2 = [];
             if (!tree || !tree.children) return foldRegions2;
-            for (let child of tree.children){
+            for (const child of tree.children){
                 if (shouldFold(child)) {
                     foldRegions2.push({
                         startLine: calculateLineNumber(tree.text, child.startIndex),
@@ -18416,7 +18684,12 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 "comment",
                 "function",
                 "class",
-                "block"
+                "block",
+                "script",
+                "style",
+                "script_element",
+                "style_element",
+                "async"
             ];
             return foldableTypes.includes(node.type);
         }
@@ -18436,7 +18709,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             setFoldRegions(regions);
         }
         function parseNode(node, rootText, styles2) {
-            let spans2 = [];
+            const spans2 = [];
             let current_position = node.startIndex;
             if (!node) return "";
             if (!node?.children || !TabStore.activeTab) return "";
@@ -18450,19 +18723,19 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             const escapeHtml = (text)=>{
                 return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\t/g, "    ");
             };
-            for (let child of node.children){
+            for (const child of node.children){
                 if (child.startIndex > current_position) {
-                    let text_before = rootText?.slice(current_position, child.startIndex) ?? "";
+                    const text_before = rootText?.slice(current_position, child.startIndex) ?? "";
                     spans2.push(escapeHtml(text_before).replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>").replace(/\t/g, "    "));
                 }
-                let childSpan = parseNode(child, rootText, styles2);
-                let spanType = styles2[specialCharacterStyles[child.type]] || styles2[child.type] || child.type || "default-style";
-                let span = `<span class="${spanType}">${childSpan || (escapeHtml(rootText?.slice(child.startIndex, child.endIndex))?.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>").replace(/\t/g, "    ") ?? "")}</span>`;
+                const childSpan = parseNode(child, rootText, styles2);
+                const spanType = styles2[specialCharacterStyles[child.type]] || styles2[child.type] || child.type || "default-style";
+                const span = `<span class="${spanType}">${childSpan || (escapeHtml(rootText?.slice(child.startIndex, child.endIndex))?.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>").replace(/\t/g, "    ") ?? "")}</span>`;
                 spans2.push(span);
                 current_position = child.endIndex;
             }
             if (current_position < node.endIndex) {
-                let text_after = rootText?.slice(current_position, node.endIndex) ?? "";
+                const text_after = rootText?.slice(current_position, node.endIndex) ?? "";
                 spans2.push(escapeHtml(text_after).replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>").replace(/\t/g, "    "));
             }
         }
@@ -18530,6 +18803,14 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 parseNode(parserTree(), parserTree().text, styles$4);
             }
         });
+        const syncScroll = (scrollTop)=>{
+            isSyncingScroll = true;
+            contentContainerRef?.scrollTo({
+                top: scrollTop,
+                behavior: "auto"
+            });
+            isSyncingScroll = false;
+        };
         return (()=>{
             var _el$ = _tmpl$$5(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$6 = _el$5.firstChild, _el$7 = _el$6.firstChild;
             addEventListener(_el$, "keypress", props.click);
@@ -18543,7 +18824,8 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 scrollTop: viewScrollTop,
                 get editor () {
                     return props.editor;
-                }
+                },
+                syncScroll
             }));
             _el$4.addEventListener("scroll", handleScroll);
             var _ref$ = contentContainerRef;

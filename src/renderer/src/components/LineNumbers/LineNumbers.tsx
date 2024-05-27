@@ -1,6 +1,3 @@
-import { lineHeight } from "@renderer/const/const";
-import type { Editor } from "@renderer/models/Editor";
-import { getNumberOfLinesOnScreen } from "@renderer/util/util";
 import {
 	type Accessor,
 	type Component,
@@ -10,8 +7,11 @@ import {
 	createSignal,
 	on,
 } from "solid-js";
-import styles from "./LineNumbers.module.scss";
+import { lineHeight } from "@renderer/const/const";
+import type { Editor } from "@renderer/models/Editor";
+import { getNumberOfLinesOnScreen } from "@renderer/util/util";
 import { TbChevronDown } from "solid-icons/tb";
+import styles from "./LineNumbers.module.scss";
 import type { FoldRegion } from "../EditorView/EditorView";
 
 interface LineNumbersProps {
@@ -20,6 +20,7 @@ interface LineNumbersProps {
 	contentContainerRef?: HTMLDivElement | undefined;
 	foldRegions: Array<FoldRegion>;
 	toggleFold: (line: number) => void;
+	syncScroll: (scrollTop: number) => void;
 }
 
 const LineNumbers: Component<LineNumbersProps> = (props) => {
@@ -38,7 +39,6 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 		setArrayLength(getNumberOfLinesOnScreen(lineHeight) + 2);
 	};
 
-	// Initial calculation
 	calculateVisibleLines();
 
 	createEffect(
@@ -47,7 +47,6 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 		}),
 	);
 
-	// Update active line on cursor change
 	createEffect(
 		on(
 			() => props.editor().cursorAt(0).line,
@@ -81,10 +80,16 @@ const LineNumbers: Component<LineNumbersProps> = (props) => {
 		return `translateY(${index * lineHeight}px)`;
 	};
 
+	const handleScroll = (e: Event) => {
+		const target = e.currentTarget as HTMLDivElement;
+		props.syncScroll(target.scrollTop);
+	};
+
 	return (
 		<div
 			class={styles["line-numbers"]}
 			style={{ transform: `translateY(${-props.scrollTop()}px)` }}
+			onScroll={handleScroll}
 		>
 			<div class={styles["line-numbers-inner"]}>
 				<For each={Array.from({ length: arrayLength() })}>
