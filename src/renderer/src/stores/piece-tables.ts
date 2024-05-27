@@ -30,6 +30,20 @@ const PieceTableStore = {
 			return newPieceTables;
 		});
 	},
+	removeAllExcept(id: string) {
+		setState("pieceTables", (prevPieceTables) => {
+            const newPieceTables = new Map(prevPieceTables);
+            newPieceTables.forEach((pieceTable, key) => {
+                if (key!== id) {
+                    newPieceTables.delete(key);
+                }
+            });
+            return newPieceTables;
+        });
+    },
+	removeAll() {
+		setState("pieceTables", new Map<string, PieceTable>());
+    },
 	getPieceTable(id: string) {
 		return state.pieceTables.get(id);
 	},

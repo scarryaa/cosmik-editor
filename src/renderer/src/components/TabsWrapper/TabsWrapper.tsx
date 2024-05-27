@@ -99,6 +99,7 @@ const TabsWrapper: Component = () => {
 				<For each={TabStore.tabs}>
 					{(tab) => (
 						<Tab
+							id={tab.id}
 							name={tab.name}
 							active={TabStore.activeTab?.id === tab.id}
 							state={tab.state}

@@ -1,4 +1,4 @@
-import { TabState } from "@renderer/stores/tabs";
+import TabStore, { TabState } from "@renderer/stores/tabs";
 import { VsClose } from "solid-icons/vs";
 import { type Component, createSignal } from "solid-js";
 import styles from "./Tab.module.scss";
@@ -6,6 +6,7 @@ import ContextMenu, { type MenuItem } from "../ContextMenu/ContextMenu";
 
 interface TabProps {
 	icon?: string;
+	id: string;
 	name: string;
 	active?: boolean;
 	state?: TabState;
@@ -24,6 +25,14 @@ const Tab: Component<TabProps> = (props: TabProps) => {
 			label: "Close",
 			action: () => props.oncloseclick?.(new MouseEvent("click")),
 		},
+		{
+			label: "Close Others",
+			action: () => TabStore.closeOtherTabs(props.id),
+		},
+		{
+            label: "Close All",
+            action: () => TabStore.closeAllTabs(),
+        },
 	];
 
 	return (
