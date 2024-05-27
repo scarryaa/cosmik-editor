@@ -127,8 +127,8 @@ const Explorer = () => {
 	});
 
 	const fetchAndSetFolderContents = async (response: FolderResponse) => {
-		let files: string[] = [];
-		let folders: string[] = [];
+		const files: string[] = [];
+		const folders: string[] = [];
 
 		if (!response.files) return;
 

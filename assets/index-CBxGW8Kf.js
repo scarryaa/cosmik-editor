@@ -1,5 +1,9 @@
 const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./javascript-C67l1L3o.js","./css-DoNn9y_q.js","./angular-ts-BdzUJqpd.js","./scss-Ce0o3RlH.js","./apl-C9W6vCle.js","./xml-CGBdWXsr.js","./java-D1WhEMP8.js","./json-B3_XiHYH.js","./asciidoc-sdyL2GNQ.js","./yaml-CdzeB0Js.js","./csv-SV4Sx2_F.js","./c-RparLEUA.js","./clojure-DUldyaQj.js","./coffee-CI2tvHVN.js","./cpp-DFohBy7Y.js","./glsl-vKfMnumi.js","./sql-yVRMvi0O.js","./csharp-DhI_1ny9.js","./diff-VMUPACBq.js","./docker-t1MdAjrc.js","./elixir-DuNB1BBS.js","./elm-CrGdvw7C.js","./erlang-C0ORVSrU.js","./go-B3ORrHWL.js","./groovy-xt9ETOUK.js","./haskell-UXfZSk_5.js","./jsx-Dhek_lNz.js","./julia-HEFZpZq1.js","./python-DdAFQc43.js","./r-VExt3r4_.js","./kotlin-CWqfBwk5.js","./less-DL22pY4I.js","./make-CH8ivb4o.js","./objective-c-DOS22jA9.js","./ocaml-qBzckQCJ.js","./perl-CzuAIuGO.js","./ruby-5LGjs1Pm.js","./shellscript-bBop2RGH.js","./lua-pd6nIbVt.js","./rust-COW7ZJIp.js","./sass-oJwsKQdv.js","./scala-DWUNMMxx.js","./swift-CGjhQosP.js","./toml-DU9_HPOl.js","./typescript-CYliDbTU.js","./astro-DRosG70n.js","./stylus-k-WBxfe-.js","./postcss-wLX4xaF-.js","./tsx-Ds786Is9.js","./blade-DqwRBQPS.js","./cobol-CbLmteZD.js","./crystal-CRzE51zz.js","./erb-5Cd5eIHq.js","./fortran-fixed-form-DxtoEefG.js","./fortran-free-form-BoQi57qK.js","./fsharp-BO-83zgp.js","./markdown-CsacJmnW.js","./gdresource-B-Voa0yv.js","./gdshader-BO43XYMV.js","./gdscript-CccYvLzp.js","./git-commit-B_f177bH.js","./git-rebase-Ct8XKp4j.js","./glimmer-js-MozmigTL.js","./glimmer-ts-BcEBv08f.js","./graphql-YkF5oJML.js","./hack-CgVeLdAF.js","./haml-TrAu53lP.js","./handlebars-npo4hGWj.js","./html-derivative-B_UhcMkx.js","./http-Co-gn1i4.js","./hxml-Zl3a4P_8.js","./haxe-uPj594z5.js","./imba-DBVe8Aym.js","./jinja-DVZkfrpO.js","./jison-6pxZ7IDQ.js","./latex-BA3YTv27.js","./tex-0uGjJ9BI.js","./gnuplot-TLobhHSn.js","./liquid-Bqd5xN-j.js","./marko-C2AP0NfW.js","./mdc-BGgFH6aU.js","./nginx-BoKi2qIY.js","./nim-CaD7WNYr.js","./php-BhYZK4_-.js","./pug-BuUjPLGk.js","./qml-ByojCR7G.js","./razor-B3Rc5T7r.js","./rst-BpzPa-jL.js","./cmake-a-8EfZAH.js","./sas-DEQFkSQy.js","./shaderlab-eCoehSuZ.js","./hlsl-DxdRzscs.js","./shellsession-ZfIGBriP.js","./soy-uFMLDv8F.js","./sparql-Cgg-C-NB.js","./turtle-B3VrIQpU.js","./stata-DazvD6a_.js","./svelte-a8rGLUzl.js","./twig-DshGX0wd.js","./vue-BVB0WzpV.js","./jsonc-hcRuV5XG.js","./json5-D9-7wPSE.js","./vue-html-fGSNhmCZ.js","./wikitext-BSXkYJx4.js","./ini-UFCqVqOy.js","./vb-Awm61LJT.js","./xsl-D2rJ1u14.js","./bat-DH3piprL.js","./raku-B5YGNUlb.js","./powershell-Ck7-Ofz9.js","./dart-DFZ6KCMX.js","./bibtex-_nVQ7ksi.js"],__vite__mapDeps=i=>i.map(i=>__vite__fileDeps[i]);
 (async ()=>{
+    const sharedConfig = {
+        context: undefined,
+        registry: undefined
+    };
     const equalFn = (a, b)=>a === b;
     const $PROXY = Symbol("solid-proxy");
     const $TRACK = Symbol("solid-track");
@@ -64,7 +68,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     function createEffect(fn, value, options) {
         runEffects = runUserEffects;
         const c = createComputation(fn, value, false, STALE);
-        c.user = true;
+        if (!options || !options.render) c.user = true;
         Effects ? Effects.push(c) : updateComputation(c);
     }
     function createMemo(fn, value, options) {
@@ -122,6 +126,23 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     }
     function getListener() {
         return Listener;
+    }
+    function getOwner() {
+        return Owner;
+    }
+    function runWithOwner(o, fn) {
+        const prev = Owner;
+        const prevListener = Listener;
+        Owner = o;
+        Listener = null;
+        try {
+            return runUpdates(fn, true);
+        } catch (err) {
+            handleError(err);
+        } finally{
+            Owner = prev;
+            Listener = prevListener;
+        }
     }
     function readSignal() {
         if (this.sources && (this.state)) {
@@ -1036,6 +1057,42 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         ];
     }
     const isServer = false;
+    const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+    function createElement(tagName, isSVG = false) {
+        return isSVG ? document.createElementNS(SVG_NAMESPACE, tagName) : document.createElement(tagName);
+    }
+    function Portal(props) {
+        const { useShadow } = props, marker = document.createTextNode(""), mount = ()=>props.mount || document.body, owner = getOwner();
+        let content;
+        let hydrating = !!sharedConfig.context;
+        createEffect(()=>{
+            content || (content = runWithOwner(owner, ()=>createMemo(()=>props.children)));
+            const el = mount();
+            if (el instanceof HTMLHeadElement) {
+                const [clean, setClean] = createSignal(false);
+                const cleanup = ()=>setClean(true);
+                createRoot((dispose)=>insert(el, ()=>(!clean() ? content() : dispose()), null));
+                onCleanup(cleanup);
+            } else {
+                const container = createElement(props.isSVG ? "g" : "div", props.isSVG), renderRoot = useShadow && container.attachShadow ? container.attachShadow({
+                    mode: "open"
+                }) : container;
+                Object.defineProperty(container, "_$host", {
+                    get () {
+                        return marker.parentNode;
+                    },
+                    configurable: true
+                });
+                insert(renderRoot, content);
+                el.appendChild(container);
+                props.ref && props.ref(container);
+                onCleanup(()=>el.removeChild(container));
+            }
+        }, undefined, {
+            render: !hydrating
+        });
+        return marker;
+    }
     const $RAW = Symbol("store-raw"), $NODE = Symbol("store-node"), $HAS = Symbol("store-has"), $SELF = Symbol("store-self");
     function wrap$1(value) {
         let p = value[$PROXY];
@@ -1648,7 +1705,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         setStore("selectedItems", folders);
     };
     const useFileStore = ()=>store;
-    var _tmpl$$k = template(`<svg stroke-width=0>`);
+    var _tmpl$$l = template(`<svg stroke-width=0>`);
     function IconTemplate(iconSrc, props) {
         const mergedProps = mergeProps(iconSrc.a, props);
         const [_, svgProps] = splitProps(mergedProps, [
@@ -1661,7 +1718,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             setContent("");
         });
         return (()=>{
-            var _el$ = _tmpl$$k();
+            var _el$ = _tmpl$$l();
             spread(_el$, mergeProps({
                 get stroke () {
                     return iconSrc.a?.stroke;
@@ -1824,7 +1881,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     const file = "_file_wfw31_1";
     const selected$1 = "_selected_wfw31_44";
     const ignored$1 = "_ignored_wfw31_48";
-    const styles$f = {
+    const styles$g = {
         "file-container": "_file-container_wfw31_1",
         indent: indent$1,
         file: file,
@@ -1832,7 +1889,92 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         selected: selected$1,
         ignored: ignored$1
     };
-    var _tmpl$$j = template(`<div><div><span>`);
+    const tooltip = "_tooltip_1q8ek_1";
+    const hidden = "_hidden_1q8ek_19";
+    const styles$f = {
+        tooltip: tooltip,
+        hidden: hidden
+    };
+    var _tmpl$$k = template(`<div>`);
+    const Tooltip = (props)=>{
+        const [visible, setVisible] = createSignal(false);
+        const [position, setPosition] = createSignal({
+            top: 0,
+            left: 0
+        });
+        let showTimeoutId;
+        let hideTimeoutId;
+        let shouldUpdatePosition = true;
+        const updatePosition = (event)=>{
+            if (shouldUpdatePosition) {
+                setPosition({
+                    top: event.clientY + 10,
+                    left: event.clientX + 15
+                });
+            }
+        };
+        const showTooltip = (event)=>{
+            clearTimeout(hideTimeoutId);
+            const delay = props.showDelay || 0;
+            updatePosition(event);
+            showTimeoutId = setTimeout(()=>{
+                setVisible(true);
+                shouldUpdatePosition = false;
+            }, delay);
+        };
+        const hideTooltip = ()=>{
+            clearTimeout(showTimeoutId);
+            const delay = props.hideDelay || 0;
+            hideTimeoutId = setTimeout(()=>{
+                setVisible(false);
+                shouldUpdatePosition = true;
+            }, delay);
+        };
+        const handleClick = ()=>{
+            clearTimeout(showTimeoutId);
+            clearTimeout(hideTimeoutId);
+            setVisible(false);
+        };
+        onCleanup(()=>{
+            clearTimeout(showTimeoutId);
+            clearTimeout(hideTimeoutId);
+        });
+        return ((()=>{
+            var _el$ = _tmpl$$k();
+            _el$.addEventListener("blur", hideTooltip);
+            _el$.$$click = handleClick;
+            _el$.$$mousemove = updatePosition;
+            _el$.addEventListener("focus", (e)=>showTooltip(e));
+            _el$.addEventListener("mouseleave", hideTooltip);
+            _el$.addEventListener("mouseenter", showTooltip);
+            insert(_el$, ()=>props.children, null);
+            insert(_el$, createComponent(Portal, {
+                get children () {
+                    var _el$2 = _tmpl$$k();
+                    _el$2.style.setProperty("position", "fixed");
+                    insert(_el$2, ()=>props.content);
+                    createRenderEffect((_p$)=>{
+                        var _v$ = `${styles$f.tooltip} ${!visible() ? styles$f.hidden : ""}`, _v$2 = `${position().top}px`, _v$3 = `${position().left}px`;
+                        _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
+                        _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$2.style.setProperty("top", _v$2) : _el$2.style.removeProperty("top"));
+                        _v$3 !== _p$.a && ((_p$.a = _v$3) != null ? _el$2.style.setProperty("left", _v$3) : _el$2.style.removeProperty("left"));
+                        return _p$;
+                    }, {
+                        e: void 0,
+                        t: void 0,
+                        a: void 0
+                    });
+                    return _el$2;
+                }
+            }), null);
+            return _el$;
+        })());
+    };
+    delegateEvents([
+        "mousemove",
+        "click"
+    ]);
+    var _tmpl$$j = template(`<div><span>`), _tmpl$2$9 = template(`<div>`);
     const FileItem = (props)=>{
         const fileStore = useFileStore();
         const indentSize = 8;
@@ -1873,23 +2015,38 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         };
         return (()=>{
-            var _el$ = _tmpl$$j(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild;
+            var _el$ = _tmpl$2$9();
             _el$.$$click = handleFileClick;
-            `${currentIndent}px` != null ? _el$2.style.setProperty("padding-left", `${currentIndent}px`) : _el$2.style.removeProperty("padding-left");
-            insert(_el$2, createComponent(VsFile, {}), _el$3);
-            insert(_el$3, fileName);
+            insert(_el$, createComponent(Tooltip, {
+                get content () {
+                    return props.file;
+                },
+                showDelay: 500,
+                get children () {
+                    var _el$2 = _tmpl$$j(), _el$3 = _el$2.firstChild;
+                    `${currentIndent}px` != null ? _el$2.style.setProperty("padding-left", `${currentIndent}px`) : _el$2.style.removeProperty("padding-left");
+                    insert(_el$2, createComponent(VsFile, {}), _el$3);
+                    insert(_el$3, fileName);
+                    createRenderEffect((_p$)=>{
+                        var _v$ = styles$g.file, _v$2 = styles$g["file-name"];
+                        _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
+                        _v$2 !== _p$.t && className(_el$3, _p$.t = _v$2);
+                        return _p$;
+                    }, {
+                        e: void 0,
+                        t: void 0
+                    });
+                    return _el$2;
+                }
+            }));
             createRenderEffect((_p$)=>{
-                var _v$ = `${styles$f["file-container"]} ${selected() ? styles$f.selected : ""} ${props.isIgnored ? styles$f.ignored : ""}`, _v$2 = props.classList, _v$3 = styles$f.file, _v$4 = styles$f["file-name"];
-                _v$ !== _p$.e && className(_el$, _p$.e = _v$);
-                _p$.t = classList(_el$, _v$2, _p$.t);
-                _v$3 !== _p$.a && className(_el$2, _p$.a = _v$3);
-                _v$4 !== _p$.o && className(_el$3, _p$.o = _v$4);
+                var _v$3 = `${styles$g["file-container"]} ${selected() ? styles$g.selected : ""} ${props.isIgnored ? styles$g.ignored : ""}`, _v$4 = props.classList;
+                _v$3 !== _p$.e && className(_el$, _p$.e = _v$3);
+                _p$.t = classList(_el$, _v$4, _p$.t);
                 return _p$;
             }, {
                 e: void 0,
-                t: void 0,
-                a: void 0,
-                o: void 0
+                t: void 0
             });
             return _el$;
         })();
@@ -1909,7 +2066,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         "folder-name": "_folder-name_1w1py_33",
         selected: selected
     };
-    var _tmpl$$i = template(`<div><div><span></span><span>`), _tmpl$2$8 = template(`<div>`);
+    var _tmpl$$i = template(`<div><span></span><span>`), _tmpl$2$8 = template(`<div>`);
     const FolderItem = (props)=>{
         const indentSize = 8;
         const currentIndent = props.indentLevel * indentSize;
@@ -1990,24 +2147,43 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         });
         return (()=>{
-            var _el$ = _tmpl$$i(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling;
-            _el$2.$$click = handleFolderClick;
-            `${currentIndent}px` != null ? _el$2.style.setProperty("padding-left", `${currentIndent}px`) : _el$2.style.removeProperty("padding-left");
-            insert(_el$3, (()=>{
-                var _c$ = createMemo(()=>!!isOpen());
-                return ()=>_c$() ? createComponent(VsChevronDown, {
-                        style: {
-                            margin: 0,
-                            padding: 0
-                        }
-                    }) : createComponent(VsChevronRight, {
-                        style: {
-                            margin: 0,
-                            padding: 0
-                        }
+            var _el$ = _tmpl$2$8();
+            insert(_el$, createComponent(Tooltip, {
+                get content () {
+                    return props.path;
+                },
+                showDelay: 500,
+                get children () {
+                    var _el$2 = _tmpl$$i(), _el$3 = _el$2.firstChild, _el$4 = _el$3.nextSibling;
+                    _el$2.$$click = handleFolderClick;
+                    `${currentIndent}px` != null ? _el$2.style.setProperty("padding-left", `${currentIndent}px`) : _el$2.style.removeProperty("padding-left");
+                    insert(_el$3, (()=>{
+                        var _c$ = createMemo(()=>!!isOpen());
+                        return ()=>_c$() ? createComponent(VsChevronDown, {
+                                style: {
+                                    margin: 0,
+                                    padding: 0
+                                }
+                            }) : createComponent(VsChevronRight, {
+                                style: {
+                                    margin: 0,
+                                    padding: 0
+                                }
+                            });
+                    })());
+                    insert(_el$4, ()=>props.folder);
+                    createRenderEffect((_p$)=>{
+                        var _v$ = `${styles$e.folder} ${selected() ? styles$e.selected : ""} ${props.isIgnored ? styles$e.ignored : ""}`, _v$2 = styles$e["folder-name"];
+                        _v$ !== _p$.e && className(_el$2, _p$.e = _v$);
+                        _v$2 !== _p$.t && className(_el$4, _p$.t = _v$2);
+                        return _p$;
+                    }, {
+                        e: void 0,
+                        t: void 0
                     });
-            })());
-            insert(_el$4, ()=>props.folder);
+                    return _el$2;
+                }
+            }), null);
             insert(_el$, (()=>{
                 var _c$2 = createMemo(()=>!!isOpen());
                 return ()=>_c$2() && (()=>{
@@ -2049,17 +2225,13 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                     })();
             })(), null);
             createRenderEffect((_p$)=>{
-                var _v$ = `${styles$e["folder-container"]}`, _v$2 = props.folder, _v$3 = `${styles$e.folder} ${selected() ? styles$e.selected : ""} ${props.isIgnored ? styles$e.ignored : ""}`, _v$4 = styles$e["folder-name"];
-                _v$ !== _p$.e && className(_el$, _p$.e = _v$);
-                _v$2 !== _p$.t && setAttribute(_el$, "data-path", _p$.t = _v$2);
-                _v$3 !== _p$.a && className(_el$2, _p$.a = _v$3);
-                _v$4 !== _p$.o && className(_el$4, _p$.o = _v$4);
+                var _v$3 = `${styles$e["folder-container"]}`, _v$4 = props.folder;
+                _v$3 !== _p$.e && className(_el$, _p$.e = _v$3);
+                _v$4 !== _p$.t && setAttribute(_el$, "data-path", _p$.t = _v$4);
                 return _p$;
             }, {
                 e: void 0,
-                t: void 0,
-                a: void 0,
-                o: void 0
+                t: void 0
             });
             return _el$;
         })();
@@ -2423,8 +2595,8 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             });
         });
         const fetchAndSetFolderContents = async (response)=>{
-            let files = [];
-            let folders = [];
+            const files = [];
+            const folders = [];
             if (!response.files) return;
             const fullPaths = await Promise.all(response.files.map(async (file)=>{
                 const fullPath = api.joinPath(response.path, file);
@@ -2658,18 +2830,19 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         return _tmpl$$f();
     };
     const styles$c = {
-        "search-container": "_search-container_l715d_1",
-        "search-bar": "_search-bar_l715d_10",
-        "search-input": "_search-input_l715d_14",
-        "search-results": "_search-results_l715d_26",
-        "no-results": "_no-results_l715d_37",
-        "search-result": "_search-result_l715d_26",
-        "result-ref-chevron": "_result-ref-chevron_l715d_63",
-        "result-ref": "_result-ref_l715d_63",
-        "result-ref-container": "_result-ref-container_l715d_74",
-        "result-ref-name": "_result-ref-name_l715d_79",
-        "result-match-count": "_result-match-count_l715d_84",
-        "match-context": "_match-context_l715d_92"
+        "search-container": "_search-container_jl6en_1",
+        "search-bar": "_search-bar_jl6en_10",
+        "search-input": "_search-input_jl6en_14",
+        "search-results": "_search-results_jl6en_26",
+        "no-results": "_no-results_jl6en_37",
+        "search-result": "_search-result_jl6en_26",
+        "result-match-data": "_result-match-data_jl6en_63",
+        "result-ref-chevron": "_result-ref-chevron_jl6en_66",
+        "result-ref": "_result-ref_jl6en_66",
+        "result-ref-container": "_result-ref-container_jl6en_77",
+        "result-ref-name": "_result-ref-name_jl6en_83",
+        "result-match-count": "_result-match-count_jl6en_88",
+        "match-context": "_match-context_jl6en_96"
     };
     var lodash = {
         exports: {}
@@ -8227,6 +8400,11 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         }.call(commonjsGlobal));
     }(lodash, lodash.exports));
     var lodashExports = lodash.exports;
+    const [searchStore, setSearchStore] = createStore({
+        searchTerm: "",
+        searchResults: [],
+        searchPerformed: false
+    });
     var _tmpl$$e = template(`<div><div><div><div></div><div>`), _tmpl$2$6 = template(`<div>`), _tmpl$3$1 = template(`<div><div><input type=text placeholder=Search></div><div>`), _tmpl$4 = template(`<div>No results found`);
     const workerUrl = new URL("data:video/mp2t;base64,bGV0IGRvY3VtZW50cyA9IFtdOwoKc2VsZi5vbm1lc3NhZ2UgPSAoZSkgPT4gewoJY29uc3QgeyB0eXBlLCBwYXlsb2FkIH0gPSBlLmRhdGE7Cglzd2l0Y2ggKHR5cGUpIHsKCQljYXNlICJJTkRFWCI6CgkJCWRvY3VtZW50cyA9IHBheWxvYWQ7CgkJCWJyZWFrOwoJCWNhc2UgIlNFQVJDSCI6IHsKCQkJY29uc3QgdGVybSA9IHBheWxvYWQudHJpbSgpLnRvTG93ZXJDYXNlKCk7CgkJCWNvbnN0IHJlc3VsdHMgPSBzZWFyY2hEb2N1bWVudHModGVybSk7CgkJCXJlc3VsdHMuc29ydCgoYSwgYikgPT4gYi5zY29yZSAtIGEuc2NvcmUpOwoJCQlzZWxmLnBvc3RNZXNzYWdlKHJlc3VsdHMpOwoJCQlicmVhazsKICAgICAgICB9Cgl9Cn07CgpmdW5jdGlvbiBzZWFyY2hEb2N1bWVudHModGVybSkgewoJY29uc3QgcmVzdWx0cyA9IFtdOwoKCWRvY3VtZW50cy5mb3JFYWNoKChkb2MpID0+IHsKCQljb25zdCBjb250ZW50ID0gZG9jLmNvbnRlbnQudG9Mb3dlckNhc2UoKTsKCQljb25zdCBwYXRoID0gZG9jLnBhdGg7CgkJY29uc3QgbWF0Y2hlcyA9IFtdOwoJCWxldCBpbmRleCA9IGNvbnRlbnQuaW5kZXhPZih0ZXJtKTsKCgkJd2hpbGUgKGluZGV4ICE9PSAtMSkgewoJCQljb25zdCBzdGFydCA9IE1hdGgubWF4KDAsIGluZGV4IC0gMzApOwoJCQljb25zdCBlbmQgPSBNYXRoLm1pbihjb250ZW50Lmxlbmd0aCwgaW5kZXggKyB0ZXJtLmxlbmd0aCArIDMwKTsKCQkJY29uc3QgY29udGV4dCA9IGRvYy5jb250ZW50LnN1YnN0cmluZyhzdGFydCwgZW5kKTsKCQkJbWF0Y2hlcy5wdXNoKHsgaW5kZXgsIGNvbnRleHQgfSk7CgkJCWluZGV4ID0gY29udGVudC5pbmRleE9mKHRlcm0sIGluZGV4ICsgMSk7CgkJfQoKCQlpZiAobWF0Y2hlcy5sZW5ndGggPiAwKSB7CgkJCXJlc3VsdHMucHVzaCh7CgkJCQlyZWY6IHBhdGgsCgkJCQlzY29yZTogbWF0Y2hlcy5sZW5ndGgsCgkJCQltYXRjaERhdGE6IHsgdGVybSwgbWF0Y2hlcyB9LAoJCQl9KTsKCQl9Cgl9KTsKCglyZXR1cm4gcmVzdWx0czsKfQo=", import.meta.url);
     const SearchResult = (props)=>{
@@ -8278,28 +8456,27 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                             get each () {
                                 return props.result.matchData.matches;
                             },
-                            children: (match)=>(()=>{
-                                    var _el$7 = _tmpl$2$6();
-                                    _el$7.$$click = async ()=>{
-                                        handleResultClick(props.result.ref, match.index);
-                                    };
-                                    _el$7.addEventListener("keypress", async (e)=>{
-                                        if (e.key === "Enter" || e.key === " ") {
+                            children: (match)=>createComponent(Tooltip, {
+                                    get content () {
+                                        return match.context;
+                                    },
+                                    position: "right",
+                                    showDelay: 500,
+                                    get children () {
+                                        var _el$7 = _tmpl$2$6();
+                                        _el$7.$$click = async ()=>{
                                             handleResultClick(props.result.ref, match.index);
-                                        }
-                                    });
-                                    insert(_el$7, ()=>match.context);
-                                    createRenderEffect((_p$)=>{
-                                        var _v$6 = styles$c["match-context"], _v$7 = match.context;
-                                        _v$6 !== _p$.e && className(_el$7, _p$.e = _v$6);
-                                        _v$7 !== _p$.t && setAttribute(_el$7, "title", _p$.t = _v$7);
-                                        return _p$;
-                                    }, {
-                                        e: void 0,
-                                        t: void 0
-                                    });
-                                    return _el$7;
-                                })()
+                                        };
+                                        _el$7.addEventListener("keypress", async (e)=>{
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                handleResultClick(props.result.ref, match.index);
+                                            }
+                                        });
+                                        insert(_el$7, ()=>match.context);
+                                        createRenderEffect(()=>className(_el$7, styles$c["match-context"]));
+                                        return _el$7;
+                                    }
+                                })
                         }));
                         createRenderEffect(()=>className(_el$6, styles$c["result-match-data"]));
                         return _el$6;
@@ -8324,9 +8501,6 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         })();
     };
     const Search = ()=>{
-        const [searchTerm, setSearchTerm] = createSignal("");
-        const [searchResults, setSearchResults] = createSignal([]);
-        const [searchPerformed, setSearchPerformed] = createSignal(false);
         const fileStore = useFileStore();
         const worker = new Worker(workerUrl, {
             type: "module"
@@ -8341,8 +8515,10 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         };
         const handleSearch = lodashExports.debounce(async (term)=>{
             if (term.trim().length === 0) {
-                setSearchResults([]);
-                setSearchPerformed(false);
+                setSearchStore({
+                    searchResults: [],
+                    searchPerformed: false
+                });
                 return;
             }
             worker.postMessage({
@@ -8351,7 +8527,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             });
         }, 300);
         createEffect(()=>{
-            handleSearch(searchTerm());
+            if (searchStore.searchTerm.trim().length > 0) {
+                handleSearch(searchStore.searchTerm);
+            }
         });
         createEffect(()=>{
             if (fileStore.folderContent.folders.length > 0) {
@@ -8367,17 +8545,21 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             });
         });
         worker.onmessage = (e)=>{
-            setSearchPerformed(true);
-            setSearchResults(e.data);
+            setSearchStore({
+                searchResults: e.data,
+                searchPerformed: true
+            });
         };
         onCleanup(()=>{
             worker.terminate();
         });
         return (()=>{
             var _el$8 = _tmpl$3$1(), _el$9 = _el$8.firstChild, _el$10 = _el$9.firstChild, _el$11 = _el$9.nextSibling;
-            _el$10.$$input = (e)=>setSearchTerm(e.target.value);
+            _el$10.$$input = (e)=>setSearchStore({
+                    searchTerm: e.target.value
+                });
             insert(_el$11, (()=>{
-                var _c$3 = createMemo(()=>!!(searchPerformed() && searchResults().length === 0));
+                var _c$3 = createMemo(()=>!!(searchStore.searchPerformed && searchStore.searchResults.length === 0));
                 return ()=>_c$3() && (()=>{
                         var _el$12 = _tmpl$4();
                         createRenderEffect(()=>className(_el$12, styles$c["no-results"]));
@@ -8386,18 +8568,18 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             })(), null);
             insert(_el$11, createComponent(For, {
                 get each () {
-                    return searchResults();
+                    return searchStore.searchResults;
                 },
                 children: (result)=>createComponent(SearchResult, {
                         result
                     })
             }), null);
             createRenderEffect((_p$)=>{
-                var _v$8 = styles$c["search-container"], _v$9 = styles$c["search-bar"], _v$10 = styles$c["search-input"], _v$11 = styles$c["search-results"];
-                _v$8 !== _p$.e && className(_el$8, _p$.e = _v$8);
-                _v$9 !== _p$.t && className(_el$9, _p$.t = _v$9);
-                _v$10 !== _p$.a && className(_el$10, _p$.a = _v$10);
-                _v$11 !== _p$.o && className(_el$11, _p$.o = _v$11);
+                var _v$6 = styles$c["search-container"], _v$7 = styles$c["search-bar"], _v$8 = styles$c["search-input"], _v$9 = styles$c["search-results"];
+                _v$6 !== _p$.e && className(_el$8, _p$.e = _v$6);
+                _v$7 !== _p$.t && className(_el$9, _p$.t = _v$7);
+                _v$8 !== _p$.a && className(_el$10, _p$.a = _v$8);
+                _v$9 !== _p$.o && className(_el$11, _p$.o = _v$9);
                 return _p$;
             }, {
                 e: void 0,
@@ -8405,7 +8587,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 a: void 0,
                 o: void 0
             });
-            createRenderEffect(()=>_el$10.value = searchTerm());
+            createRenderEffect(()=>_el$10.value = searchStore.searchTerm);
             return _el$8;
         })();
     };
@@ -17648,7 +17830,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         }, 0);
         const updateSelection = ()=>{
-            let { startLine, endLine, startIndex, endIndex } = props.selection;
+            const { startLine, endLine, startIndex, endIndex } = props.selection;
             if (startLine === endLine) {
                 setSelectedContent(props.content.slice(startIndex, endIndex));
                 setSelectionLeft(textService.measureTextWidth(props.content.substring(0, startIndex), "Hack", 14));
@@ -18604,7 +18786,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         const adjustPaneHeights = (panes2, columnIndex)=>{
             const columnPanes = panes2.filter((pane)=>pane.column === columnIndex);
             const firstPaneIndex = panes2.findIndex((pane)=>pane.column === columnIndex);
-            let totalHeight = columnPanes.reduce((acc, pane, index)=>{
+            const totalHeight = columnPanes.reduce((acc, pane, index)=>{
                 const panePadding = index === 0 ? padding() : 0;
                 return acc + Number.parseInt(pane.height) + panePadding;
             }, 0);

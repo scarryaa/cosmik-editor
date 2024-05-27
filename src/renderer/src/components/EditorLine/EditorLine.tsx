@@ -48,7 +48,7 @@ const EditorLine: Component<EditorLineProps> = (props: EditorLineProps) => {
 	}, 0);
 
 	const updateSelection = () => {
-		let { startLine, endLine, startIndex, endIndex } = props.selection;
+		const { startLine, endLine, startIndex, endIndex } = props.selection;
 
 		if (startLine === endLine) {
 			// Single-line selection
