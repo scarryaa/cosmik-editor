@@ -9,6 +9,7 @@ import { For, createEffect, createMemo, createSignal } from "solid-js";
 import type { Component } from "solid-js";
 import FileItem from "../FileItem/FileItem";
 import styles from "./FolderItem.module.scss";
+import Tooltip from "../Tooltip/Tooltip";
 
 interface FolderItemProps {
 	folder: string;
@@ -112,6 +113,7 @@ const FolderItem: Component<FolderItemProps> = (props: FolderItemProps) => {
 
 	return (
 		<div class={`${styles["folder-container"]}`} data-path={props.folder}>
+			<Tooltip content={props.path} showDelay={500}>
 			<div
 				onclick={handleFolderClick}
 				class={`${styles.folder} ${selected() ? styles.selected : ""} ${
@@ -128,6 +130,7 @@ const FolderItem: Component<FolderItemProps> = (props: FolderItemProps) => {
 				</span>
 				<span class={styles["folder-name"]}>{props.folder}</span>
 			</div>
+			</Tooltip>
 			{isOpen() && (
 				<div>
 					<For each={contents().folders}>

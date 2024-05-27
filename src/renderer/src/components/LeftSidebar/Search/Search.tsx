@@ -11,6 +11,8 @@ import { useFileStore } from "@renderer/stores/files";
 import TabStore, { TabState } from "@renderer/stores/tabs";
 import EditorStore from "@renderer/stores/editors";
 import { VsChevronDown, VsChevronRight } from "solid-icons/vs";
+import { searchStore, setSearchStore } from "@renderer/stores/search";
+import Tooltip from "@renderer/components/Tooltip/Tooltip";
 
 const workerUrl = new URL(
 	"../../../../../workers/searchWorker.ts",
@@ -18,7 +20,10 @@ const workerUrl = new URL(
 );
 
 const SearchResult = (props: {
-	result: { ref: string; matchData: { matches: Array<{ context: string, index: number }> } };
+	result: {
+		ref: string;
+		matchData: { matches: Array<{ context: string; index: number }> };
+	};
 }) => {
 	const [collapsed, setCollapsed] = createSignal(false);
 
@@ -72,20 +77,21 @@ const SearchResult = (props: {
 				<div class={styles["result-match-data"]}>
 					<For each={props.result.matchData.matches}>
 						{(match) => (
-							<div
-								class={styles["match-context"]}
-								onKeyPress={async (e) => {
-									if (e.key === "Enter" || e.key === " ") {
+							<Tooltip content={match.context} position="right" showDelay={500}>
+								<div
+									class={styles["match-context"]}
+									onKeyPress={async (e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											handleResultClick(props.result.ref, match.index);
+										}
+									}}
+									onClick={async () => {
 										handleResultClick(props.result.ref, match.index);
-									}
-								}}
-								onClick={async () => {
-									handleResultClick(props.result.ref, match.index);
-								}}
-								title={match.context}
-							>
-								{match.context}
-							</div>
+									}}
+								>
+									{match.context}
+								</div>
+							</Tooltip>
 						)}
 					</For>
 				</div>
@@ -95,9 +101,6 @@ const SearchResult = (props: {
 };
 
 const Search: Component = () => {
-	const [searchTerm, setSearchTerm] = createSignal("");
-	const [searchResults, setSearchResults] = createSignal([]);
-	const [searchPerformed, setSearchPerformed] = createSignal(false); // Signal to track if a search was performed
 	const fileStore = useFileStore();
 	const worker = new Worker(workerUrl, { type: "module" });
 
@@ -120,15 +123,16 @@ const Search: Component = () => {
 
 	const handleSearch = debounce(async (term) => {
 		if (term.trim().length === 0) {
-			setSearchResults([]);
-			setSearchPerformed(false);
+			setSearchStore({ searchResults: [], searchPerformed: false });
 			return;
 		}
 		worker.postMessage({ type: "SEARCH", payload: term.trim() });
 	}, 300);
 
 	createEffect(() => {
-		handleSearch(searchTerm());
+		if (searchStore.searchTerm.trim().length > 0) {
+			handleSearch(searchStore.searchTerm);
+		}
 	});
 
 	createEffect(() => {
@@ -144,8 +148,10 @@ const Search: Component = () => {
 	});
 
 	worker.onmessage = (e) => {
-		setSearchPerformed(true);
-		setSearchResults(e.data);
+		setSearchStore({
+			searchResults: e.data,
+			searchPerformed: true,
+		});
 	};
 
 	onCleanup(() => {
@@ -159,15 +165,16 @@ const Search: Component = () => {
 					type="text"
 					class={styles["search-input"]}
 					placeholder="Search"
-					value={searchTerm()}
-					oninput={(e) => setSearchTerm(e.target.value)}
+					value={searchStore.searchTerm}
+					oninput={(e) => setSearchStore({ searchTerm: e.target.value })}
 				/>
 			</div>
 			<div class={styles["search-results"]}>
-				{searchPerformed() && searchResults().length === 0 && (
-					<div class={styles["no-results"]}>No results found</div>
-				)}
-				<For each={searchResults()}>
+				{searchStore.searchPerformed &&
+					searchStore.searchResults.length === 0 && (
+						<div class={styles["no-results"]}>No results found</div>
+					)}
+				<For each={searchStore.searchResults}>
 					{(result) => <SearchResult result={result} />}
 				</For>
 			</div>

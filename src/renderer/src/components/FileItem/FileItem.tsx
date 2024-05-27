@@ -4,6 +4,7 @@ import TabStore, { TabState } from "@renderer/stores/tabs";
 import { VsFile } from "solid-icons/vs";
 import { type Component, createMemo } from "solid-js";
 import styles from "./FileItem.module.scss";
+import Tooltip from "../Tooltip/Tooltip";
 
 interface FileItemProps {
 	file: string;
@@ -61,10 +62,15 @@ const FileItem: Component<FileItemProps> = (props: FileItemProps) => {
 			classList={props.classList}
 			onclick={handleFileClick}
 		>
-			<div class={styles.file} style={{ "padding-left": `${currentIndent}px` }}>
-				<VsFile />
-				<span class={styles["file-name"]}>{fileName()}</span>
-			</div>
+			<Tooltip content={props.file} showDelay={500}>
+				<div
+					class={styles.file}
+					style={{ "padding-left": `${currentIndent}px` }}
+				>
+					<VsFile />
+					<span class={styles["file-name"]}>{fileName()}</span>
+				</div>
+			</Tooltip>
 		</div>
 	);
 };

@@ -89,7 +89,7 @@ const LeftSidebar: Component<LeftSidebarProps> = (props: LeftSidebarProps) => {
 			(pane) => pane.column === columnIndex,
 		);
 
-		let totalHeight = columnPanes.reduce((acc, pane, index) => {
+		const totalHeight = columnPanes.reduce((acc, pane, index) => {
 			const panePadding = index === 0 ? padding() : 0; // Add padding only to the first pane
 			return acc + Number.parseInt(pane.height) + panePadding;
 		}, 0);
