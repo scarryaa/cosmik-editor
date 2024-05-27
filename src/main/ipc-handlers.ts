@@ -257,7 +257,7 @@ const registerIpcHandlers = (mainWindow: BrowserWindow) => {
 			const results = await readDirectoryRecursive(folderPath);
 			mainWindow?.webContents.send("folder-read", results);
 			return results;
-		} catch (error) {
+		} catch (error) {	
 			console.error("Error reading folder:", error);
 		}
 	});

@@ -1,26 +1,25 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.7.0/schema.json",
-	"organizeImports": {
-		"enabled": true
-	},
-	"files": {
-		"ignore": ["/out/"]
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true,
-			"style": {
-				"useConst": "off",
-				"noNonNullAssertion": "off"
-			},
-			"suspicious": {
-				"noConfusingLabels": "off",
-				"noShadowRestrictedNames": "off"
-			},
-			"correctness": {
-				"noUnusedLabels": "off"
-			}
-		}
-	}
+    "$schema": "https://biomejs.dev/schemas/1.7.0/schema.json",
+    "organizeImports": {
+        "enabled": true
+    },
+    "files": {
+        "ignore": ["/out/"]
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "style": {
+                "noNonNullAssertion": "off"
+            },
+            "suspicious": {
+                "noConfusingLabels": "off",
+                "noShadowRestrictedNames": "off"
+            },
+            "correctness": {
+                "noUnusedLabels": "off"
+            }
+        }
+    }
 }

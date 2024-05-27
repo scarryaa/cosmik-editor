@@ -2341,7 +2341,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         checkPath.isNotRelative = (path)=>REGIX_IS_WINDOWS_PATH_ABSOLUTE.test(path) || isNotRelative(path);
     }
     const ignore$1 = getDefaultExportFromCjs(ignore);
-    var _tmpl$$h = template(`<div>`), _tmpl$2$7 = template(`<div><div><h3></h3></div><div><button type=button></button><button type=button></button><button type=button></button><button type=button>`), _tmpl$3$1 = template(`<div><div>`);
+    var _tmpl$$h = template(`<div>`), _tmpl$2$7 = template(`<div><div><h3></h3></div><div><button type=button></button><button type=button></button><button type=button></button><button type=button>`), _tmpl$3$2 = template(`<div><div>`);
     const Explorer = ()=>{
         const [rootOpen, setRootOpen] = createSignal(true);
         const [explorerHeight, setExplorerHeight] = createSignal(null);
@@ -2589,7 +2589,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 insert(_el$, (()=>{
                     var _c$2 = createMemo(()=>!!rootOpen());
                     return ()=>_c$2() && (()=>{
-                            var _el$10 = _tmpl$3$1(), _el$11 = _el$10.firstChild;
+                            var _el$10 = _tmpl$3$2(), _el$11 = _el$10.firstChild;
                             _el$10.addEventListener("scroll", (event)=>setExplorerScroll(event.target.scrollTop));
                             var _ref$2 = explorerRef;
                             typeof _ref$2 === "function" ? use(_ref$2, _el$10) : explorerRef = _el$10;
@@ -2658,11 +2658,18 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         return _tmpl$$f();
     };
     const styles$c = {
-        "search-container": "_search-container_1l014_1",
-        "search-bar": "_search-bar_1l014_9",
-        "search-input": "_search-input_1l014_13",
-        "search-results": "_search-results_1l014_25",
-        "search-result": "_search-result_1l014_25"
+        "search-container": "_search-container_l715d_1",
+        "search-bar": "_search-bar_l715d_10",
+        "search-input": "_search-input_l715d_14",
+        "search-results": "_search-results_l715d_26",
+        "no-results": "_no-results_l715d_37",
+        "search-result": "_search-result_l715d_26",
+        "result-ref-chevron": "_result-ref-chevron_l715d_63",
+        "result-ref": "_result-ref_l715d_63",
+        "result-ref-container": "_result-ref-container_l715d_74",
+        "result-ref-name": "_result-ref-name_l715d_79",
+        "result-match-count": "_result-match-count_l715d_84",
+        "match-context": "_match-context_l715d_92"
     };
     var lodash = {
         exports: {}
@@ -8220,12 +8227,106 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         }.call(commonjsGlobal));
     }(lodash, lodash.exports));
     var lodashExports = lodash.exports;
-    var _tmpl$$e = template(`<div><div><input type=text placeholder=Search></div><div>`), _tmpl$2$6 = template(`<div><div>`);
-    const workerUrl = new URL("data:video/mp2t;base64,aW1wb3J0IGx1bnIgZnJvbSAibHVuciI7CgpsZXQgaW5kZXg7CgpzZWxmLm9ubWVzc2FnZSA9IChlKSA9PiB7CiAgICBjb25zdCB7IHR5cGUsIHBheWxvYWQgfSA9IGUuZGF0YTsKICAgIHN3aXRjaCAodHlwZSkgewogICAgICAgIGNhc2UgIklOREVYIjoKICAgICAgICAgICAgaW5kZXggPSBsdW5yKGZ1bmN0aW9uICgpIHsKICAgICAgICAgICAgICAgIHRoaXMuZmllbGQoImNvbnRlbnQiKTsKICAgICAgICAgICAgICAgIHRoaXMucmVmKCJwYXRoIik7CiAgICAgICAgICAgICAgICBwYXlsb2FkLmZvckVhY2goKGRvYykgPT4gewogICAgICAgICAgICAgICAgICAgIHRoaXMuYWRkKGRvYyk7CiAgICAgICAgICAgICAgICB9KTsKICAgICAgICAgICAgfSk7CiAgICAgICAgICAgIGJyZWFrOwogICAgICAgIGNhc2UgIlNFQVJDSCI6CiAgICAgICAgICAgIGlmIChpbmRleCkgewogICAgICAgICAgICAgICAgY29uc3QgcmVzdWx0cyA9IGluZGV4LnNlYXJjaChwYXlsb2FkKTsKICAgICAgICAgICAgICAgIHNlbGYucG9zdE1lc3NhZ2UocmVzdWx0cyk7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgYnJlYWs7CiAgICB9Cn07Cg==", import.meta.url);
+    var _tmpl$$e = template(`<div><div><div><div></div><div>`), _tmpl$2$6 = template(`<div>`), _tmpl$3$1 = template(`<div><div><input type=text placeholder=Search></div><div>`), _tmpl$4 = template(`<div>No results found`);
+    const workerUrl = new URL("data:video/mp2t;base64,bGV0IGRvY3VtZW50cyA9IFtdOwoKc2VsZi5vbm1lc3NhZ2UgPSAoZSkgPT4gewoJY29uc3QgeyB0eXBlLCBwYXlsb2FkIH0gPSBlLmRhdGE7Cglzd2l0Y2ggKHR5cGUpIHsKCQljYXNlICJJTkRFWCI6CgkJCWRvY3VtZW50cyA9IHBheWxvYWQ7CgkJCWJyZWFrOwoJCWNhc2UgIlNFQVJDSCI6IHsKCQkJY29uc3QgdGVybSA9IHBheWxvYWQudHJpbSgpLnRvTG93ZXJDYXNlKCk7CgkJCWNvbnN0IHJlc3VsdHMgPSBzZWFyY2hEb2N1bWVudHModGVybSk7CgkJCXJlc3VsdHMuc29ydCgoYSwgYikgPT4gYi5zY29yZSAtIGEuc2NvcmUpOwoJCQlzZWxmLnBvc3RNZXNzYWdlKHJlc3VsdHMpOwoJCQlicmVhazsKICAgICAgICB9Cgl9Cn07CgpmdW5jdGlvbiBzZWFyY2hEb2N1bWVudHModGVybSkgewoJY29uc3QgcmVzdWx0cyA9IFtdOwoKCWRvY3VtZW50cy5mb3JFYWNoKChkb2MpID0+IHsKCQljb25zdCBjb250ZW50ID0gZG9jLmNvbnRlbnQudG9Mb3dlckNhc2UoKTsKCQljb25zdCBwYXRoID0gZG9jLnBhdGg7CgkJY29uc3QgbWF0Y2hlcyA9IFtdOwoJCWxldCBpbmRleCA9IGNvbnRlbnQuaW5kZXhPZih0ZXJtKTsKCgkJd2hpbGUgKGluZGV4ICE9PSAtMSkgewoJCQljb25zdCBzdGFydCA9IE1hdGgubWF4KDAsIGluZGV4IC0gMzApOwoJCQljb25zdCBlbmQgPSBNYXRoLm1pbihjb250ZW50Lmxlbmd0aCwgaW5kZXggKyB0ZXJtLmxlbmd0aCArIDMwKTsKCQkJY29uc3QgY29udGV4dCA9IGRvYy5jb250ZW50LnN1YnN0cmluZyhzdGFydCwgZW5kKTsKCQkJbWF0Y2hlcy5wdXNoKHsgaW5kZXgsIGNvbnRleHQgfSk7CgkJCWluZGV4ID0gY29udGVudC5pbmRleE9mKHRlcm0sIGluZGV4ICsgMSk7CgkJfQoKCQlpZiAobWF0Y2hlcy5sZW5ndGggPiAwKSB7CgkJCXJlc3VsdHMucHVzaCh7CgkJCQlyZWY6IHBhdGgsCgkJCQlzY29yZTogbWF0Y2hlcy5sZW5ndGgsCgkJCQltYXRjaERhdGE6IHsgdGVybSwgbWF0Y2hlcyB9LAoJCQl9KTsKCQl9Cgl9KTsKCglyZXR1cm4gcmVzdWx0czsKfQo=", import.meta.url);
+    const SearchResult = (props)=>{
+        const [collapsed, setCollapsed] = createSignal(false);
+        const handleResultClick = async (file, globalIndex)=>{
+            TabStore.openTab({
+                id: file,
+                name: file.split("/").pop(),
+                state: TabState.Untracked,
+                editorId: EditorStore.getActiveEditorId()
+            });
+            const contents = await window.api.getFileContents(file);
+            EditorStore.setEditorContent("editor1", contents);
+            TabStore.updateTab(file, {
+                content: contents
+            });
+            const { line, column } = await EditorStore.getActiveEditor().calculateLocalIndex(globalIndex);
+            EditorStore.getActiveEditor()?.moveTo(column, line, 0);
+        };
+        return (()=>{
+            var _el$ = _tmpl$$e(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling;
+            _el$2.$$click = ()=>setCollapsed(!collapsed());
+            _el$2.addEventListener("keypress", (e)=>{
+                if (e.key === "Enter" || e.key === " ") {
+                    setCollapsed(!collapsed());
+                }
+            });
+            insert(_el$4, ()=>props.result.matchData.matches.length);
+            insert(_el$3, (()=>{
+                var _c$ = createMemo(()=>!!collapsed());
+                return ()=>_c$() ? createComponent(VsChevronRight, {
+                        "font-size": "14",
+                        get ["class"] () {
+                            return styles$c["result-ref-chevron"];
+                        }
+                    }) : createComponent(VsChevronDown, {
+                        "font-size": "14",
+                        get ["class"] () {
+                            return styles$c["result-ref-chevron"];
+                        }
+                    });
+            })(), _el$5);
+            insert(_el$5, ()=>props.result.ref.split("/").pop());
+            insert(_el$, (()=>{
+                var _c$2 = createMemo(()=>!!!collapsed());
+                return ()=>_c$2() ? (()=>{
+                        var _el$6 = _tmpl$2$6();
+                        insert(_el$6, createComponent(For, {
+                            get each () {
+                                return props.result.matchData.matches;
+                            },
+                            children: (match)=>(()=>{
+                                    var _el$7 = _tmpl$2$6();
+                                    _el$7.$$click = async ()=>{
+                                        handleResultClick(props.result.ref, match.index);
+                                    };
+                                    _el$7.addEventListener("keypress", async (e)=>{
+                                        if (e.key === "Enter" || e.key === " ") {
+                                            handleResultClick(props.result.ref, match.index);
+                                        }
+                                    });
+                                    insert(_el$7, ()=>match.context);
+                                    createRenderEffect((_p$)=>{
+                                        var _v$6 = styles$c["match-context"], _v$7 = match.context;
+                                        _v$6 !== _p$.e && className(_el$7, _p$.e = _v$6);
+                                        _v$7 !== _p$.t && setAttribute(_el$7, "title", _p$.t = _v$7);
+                                        return _p$;
+                                    }, {
+                                        e: void 0,
+                                        t: void 0
+                                    });
+                                    return _el$7;
+                                })()
+                        }));
+                        createRenderEffect(()=>className(_el$6, styles$c["result-match-data"]));
+                        return _el$6;
+                    })() : null;
+            })(), null);
+            createRenderEffect((_p$)=>{
+                var _v$ = styles$c["search-result"], _v$2 = styles$c["result-ref"], _v$3 = styles$c["result-ref-container"], _v$4 = styles$c["result-match-count"], _v$5 = styles$c["result-ref-name"];
+                _v$ !== _p$.e && className(_el$, _p$.e = _v$);
+                _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
+                _v$3 !== _p$.a && className(_el$3, _p$.a = _v$3);
+                _v$4 !== _p$.o && className(_el$4, _p$.o = _v$4);
+                _v$5 !== _p$.i && className(_el$5, _p$.i = _v$5);
+                return _p$;
+            }, {
+                e: void 0,
+                t: void 0,
+                a: void 0,
+                o: void 0,
+                i: void 0
+            });
+            return _el$;
+        })();
+    };
     const Search = ()=>{
-        const [documents, setDocuments] = createSignal([]);
         const [searchTerm, setSearchTerm] = createSignal("");
         const [searchResults, setSearchResults] = createSignal([]);
+        const [searchPerformed, setSearchPerformed] = createSignal(false);
         const fileStore = useFileStore();
         const worker = new Worker(workerUrl, {
             type: "module"
@@ -8239,8 +8340,9 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         };
         const handleSearch = lodashExports.debounce(async (term)=>{
-            if (term.length < 3 || term.trim().length === 0) {
+            if (term.trim().length === 0) {
                 setSearchResults([]);
+                setSearchPerformed(false);
                 return;
             }
             worker.postMessage({
@@ -8248,19 +8350,6 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 payload: term.trim()
             });
         }, 300);
-        const handleResultClick = async (file)=>{
-            TabStore.openTab({
-                id: file,
-                name: file.split("/").pop(),
-                state: TabState.Untracked,
-                editorId: EditorStore.getActiveEditorId()
-            });
-            const contents = await window.api.getFileContents(file);
-            EditorStore.setEditorContent("editor1", contents);
-            TabStore.updateTab(file, {
-                content: contents
-            });
-        };
         createEffect(()=>{
             handleSearch(searchTerm());
         });
@@ -8270,61 +8359,45 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
         });
         createEffect(()=>{
-            window.api.onIndexResult((_, documents2)=>{
-                setDocuments((docs)=>[
-                        ...docs,
-                        ...documents2
-                    ]);
+            window.api.onIndexResult((_, documents)=>{
                 worker.postMessage({
                     type: "INDEX",
-                    payload: documents2
+                    payload: documents
                 });
             });
         });
         worker.onmessage = (e)=>{
+            setSearchPerformed(true);
             setSearchResults(e.data);
         };
         onCleanup(()=>{
             worker.terminate();
         });
         return (()=>{
-            var _el$ = _tmpl$$e(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$2.nextSibling;
-            _el$3.$$input = (e)=>setSearchTerm(e.target.value);
-            insert(_el$4, createComponent(For, {
+            var _el$8 = _tmpl$3$1(), _el$9 = _el$8.firstChild, _el$10 = _el$9.firstChild, _el$11 = _el$9.nextSibling;
+            _el$10.$$input = (e)=>setSearchTerm(e.target.value);
+            insert(_el$11, (()=>{
+                var _c$3 = createMemo(()=>!!(searchPerformed() && searchResults().length === 0));
+                return ()=>_c$3() && (()=>{
+                        var _el$12 = _tmpl$4();
+                        createRenderEffect(()=>className(_el$12, styles$c["no-results"]));
+                        return _el$12;
+                    })();
+            })(), null);
+            insert(_el$11, createComponent(For, {
                 get each () {
                     return searchResults();
                 },
-                children: (result)=>(()=>{
-                        var _el$5 = _tmpl$2$6(), _el$6 = _el$5.firstChild;
-                        _el$6.$$click = async ()=>{
-                            handleResultClick(result.ref);
-                        };
-                        _el$6.addEventListener("keypress", async (e)=>{
-                            if (e.key === "Enter" || e.key === " ") {
-                                handleResultClick(result.ref);
-                            }
-                        });
-                        insert(_el$6, ()=>result.ref);
-                        createRenderEffect((_p$)=>{
-                            var _v$5 = styles$c["search-result"], _v$6 = styles$c["result-ref"], _v$7 = result.ref;
-                            _v$5 !== _p$.e && className(_el$5, _p$.e = _v$5);
-                            _v$6 !== _p$.t && className(_el$6, _p$.t = _v$6);
-                            _v$7 !== _p$.a && setAttribute(_el$6, "title", _p$.a = _v$7);
-                            return _p$;
-                        }, {
-                            e: void 0,
-                            t: void 0,
-                            a: void 0
-                        });
-                        return _el$5;
-                    })()
-            }));
+                children: (result)=>createComponent(SearchResult, {
+                        result
+                    })
+            }), null);
             createRenderEffect((_p$)=>{
-                var _v$ = styles$c["search-container"], _v$2 = styles$c["search-bar"], _v$3 = styles$c["search-input"], _v$4 = styles$c["search-results"];
-                _v$ !== _p$.e && className(_el$, _p$.e = _v$);
-                _v$2 !== _p$.t && className(_el$2, _p$.t = _v$2);
-                _v$3 !== _p$.a && className(_el$3, _p$.a = _v$3);
-                _v$4 !== _p$.o && className(_el$4, _p$.o = _v$4);
+                var _v$8 = styles$c["search-container"], _v$9 = styles$c["search-bar"], _v$10 = styles$c["search-input"], _v$11 = styles$c["search-results"];
+                _v$8 !== _p$.e && className(_el$8, _p$.e = _v$8);
+                _v$9 !== _p$.t && className(_el$9, _p$.t = _v$9);
+                _v$10 !== _p$.a && className(_el$10, _p$.a = _v$10);
+                _v$11 !== _p$.o && className(_el$11, _p$.o = _v$11);
                 return _p$;
             }, {
                 e: void 0,
@@ -8332,13 +8405,13 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 a: void 0,
                 o: void 0
             });
-            createRenderEffect(()=>_el$3.value = searchTerm());
-            return _el$;
+            createRenderEffect(()=>_el$10.value = searchTerm());
+            return _el$8;
         })();
     };
     delegateEvents([
-        "input",
-        "click"
+        "click",
+        "input"
     ]);
     var _tmpl$$d = template(`<h2>Source Control`);
     const SourceControl = ()=>{
@@ -18070,7 +18143,7 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
         const [cursorRefs, setCursorRefs] = createSignal([]);
         const [foldRegions, setFoldRegions] = createSignal([]);
         const [visibleLinesStart, setVisibleLinesStart] = createSignal(0);
-        const [spans, setSpans] = createSignal();
+        createSignal();
         const windowSize = createMemo(()=>getNumberOfLinesOnScreen(lineHeight) + 5);
         const fileStore = useFileStore();
         let contentContainerRef;
@@ -18210,8 +18283,6 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
                 let text_after = rootText?.slice(current_position, node.endIndex) ?? "";
                 spans2.push(escapeHtml(text_after).replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>").replace(/\t/g, "    "));
             }
-            setSpans(spans2.join(""));
-            return spans2.join("");
         }
         const memoizedParseNode = createMemo(()=>{
             if (parserTree()) {
@@ -18363,15 +18434,15 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
     delegateEvents([
         "click"
     ]);
-    const expanded = "_expanded_1h6us_13";
+    const expanded = "_expanded_9x9mn_13";
     const styles$3 = {
-        "pane-container": "_pane-container_1h6us_1",
+        "pane-container": "_pane-container_9x9mn_1",
         expanded: expanded,
-        "resize-handle": "_resize-handle_1h6us_16",
-        "resize-input": "_resize-input_1h6us_27",
-        "pane-title": "_pane-title_1h6us_35",
-        "buttons-container": "_buttons-container_1h6us_45",
-        "pane-content": "_pane-content_1h6us_56"
+        "resize-handle": "_resize-handle_9x9mn_16",
+        "resize-input": "_resize-input_9x9mn_27",
+        "pane-title": "_pane-title_9x9mn_35",
+        "buttons-container": "_buttons-container_9x9mn_45",
+        "pane-content": "_pane-content_9x9mn_56"
     };
     var _tmpl$$4 = template(`<div><div draggable=true><h2></h2><div><button type=button></button><button type=button></button></div></div><div>`), _tmpl$2 = template(`<div>`);
     const Pane = (props)=>{
@@ -19262,6 +19333,18 @@ const __vite__fileDeps=["./angular-html-CCA6uK5u.js","./html-Eq4sA2a8.js","./jav
             }
             return index + column;
         };
+        calculateLocalIndex(globalIndex) {
+            let remainingIndex = globalIndex;
+            let line = 0;
+            while(line < this.totalLines() && remainingIndex >= this.lineContent(line).length + 1){
+                remainingIndex -= this.lineContent(line).length + 1;
+                line++;
+            }
+            return {
+                line,
+                column: remainingIndex
+            };
+        }
         cursorAt(index) {
             return this.cursors[index];
         }

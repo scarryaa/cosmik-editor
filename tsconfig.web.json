@@ -5,8 +5,9 @@
 		"src/renderer/src/**/*",
 		"src/renderer/src/**/*.tsx",
 		"src/preload/*.d.ts",
-		"src/main/tree-sitter"
-, "src/workers/searchWorker.ts"	],
+		"src/main/tree-sitter",
+		"src/workers/searchWorker.ts"
+	],
 	"compilerOptions": {
 		"composite": true,
 		"jsxImportSource": "solid-js",
