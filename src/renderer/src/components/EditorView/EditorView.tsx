@@ -1,9 +1,9 @@
+import { For, createEffect, createMemo, createSignal, on } from "solid-js";
+import type { Accessor, Component } from "solid-js";
 import { lineHeight } from "@renderer/const/const";
 import { parserTree } from "@renderer/stores/parser-tree";
 import TabStore from "@renderer/stores/tabs";
 import { getNumberOfLinesOnScreen } from "@renderer/util/util";
-import { For, createEffect, createMemo, createSignal, on } from "solid-js";
-import type { Accessor, Component } from "solid-js";
 import Cursor from "../Cursor/Cursor";
 import EditorLine from "../EditorLine/EditorLine";
 import LineNumbers from "../LineNumbers/LineNumbers";
@@ -46,6 +46,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	const fileStore = useFileStore();
 
 	let contentContainerRef: HTMLDivElement | undefined;
+	let isSyncingScroll = false;
 
 	const ensureCursorVisible = () => {
 		const cursorElement = cursorRefs()[0];
@@ -103,19 +104,21 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		const scrollLeft = container.scrollLeft;
 
 		requestAnimationFrame(() => {
-			setViewScrollTop(scrollTop);
-			setViewScrollLeft(scrollLeft);
+			if (!isSyncingScroll) {
+				setViewScrollTop(scrollTop);
+				setViewScrollLeft(scrollLeft);
 
-			const visibleLinesStart = Math.max(
-				Math.floor(scrollTop / lineHeight) - 5,
-				0,
-			);
-			setVisibleLinesStart(visibleLinesStart);
+				const visibleLinesStart = Math.max(
+					Math.floor(scrollTop / lineHeight) - 5,
+					0,
+				);
+				setVisibleLinesStart(visibleLinesStart);
 
-			TabStore.updateTab(TabStore.activeTab!.id, {
-				scrollX: scrollLeft,
-				scrollY: scrollTop,
-			});
+				TabStore.updateTab(TabStore.activeTab!.id, {
+					scrollX: scrollLeft,
+					scrollY: scrollTop,
+				});
+			}
 		});
 	};
 
@@ -142,7 +145,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		let foldRegions: FoldRegion[] = [];
 		if (!tree || !tree.children) return foldRegions;
 
-		for (let child of tree.children) {
+		for (const child of tree.children) {
 			if (shouldFold(child)) {
 				foldRegions.push({
 					startLine: calculateLineNumber(tree.text, child.startIndex),
@@ -158,7 +161,17 @@ const EditorView: Component<EditorViewProps> = (props) => {
 	}
 
 	function shouldFold(node: ASTNode): boolean {
-		const foldableTypes = ["comment", "function", "class", "block"];
+		const foldableTypes = [
+			"comment",
+			"function",
+			"class",
+			"block",
+			"script",
+			"style",
+			"script_element",
+			"style_element",
+			"async",
+		];
 		return foldableTypes.includes(node.type);
 	}
 
@@ -181,7 +194,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		rootText: string,
 		styles: { [key: string]: string },
 	): string {
-		let spans: string[] = [];
+		const spans: string[] = [];
 		let current_position = node.startIndex;
 		if (!node) return "";
 		if (!node?.children || !TabStore.activeTab) return "";
@@ -202,9 +215,9 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				.replace(/\t/g, "    ");
 		};
 
-		for (let child of node.children) {
+		for (const child of node.children) {
 			if (child.startIndex > current_position) {
-				let text_before =
+				const text_before =
 					rootText?.slice(current_position, child.startIndex) ?? "";
 				spans.push(
 					escapeHtml(text_before)
@@ -214,13 +227,13 @@ const EditorView: Component<EditorViewProps> = (props) => {
 				);
 			}
 
-			let childSpan = parseNode(child, rootText, styles);
-			let spanType =
+			const childSpan = parseNode(child, rootText, styles);
+			const spanType =
 				styles[specialCharacterStyles[child.type]] ||
 				styles[child.type] ||
 				child.type ||
 				"default-style";
-			let span = `<span class="${spanType}">${
+			const span = `<span class="${spanType}">${
 				childSpan ||
 				(escapeHtml(rootText?.slice(child.startIndex, child.endIndex))
 					?.replace(/ /g, "&nbsp;")
@@ -233,7 +246,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		}
 
 		if (current_position < node.endIndex) {
-			let text_after = rootText?.slice(current_position, node.endIndex) ?? "";
+			const text_after = rootText?.slice(current_position, node.endIndex) ?? "";
 			spans.push(
 				escapeHtml(text_after)
 					.replace(/ /g, "&nbsp;")
@@ -344,6 +357,15 @@ const EditorView: Component<EditorViewProps> = (props) => {
 		}
 	});
 
+	const syncScroll = (scrollTop: number) => {
+		isSyncingScroll = true;
+		contentContainerRef?.scrollTo({
+			top: scrollTop,
+			behavior: "auto",
+		});
+		isSyncingScroll = false;
+	};
+
 	return (
 		<div
 			onClick={props.click}
@@ -358,6 +380,7 @@ const EditorView: Component<EditorViewProps> = (props) => {
 						foldRegions={foldRegions()}
 						scrollTop={viewScrollTop}
 						editor={props.editor}
+						syncScroll={syncScroll}
 					/>
 				</div>
 				<div
